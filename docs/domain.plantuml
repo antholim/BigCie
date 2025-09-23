@@ -93,7 +93,15 @@ Terminal -- "1" BikeDB : accesses >
 
 Terminal -- "1" StationDB : accesses >
 
-(Rider, Bike) .. Bill
+class "Rental" as Rental {
+  - rentalId: UUID
+  - startTime: DateTime
+  - endTime: DateTime
+}
+
+(Rider, Bike) .. Rental
+
+Rental "1" -- "1" Bill : generates >
 
 class "Bill" as Bill {
   - billId: UUID
