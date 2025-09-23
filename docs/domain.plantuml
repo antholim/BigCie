@@ -1,0 +1,128 @@
+@startuml Domain Model
+skinparam style strictuml
+skinparam DefaultFontName Arial
+skinparam DefaultFontSize 16
+skinparam DefaultFontStyle bold
+skinparam ArrowThickness 2.2
+hide empty members
+
+class "<i>User</i>" as User {
+  - userId: UUID
+  - username: String
+  - email: String
+}
+
+
+package "Database" <<Database>> {
+    class "UserDB" as UserDB {
+    - users: Map<UUID, User>
+    }
+}
+
+class "Rider" as Rider {
+
+}
+
+class "Operator" as Operator {
+
+}
+
+class "<i>Terminal</i>" as Terminal {
+  - terminalId: UUID
+  - Privileged: boolean
+}
+
+class "UserInterface" as UserInterface {
+
+}
+
+class "AdminInterface" as AdminInterface {
+
+}
+
+class "Bike" as Bike {
+  - bikeId: UUID
+  - status: String
+}
+
+
+package "Database" <<Database>> {
+    class "BikeDB" as BikeDB {
+    - bikes: Map<UUID, Bike>
+    }
+}
+
+class "Station" as Station {
+  - stationId: UUID
+  - location: String
+}
+
+package "Database" <<Database>> {
+    class "StationDB" as StationDB {
+    - stations: Map<UUID, Station>
+    }
+}
+
+UserDB "1" *-- "0..*" User : stores >
+
+BikeDB "1" *-- "0..*" Bike : stores >
+
+StationDB "1" *-- "0..*" Station : stores >
+
+Terminal <|-- UserInterface : extends 
+
+Terminal <|-- AdminInterface : extends
+
+User <|-- Rider : extends
+
+User <|-- Operator : extends
+
+Rider "*" -- "0..*" Bike : rents >
+
+Operator "*" -- "0..*" Station : manages >
+
+Station "*" o-- "0..*" Bike : contains >
+
+Rider "*" -- "1" UserInterface : interacts >
+
+Operator "*" -- "1" AdminInterface : interacts >
+
+Terminal -- "1" UserDB : accesses >
+
+Terminal -- "1" BikeDB : accesses >
+
+Terminal -- "1" StationDB : accesses >
+
+(Rider, Bike) .. Bill
+
+class "Bill" as Bill {
+  - billId: UUID
+  - amount: Decimal
+  - date: Date
+}
+
+package "Database" <<Database>> {
+
+    class "BillDB" as BillDB {
+    - bills: Map<UUID, Bill>
+    }
+}
+BillDB "1" *-- "0..*" Bill : stores >
+
+Terminal -- "1" BillDB : accesses >
+
+package "Authentication" {
+  class "AuthService" as AuthService {
+    - authId: UUID
+    - method: String
+  }
+
+  User "1" -- "1" AuthService : uses >
+  Terminal "1" -- "1" AuthService : uses >
+}
+
+
+
+
+
+@enduml
