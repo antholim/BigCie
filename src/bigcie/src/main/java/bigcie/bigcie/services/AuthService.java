@@ -8,6 +8,9 @@ import bigcie.bigcie.models.User;
 import bigcie.bigcie.models.UserType;
 import bigcie.bigcie.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +19,19 @@ import org.springframework.stereotype.Service;
 public class AuthService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final TokenService tokenService;
 
     public String login(LoginRequest loginRequest) {
-        return "Login successful for: " + loginRequest.getUsernameOrEmail();
+        Authentication authentication = authenticationManager.authenticate(
+                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                        loginRequest.getUsernameOrEmail(), loginRequest.getPassword()
+                ))
+        );
+        if (authentication.isAuthenticated()) {
+            return tokenService.generateToken();
+        }
+        throw new IllegalArgumentException("Invalid username/email or password");
     }
 
     public String register(RegisterRequest registerRequest) {
