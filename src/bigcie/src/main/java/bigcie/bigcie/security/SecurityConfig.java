@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -31,6 +33,13 @@ public class SecurityConfig {
     }
 
     @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setPasswordEncoder(new BCryptPasswordEncoder(12));
+        authProvider.setUserDetailsPasswordService(null);
+        return authProvider;
+    }
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -39,14 +48,8 @@ public class SecurityConfig {
 //                        .requestMatchers("/api-docs").permitAll()
 //                        .requestMatchers("/swagger-ui.html").permitAll()
                                 .requestMatchers("/api/v1/register").permitAll()
-                                .requestMatchers("/api/v1/property").permitAll()
-                                .requestMatchers("/api/v1/property-summary").permitAll()
                                 .requestMatchers("/api/v1/login").permitAll()
-                                .requestMatchers("/api/v1/hello-world").permitAll()
-                                .requestMatchers("/api/v1/unit").permitAll()
-                                .requestMatchers("/api/v1/lease").permitAll()
-                                .requestMatchers("/api/v1/tenant").permitAll()
-                                .requestMatchers("/api/v1/users").permitAll()
+
                                 .anyRequest().authenticated()
                 )
 //                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
