@@ -1,4 +1,4 @@
-package com.bigcie.bigcie;
+package bigcie.bigcie;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
