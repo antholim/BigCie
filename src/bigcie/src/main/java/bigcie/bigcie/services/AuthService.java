@@ -2,10 +2,8 @@ package bigcie.bigcie.services;
 
 import bigcie.bigcie.dtos.LoginRequest;
 import bigcie.bigcie.dtos.RegisterRequest;
-import bigcie.bigcie.models.Operator;
-import bigcie.bigcie.models.Rider;
-import bigcie.bigcie.models.User;
-import bigcie.bigcie.models.UserType;
+import bigcie.bigcie.entities.User;
+import bigcie.bigcie.models.UserFactory;
 import bigcie.bigcie.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,12 +22,18 @@ public class AuthService {
 
     public String login(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
-                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsernameOrEmail(), loginRequest.getPassword()
-                ))
+            new UsernamePasswordAuthenticationToken(
+                loginRequest.getUsernameOrEmail(), loginRequest.getPassword()
+            )
         );
         if (authentication.isAuthenticated()) {
-            return tokenService.generateToken();
+            // Retrieve user entity by username or email
+            User user = userRepository.findByUsername(loginRequest.getUsernameOrEmail())
+                .orElseGet(() -> userRepository.findByEmail(loginRequest.getUsernameOrEmail()).orElse(null));
+            if (user == null) {
+                throw new IllegalArgumentException("User not found");
+            }
+            return tokenService.generateToken(user.getId(), (org.springframework.security.core.userdetails.UserDetails) authentication.getPrincipal(), bigcie.bigcie.models.enums.TokenType.ACCESS_TOKEN);
         }
         throw new IllegalArgumentException("Invalid username/email or password");
     }
@@ -43,10 +47,10 @@ public class AuthService {
         }
 
         User user;
-        switch (registerRequest.getUserType()) {
-            case OPERATOR -> user = new Operator();
-            case RIDER -> user = new Rider();
-            default -> throw new IllegalArgumentException("Invalid user type: " + registerRequest.getUserType());
+        UserFactory userFactory = UserFactory.getInstance();
+        user = userFactory.createUser(registerRequest.getUserType());
+        if (user == null) {
+            throw new IllegalArgumentException("Invalid user type: " + registerRequest.getUserType());
         }
         user.setUsername(registerRequest.getUsername());
         user.setEmail(registerRequest.getEmail());

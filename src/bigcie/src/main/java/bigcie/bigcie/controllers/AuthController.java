@@ -23,13 +23,11 @@ public class AuthController {
 
     @PostMapping("/api/v1/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        return null;
-//        return ResponseEntity.status(200).(authService.login(loginRequest)).;
+        return ResponseEntity.ok(authService.login(loginRequest));
     }
 
     @PostMapping("/api/v1/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
-        return null;
-//        return ResponseEntity.ok(authService.register(registerRequest));
+        return ResponseEntity.ok(authService.register(registerRequest));
     }
 }
