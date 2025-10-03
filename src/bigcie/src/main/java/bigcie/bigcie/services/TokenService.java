@@ -37,13 +37,6 @@ public class TokenService implements ITokenService {
         return extractUsername(token, TokenType.ACCESS_TOKEN);
     }
 
-    /**
-     * Extracts the username from a token of a specified type.
-     *
-     * @param token     The JWT token.
-     * @param tokenType The type of the token (ACCESS or REFRESH).
-     * @return The username extracted from the token.
-     */
     @Override
     public String extractUsername(String token, TokenType tokenType) {
         return extractClaim(token, Claims::getSubject, tokenType);
@@ -92,7 +85,6 @@ public class TokenService implements ITokenService {
                 .compact();
     }
 
-    // Implementation for ITokenService interface method
     @Override
     public String generateToken(UserDetails userDetails, TokenType tokenType) {
         // This implementation assumes the userId is not available; returns a token with only username as subject
@@ -100,38 +92,16 @@ public class TokenService implements ITokenService {
         return generateToken(claims, userDetails, tokenType);
     }
 
-    /**
-     * Validates a token by checking its expiration and comparing its subject with UserDetails.
-     *
-     * @param token       The JWT token to validate.
-     * @param userDetails UserDetails to compare with token subject.
-     * @param tokenType   The type of the token (ACCESS or REFRESH).
-     * @return true if the token is valid; false otherwise.
-     */
     public boolean isTokenValid(String token, UserDetails userDetails, TokenType tokenType) {
         final String username = extractUsername(token, tokenType);
         return (username.equals(userDetails.getUsername())) &&
                 !isTokenExpired(token, tokenType);
     }
 
-    /**
-     * Extracts the expiration date from a token.
-     *
-     * @param token     The JWT token.
-     * @param tokenType The type of the token (ACCESS or REFRESH).
-     * @return The expiration date extracted from the token.
-     */
     public Date extractExpiration(String token, TokenType tokenType) {
         return extractClaim(token, Claims::getExpiration, tokenType);
     }
 
-    /**
-     * Checks if a token has expired.
-     *
-     * @param token     The JWT token to check.
-     * @param tokenType The type of the token (ACCESS or REFRESH).
-     * @return true if the token has expired; false otherwise.
-     */
     public boolean isTokenExpired(String token, TokenType tokenType) {
         return extractExpiration(token, tokenType).before(new Date());
     }
