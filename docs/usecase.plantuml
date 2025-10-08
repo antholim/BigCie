@@ -1,0 +1,30 @@
+@startuml Usecase Diagram
+title Usecase Diagram for Bike Management System (BMS)
+left to right direction
+skinparam packageStyle rectangle
+
+rectangle "BMS" as BMS {
+    usecase "Register" as UC1
+    usecase "Login" as UC2
+    usecase "Start Bike Session" as UC3
+    usecase "End Bike Session" as UC4
+    usecase "Logout" as UC5
+
+}
+actor User
+actor Admin
+
+User --> UC1
+User --> UC2
+User --> UC3
+User --> UC4
+Admin --> UC2
+Admin --> UC5
+User --> UC5
+
+note right of BMS
+    There will be more use cases in the future
+end note
+
+
+@enduml
