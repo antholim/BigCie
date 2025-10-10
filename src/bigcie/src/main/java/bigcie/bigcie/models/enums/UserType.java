@@ -1,4 +1,4 @@
-package bigcie.bigcie.models;
+package bigcie.bigcie.models.enums;
 
 public enum UserType {
     RIDER,

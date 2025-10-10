@@ -1,5 +1,6 @@
-package bigcie.bigcie.models;
+package bigcie.bigcie.entities;
 
+import bigcie.bigcie.models.enums.UserType;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;

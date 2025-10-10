@@ -1,4 +1,6 @@
-package bigcie.bigcie.models;
+package bigcie.bigcie.entities;
+
+import bigcie.bigcie.models.enums.UserType;
 
 public class Operator extends User {
     public Operator() {

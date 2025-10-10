@@ -1,6 +1,6 @@
 package bigcie.bigcie.repositories;
 
-import bigcie.bigcie.models.User;
+import bigcie.bigcie.entities.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.Optional;
 import java.util.UUID;

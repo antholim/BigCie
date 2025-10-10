@@ -1,0 +1,24 @@
+@startuml Sequence Diagram
+title Sequence Diagram for Bike Management System (BMS)
+actor User
+participant BMS
+
+User -> BMS: Register(Fullname, address, payment info, email, username, password)
+BMS --> User: Registration Successful
+
+User -> BMS: Login(username, password)
+BMS --> User: Login Successful
+
+loop Bike Session
+    User -> BMS: StartBikeSession(StationID, BikeID, Rider)
+    BMS --> User: BikeSessionStarted, RentalID
+
+    User -> BMS: EndBikeSession(StationID, DockID, RentalID)
+    BMS --> User: BikeSessionEnded, Receipt
+end
+
+User -> BMS: Logout()
+BMS --> User: Logout Successful
+
+
+@enduml
