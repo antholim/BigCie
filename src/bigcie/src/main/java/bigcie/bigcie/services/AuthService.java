@@ -1,6 +1,7 @@
 package bigcie.bigcie.services;
 
 import bigcie.bigcie.dtos.auth.LoginRequest;
+import bigcie.bigcie.dtos.auth.LoginResponse;
 import bigcie.bigcie.dtos.auth.RegisterRequest;
 import bigcie.bigcie.dtos.auth.RegisterResponse;
 import bigcie.bigcie.entities.User;
@@ -25,23 +26,34 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
 
-    public String login(LoginRequest loginRequest) {
+    public LoginResponse login(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                loginRequest.getUsernameOrEmail(), loginRequest.getPassword()
-            )
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.getUsernameOrEmail(), loginRequest.getPassword()
+                )
         );
         if (authentication.isAuthenticated()) {
-            // Retrieve user entity by username or email
             User user = userRepository.findByUsername(loginRequest.getUsernameOrEmail())
-                .orElseGet(() -> userRepository.findByEmail(loginRequest.getUsernameOrEmail()).orElse(null));
+                    .orElseGet(() -> userRepository.findByEmail(loginRequest.getUsernameOrEmail()).orElse(null));
             if (user == null) {
                 throw new IllegalArgumentException("User not found");
             }
-            return tokenService.generateToken(user.getId(), (org.springframework.security.core.userdetails.UserDetails) authentication.getPrincipal(), TokenType.ACCESS_TOKEN);
+            String accessToken = tokenService.generateToken(user.getId(), (org.springframework.security.core.userdetails.UserDetails) authentication.getPrincipal(), TokenType.ACCESS_TOKEN);
+            String refreshToken = tokenService.generateToken(user.getId(), (org.springframework.security.core.userdetails.UserDetails) authentication.getPrincipal(), TokenType.REFRESH_TOKEN);
+            return LoginResponse.builder()
+                    .userId(user.getId())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .userType(user.getType())
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .message("Login successful for: " + user.getUsername())
+                    .timestamp(Instant.now())
+                    .build();
         }
         throw new IllegalArgumentException("Invalid username/email or password");
     }
+
 
     public RegisterResponse register(RegisterRequest registerRequest) {
         if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
