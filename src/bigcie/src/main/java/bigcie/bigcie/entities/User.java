@@ -3,8 +3,8 @@ package bigcie.bigcie.entities;
 import bigcie.bigcie.entities.enums.UserType;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.UUID;
@@ -13,7 +13,7 @@ import java.util.UUID;
 @Setter
 @Document(collection = "users")
 public abstract class User implements UserDetails {
-    @Id
+    @MongoId
     private UUID id;
     private String username;
     private String email;
