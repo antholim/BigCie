@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -16,6 +17,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -33,33 +35,19 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setPasswordEncoder(new BCryptPasswordEncoder(12));
-        authProvider.setUserDetailsPasswordService(null);
-        return authProvider;
-    }
-    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .requiresChannel(channel -> channel.anyRequest())//enforce https
+                .requiresChannel(channel -> channel.anyRequest())
                 .authorizeHttpRequests(authz -> authz
-//                        .requestMatchers("/api-docs").permitAll()
-//                        .requestMatchers("/swagger-ui.html").permitAll()
-                                .requestMatchers("/api/v1/register").permitAll()
-                                .requestMatchers("/api/v1/login").permitAll()
-
-                                .anyRequest().authenticated()
+                        .requestMatchers("/api/v1/register").permitAll()
+                        .requestMatchers("/api/v1/login").permitAll()
+                        .anyRequest().authenticated()
                 )
-//                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//                .authenticationProvider(authenticationProvider)
-//                .addFilterBefore(hostCheckFilter, UsernamePasswordAuthenticationFilter.class)
-//                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
-//                .addFilterBefore(jwAuthenFilter, UsernamePasswordAuthenticationFilter.class)
-                .csrf().disable()
+                .csrf(csrf -> csrf.disable())
                 .build();
     }
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -76,3 +64,4 @@ public class SecurityConfig {
         return (CorsConfigurationSource) source;
     }
 }
+

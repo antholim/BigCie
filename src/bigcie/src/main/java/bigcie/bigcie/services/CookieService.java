@@ -4,7 +4,7 @@ import bigcie.bigcie.configs.CookieConfigProperties;
 import bigcie.bigcie.configs.RtConfigProperties;
 import bigcie.bigcie.configs.TokenConfigProperties;
 import bigcie.bigcie.models.AuthenticationResponse;
-import bigcie.bigcie.models.enums.TokenType;
+import bigcie.bigcie.entities.enums.TokenType;
 import bigcie.bigcie.services.interfaces.ICookieService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

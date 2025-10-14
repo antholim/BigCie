@@ -1,4 +1,4 @@
-package bigcie.bigcie.dtos;
+package bigcie.bigcie.dtos.auth;
 
 public class LoginRequest {
     private String usernameOrEmail;

@@ -1,9 +1,11 @@
 package bigcie.bigcie.services;
 
-import bigcie.bigcie.dtos.LoginRequest;
-import bigcie.bigcie.dtos.RegisterRequest;
+import bigcie.bigcie.dtos.auth.LoginRequest;
+import bigcie.bigcie.dtos.auth.RegisterRequest;
+import bigcie.bigcie.dtos.auth.RegisterResponse;
 import bigcie.bigcie.entities.User;
-import bigcie.bigcie.models.UserFactory;
+import bigcie.bigcie.entities.enums.TokenType;
+import bigcie.bigcie.entities.factory.UserFactory;
 import bigcie.bigcie.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,6 +13,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -33,12 +38,12 @@ public class AuthService {
             if (user == null) {
                 throw new IllegalArgumentException("User not found");
             }
-            return tokenService.generateToken(user.getId(), (org.springframework.security.core.userdetails.UserDetails) authentication.getPrincipal(), bigcie.bigcie.models.enums.TokenType.ACCESS_TOKEN);
+            return tokenService.generateToken(user.getId(), (org.springframework.security.core.userdetails.UserDetails) authentication.getPrincipal(), TokenType.ACCESS_TOKEN);
         }
         throw new IllegalArgumentException("Invalid username/email or password");
     }
 
-    public String register(RegisterRequest registerRequest) {
+    public RegisterResponse register(RegisterRequest registerRequest) {
         if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
             throw new IllegalArgumentException("Username already exists: " + registerRequest.getUsername());
         }
@@ -55,7 +60,16 @@ public class AuthService {
         user.setUsername(registerRequest.getUsername());
         user.setEmail(registerRequest.getEmail());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        user.setId(UUID.randomUUID());
         userRepository.save(user);
-        return "Registration successful for: " + registerRequest.getUsername();
+
+        return RegisterResponse.builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .userType(user.getType())
+                .message("Registration successful for: " + user.getUsername())
+                .timestamp(Instant.now())
+                .build();
     }
 }

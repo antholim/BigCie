@@ -2,7 +2,7 @@ package bigcie.bigcie.services;
 
 import bigcie.bigcie.configs.RtConfigProperties;
 import bigcie.bigcie.configs.TokenConfigProperties;
-import bigcie.bigcie.models.enums.TokenType;
+import bigcie.bigcie.entities.enums.TokenType;
 import bigcie.bigcie.services.interfaces.ITokenService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -27,10 +27,13 @@ public class TokenService implements ITokenService {
 
     public TokenService(TokenConfigProperties tokenConfigProperties, RtConfigProperties rtConfigProperties) {
         this.tokenConfigProperties = tokenConfigProperties;
+        log.info("Loaded signInKey length: {}", this.tokenConfigProperties.getSignInKey() != null ? this.tokenConfigProperties.getSignInKey().length() : "null");
         this.signInKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(this.tokenConfigProperties.getSignInKey()));
         this.rtConfigProperties = rtConfigProperties;
+        log.info("Loaded refreshKey length: {}", this.rtConfigProperties.getRefreshKey() != null ? this.rtConfigProperties.getRefreshKey().length() : "null");
         this.refreshKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(this.rtConfigProperties.getRefreshKey()));
     }
+
 
     @Override
     public String extractUsername(String token) {

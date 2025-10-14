@@ -1,7 +1,7 @@
 package bigcie.bigcie.services.interfaces;
 
 import bigcie.bigcie.models.AuthenticationResponse;
-import bigcie.bigcie.models.enums.TokenType;
+import bigcie.bigcie.entities.enums.TokenType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 

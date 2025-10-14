@@ -1,32 +1,30 @@
 package bigcie.bigcie.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import bigcie.bigcie.dtos.LoginRequest;
-import bigcie.bigcie.dtos.RegisterRequest;
+import bigcie.bigcie.dtos.auth.LoginRequest;
+import bigcie.bigcie.dtos.auth.RegisterRequest;
 import bigcie.bigcie.services.AuthService;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1")
 public class AuthController {
     private final AuthService authService;
 
-    @Autowired
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
 
-    @PostMapping("/api/v1/login")
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         return ResponseEntity.ok(authService.login(loginRequest));
     }
 
-    @PostMapping("/api/v1/register")
+    @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
         return ResponseEntity.ok(authService.register(registerRequest));
     }

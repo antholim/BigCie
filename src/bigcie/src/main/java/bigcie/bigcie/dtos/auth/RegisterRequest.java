@@ -1,6 +1,6 @@
-package bigcie.bigcie.dtos;
+package bigcie.bigcie.dtos.auth;
 
-import bigcie.bigcie.models.enums.UserType;
+import bigcie.bigcie.entities.enums.UserType;
 
 public class RegisterRequest {
     private String username;

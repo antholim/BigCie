@@ -1,6 +1,6 @@
 package bigcie.bigcie.services.interfaces;
 
-import bigcie.bigcie.models.enums.TokenType;
+import bigcie.bigcie.entities.enums.TokenType;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Date;
 import java.util.UUID;

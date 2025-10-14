@@ -1,6 +1,7 @@
-package bigcie.bigcie.models.factory;
+package bigcie.bigcie.entities.factory;
 
-import bigcie.bigcie.models.User;
+
+import bigcie.bigcie.entities.User;
 
 public interface UserBuilder<T extends User> {
     UserBuilder<T> id(java.util.UUID id);
