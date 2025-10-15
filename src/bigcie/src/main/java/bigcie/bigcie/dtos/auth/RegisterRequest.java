@@ -6,7 +6,7 @@ public class RegisterRequest {
     private String username;
     private String email;
     private String password;
-    private UserType userType;
+    private UserType userType = UserType.RIDER;
 
     public String getUsername() {
         return username;
