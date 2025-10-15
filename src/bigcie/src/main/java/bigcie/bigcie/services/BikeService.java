@@ -32,7 +32,13 @@ public class BikeService implements IBikeService {
         bikeEntity.setReservationExpiry(bike.getReservationExpiry());
 
         Bike savedBike = bikeRepository.save(bikeEntity);
-        station.getBikes().add(savedBike);
+        List<Bike> bikes = station.getBikes();
+        bikes.add(savedBike);
+        int numberOfBikesDocked = bikes.stream().filter(b ->
+                b.getStatus() == BikeStatus.AVAILABLE ||
+                        b.getStatus() == BikeStatus.MAINTENANCE ||
+                        b.getStatus() == BikeStatus.RESERVED).toList().size();
+        station.setNumberOfBikesDocked(numberOfBikesDocked);
         bikeStationService.updateStation(station.getId(), station);
         return savedBike;
     }

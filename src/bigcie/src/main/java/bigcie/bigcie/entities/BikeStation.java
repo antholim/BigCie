@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,6 +25,6 @@ public class BikeStation {
     private String address;
     private int capacity;
     private int numberOfBikesDocked;
-    private List<Bike> bikes;
+    private List<Bike> bikes = new ArrayList<>();
     private int reservationHoldTimeMinutes; // in minutes
 }
