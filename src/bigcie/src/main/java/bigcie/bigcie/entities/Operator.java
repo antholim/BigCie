@@ -2,12 +2,14 @@ package bigcie.bigcie.entities;
 
 import bigcie.bigcie.entities.enums.UserType;
 import bigcie.bigcie.entities.factory.UserBuilder;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+@TypeAlias("operator")
 public class Operator extends User  {
     public Operator() {
         this.type = UserType.OPERATOR;

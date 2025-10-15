@@ -12,6 +12,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Document(collection = "users")
+@TypeAlias("user")
 public abstract class User implements UserDetails {
     @MongoId
     private UUID id;

@@ -4,6 +4,7 @@ import bigcie.bigcie.dtos.auth.LoginRequest;
 import bigcie.bigcie.dtos.auth.LoginResponse;
 import bigcie.bigcie.dtos.auth.RegisterRequest;
 import bigcie.bigcie.dtos.auth.RegisterResponse;
+import bigcie.bigcie.entities.Rider;
 import bigcie.bigcie.entities.User;
 import bigcie.bigcie.entities.enums.TokenType;
 import bigcie.bigcie.entities.factory.UserFactory;
