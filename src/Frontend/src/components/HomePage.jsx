@@ -1,7 +1,9 @@
 import React from "react";
 import "./home.css";
+import { useNavigate } from "react-router-dom";
 
 export default function DowntownBikeLanding() {
+  const navigate = useNavigate();
   return (
     <div className="db-page">
       {/* Top bar */}
@@ -26,7 +28,7 @@ export default function DowntownBikeLanding() {
             <a href="#faq">FAQ</a>
           </nav>
           <div className="db-actions">
-            <button className="db-btn ghost">Log in</button>
+            <button className="db-btn ghost" onClick={() => navigate("/login")}>Log in</button>
             <a className="db-btn primary" href="#download">Get the app</a>
           </div>
         </div>

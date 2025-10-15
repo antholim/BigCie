@@ -1,9 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import FetchingService from "../../services/FetchingService";
+
+// Ensure axios sends cookies with requests
+// axios.defaults.withCredentials = true; // This line is no longer needed
 import "../../components/home.css";
 
 export default function LoginPage() {
-  const [form, setForm] = useState({ usernameOrEmail: "", password: "" });
+  const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -17,19 +21,13 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/v1/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Login failed");
-      }
+      const res = await FetchingService.post("/api/v1/login", form);
       // Optionally handle login response (e.g., save token)
       navigate("/");
     } catch (err) {
-      setError(err.message);
+      setError(
+        err.response?.data?.message || err.message || "Login failed"
+      );
     } finally {
       setLoading(false);
     }
@@ -40,11 +38,11 @@ export default function LoginPage() {
       <form className="db-card" style={{ padding: 32, minWidth: 320 }} onSubmit={handleSubmit}>
         <h2 style={{ marginBottom: 24 }}>Login</h2>
         <div className="db-field">
-          <span>Username or Email</span>
+          <span>Username</span>
           <input
-            name="usernameOrEmail"
+            name="username"
             type="text"
-            value={form.usernameOrEmail}
+            value={form.username}
             onChange={handleChange}
             required
             autoFocus
