@@ -96,8 +96,8 @@ public class BikeStationController {
         if (!authorizationService.hasRole(request, UserType.OPERATOR)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        BikeStation updatedStation = bikeStationService.dockBike(stationId, dockBikeRequest.getBikeId());
-        return ResponseEntity.ok(updatedStation);
+        bikeStationService.dockBike(stationId, dockBikeRequest.getBikeId());
+        return ResponseEntity.ok(null);
     }
 
 

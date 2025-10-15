@@ -73,7 +73,10 @@ public class BikeStationService implements IBikeStationService {
         station.setStatus(status);
         return bikeStationRepository.save(station);
     }
+    @Override
+    public void dockBike(UUID stationId, UUID bikeId) {
 
+    }
 //    @Override
 //    public BikeStation dockBike(UUID stationId, UUID bikeId) {
 //        BikeStation station = getStationById(stationId);
