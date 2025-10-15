@@ -41,6 +41,17 @@ public class BikeController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
+    @PostMapping("/bulk-create")
+    @Operation(summary = "Bulk create bikes")
+    public ResponseEntity<List<Bike>> bulkCreateBikes(@RequestBody List<BikeRequest> bikes, HttpServletRequest request) {
+        if (authorizationService.hasRole(request, UserType.OPERATOR)) {
+            List<Bike> createdBikes = bikeService.bulkCreateBikes(bikes);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdBikes);
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+
     @Operation(summary = "Get a bike by ID")
     @GetMapping("/{id}")
     public ResponseEntity<Bike> getBikeById(@PathVariable UUID id) {

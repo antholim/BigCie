@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class BikeService implements IBikeService {
@@ -71,5 +72,11 @@ public class BikeService implements IBikeService {
         Bike bike = getBikeById(id);
         bike.setStatus(status);
         return bikeRepository.save(bike);
+    }
+    @Override
+    public List<Bike> bulkCreateBikes(List<BikeRequest> bikes) {
+        return bikes.stream()
+                .map(this::createBike)
+                .collect(Collectors.toList());
     }
 }

@@ -15,4 +15,5 @@ public interface IBikeService {
     Bike updateBike(UUID id, Bike bike);
     void deleteBike(UUID id);
     Bike updateBikeStatus(UUID id, BikeStatus status);
+    List<Bike> bulkCreateBikes(List<BikeRequest> bikes);
 }
