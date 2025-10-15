@@ -8,7 +8,12 @@ import bigcie.bigcie.entities.Rider;
 import bigcie.bigcie.entities.User;
 import bigcie.bigcie.entities.enums.TokenType;
 import bigcie.bigcie.entities.factory.UserFactory;
+import bigcie.bigcie.models.AuthenticationResponse;
 import bigcie.bigcie.repositories.UserRepository;
+import bigcie.bigcie.services.interfaces.ICookieService;
+import bigcie.bigcie.services.interfaces.ITokenService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,9 +30,10 @@ public class AuthService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private final TokenService tokenService;
+    private final ITokenService tokenService;
+    private final ICookieService cookieService;
 
-    public LoginResponse login(LoginRequest loginRequest) {
+    public LoginResponse login(LoginRequest loginRequest, HttpServletResponse response) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsernameOrEmail(), loginRequest.getPassword()
@@ -39,8 +45,10 @@ public class AuthService {
             if (user == null) {
                 throw new IllegalArgumentException("User not found");
             }
-            String accessToken = tokenService.generateToken(user.getId(), (org.springframework.security.core.userdetails.UserDetails) authentication.getPrincipal(), TokenType.ACCESS_TOKEN);
-            String refreshToken = tokenService.generateToken(user.getId(), (org.springframework.security.core.userdetails.UserDetails) authentication.getPrincipal(), TokenType.REFRESH_TOKEN);
+            String accessToken = tokenService.generateToken(user, TokenType.ACCESS_TOKEN);
+            String refreshToken = tokenService.generateToken(user, TokenType.REFRESH_TOKEN);
+            AuthenticationResponse res = new AuthenticationResponse(accessToken, refreshToken);
+            cookieService.addTokenCookies(response, res);
             return LoginResponse.builder()
                     .userId(user.getId())
                     .username(user.getUsername())

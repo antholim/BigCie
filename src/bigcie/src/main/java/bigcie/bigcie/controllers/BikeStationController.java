@@ -9,6 +9,7 @@ import bigcie.bigcie.services.interfaces.IBikeStationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/stations")
 @Tag(name = "Bike Stations", description = "Operations related to bike stations")
+@Slf4j
 public class BikeStationController {
     private final IBikeStationService bikeStationService;
     private final IAuthorizationService authorizationService;
@@ -33,6 +35,7 @@ public class BikeStationController {
     @PostMapping
     public ResponseEntity<BikeStation> createStation(@RequestBody BikeStationRequest station, HttpServletRequest request) {
         if (!authorizationService.hasRole(request, UserType.OPERATOR)) {
+            log.warn("Unauthorized attempt to create bike station");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         BikeStation createdStation = bikeStationService.createStation(station);

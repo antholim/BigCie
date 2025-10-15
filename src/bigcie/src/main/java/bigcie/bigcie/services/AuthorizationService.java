@@ -8,10 +8,12 @@ import bigcie.bigcie.services.interfaces.IAuthorizationService;
 import bigcie.bigcie.services.interfaces.ICookieService;
 import bigcie.bigcie.services.interfaces.ITokenService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class AuthorizationService implements IAuthorizationService {
     private final ICookieService cookieService;
@@ -26,7 +28,8 @@ public class AuthorizationService implements IAuthorizationService {
 
     @Override
     public User getUserFromRequest(HttpServletRequest request) {
-        String token = cookieService.getTokenFromCookie(request, "accessToken");
+        log.info("HERE");
+        String token = cookieService.getTokenFromCookie(request, "authToken");
         if (token == null) {
             throw new RuntimeException("No access token found");
         }
@@ -40,8 +43,10 @@ public class AuthorizationService implements IAuthorizationService {
     public boolean hasRole(HttpServletRequest request, UserType requiredRole) {
         try {
             User user = getUserFromRequest(request);
+            log.info(user.toString());
             return user.getType() == requiredRole;
         } catch (Exception e) {
+            log.error("Error checking user role: {}", e.getMessage());
             return false;
         }
     }

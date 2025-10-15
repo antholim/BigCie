@@ -2,6 +2,7 @@ package bigcie.bigcie.services;
 
 import bigcie.bigcie.configs.RtConfigProperties;
 import bigcie.bigcie.configs.TokenConfigProperties;
+import bigcie.bigcie.entities.User;
 import bigcie.bigcie.entities.enums.TokenType;
 import bigcie.bigcie.services.interfaces.ITokenService;
 import io.jsonwebtoken.*;
@@ -50,10 +51,10 @@ public class TokenService implements ITokenService {
         return extractUserId(token, TokenType.ACCESS_TOKEN);
     }
 
-    @Override
     public UUID extractUserId(String token, TokenType tokenType) {
-        return extractClaim(token, claims -> claims.get("userId", UUID.class), tokenType);
+        return extractClaim(token, claims -> UUID.fromString(claims.get("userId", String.class)), tokenType);
     }
+
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver, TokenType tokenType) {
         final Claims claims = extractAllClaims(token, tokenType);
@@ -66,7 +67,7 @@ public class TokenService implements ITokenService {
         return generateToken(claims, userDetails, tokenType);
     }
 
-    public String generateToken(
+    private String generateToken(
             Map<String, Object> claims,
             UserDetails userDetails,
             TokenType tokenType
@@ -92,6 +93,13 @@ public class TokenService implements ITokenService {
     public String generateToken(UserDetails userDetails, TokenType tokenType) {
         // This implementation assumes the userId is not available; returns a token with only username as subject
         Map<String, Object> claims = new HashMap<>();
+        try {
+            if (userDetails instanceof User) {
+                claims.put("userId", ((User) userDetails).getId());
+            }
+        } catch (Exception e) {
+            log.warn("Could not cast from UserDetails to User", e.getMessage());
+        }
         return generateToken(claims, userDetails, tokenType);
     }
 
