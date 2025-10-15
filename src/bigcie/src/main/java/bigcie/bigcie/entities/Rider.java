@@ -5,6 +5,7 @@ import bigcie.bigcie.entities.factory.UserBuilder;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.security.core.GrantedAuthority;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -14,6 +15,8 @@ public class Rider extends User {
     public Rider() {
         this.type = UserType.RIDER;
     }
+
+    private List<PaymentInfo> paymentInfos = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
