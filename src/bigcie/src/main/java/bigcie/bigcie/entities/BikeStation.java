@@ -25,5 +25,5 @@ public class BikeStation {
     private int capacity;
     private int numberOfBikesDocked;
     private List<Bike> bikes;
-    private Duration reservationHoldTimeMinutes; // in minutes
+    private int reservationHoldTimeMinutes; // in minutes
 }

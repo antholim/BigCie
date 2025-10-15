@@ -4,8 +4,6 @@ import bigcie.bigcie.entities.enums.BikeStationStatus;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Duration;
-
 @Getter
 @Setter
 public class BikeStationRequest {
@@ -17,6 +15,6 @@ public class BikeStationRequest {
     private int capacity;
 //    private int numberOfBikesDocked;
 //    private Bike bikes[];
-    private Duration reservationHoldTimeMinutes; // in minutes
+    private int reservationHoldTimeMinutes; // in minutes
 }
 
