@@ -1,5 +1,6 @@
 package bigcie.bigcie.controllers;
 
+import bigcie.bigcie.dtos.BikeRequest.BikeStationRequest;
 import bigcie.bigcie.entities.BikeStation;
 import bigcie.bigcie.entities.enums.BikeStationStatus;
 import bigcie.bigcie.entities.enums.UserType;
@@ -26,7 +27,7 @@ public class BikeStationController {
     }
 
     @PostMapping
-    public ResponseEntity<BikeStation> createStation(@RequestBody BikeStation station, HttpServletRequest request) {
+    public ResponseEntity<BikeStation> createStation(@RequestBody BikeStationRequest station, HttpServletRequest request) {
         if (!authorizationService.hasRole(request, UserType.OPERATOR)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }

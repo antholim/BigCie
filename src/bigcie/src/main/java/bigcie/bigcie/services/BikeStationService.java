@@ -1,12 +1,11 @@
 package bigcie.bigcie.services;
 
+import bigcie.bigcie.dtos.BikeRequest.BikeStationRequest;
 import bigcie.bigcie.entities.BikeStation;
 import bigcie.bigcie.entities.enums.BikeStationStatus;
 import bigcie.bigcie.repositories.BikeStationRepository;
 import bigcie.bigcie.services.interfaces.IBikeStationService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -19,11 +18,17 @@ public class BikeStationService implements IBikeStationService {
     }
 
     @Override
-    public BikeStation createStation(BikeStation station) {
-        if (station.getId() == null) {
-            station.setId(UUID.randomUUID());
-        }
-        return bikeStationRepository.save(station);
+    public BikeStation createStation(BikeStationRequest station) {
+        BikeStation bikeStationEntity = new BikeStation();
+        bikeStationEntity.setId(UUID.randomUUID());
+        bikeStationEntity.setName(station.getName());
+        bikeStationEntity.setStatus(station.getStatus());
+        bikeStationEntity.setLatitude(station.getLatitude());
+        bikeStationEntity.setLongitude(station.getLongitude());
+        bikeStationEntity.setAddress(station.getAddress());
+        bikeStationEntity.setCapacity(station.getCapacity());
+        bikeStationEntity.setReservationHoldTimeMinutes(station.getReservationHoldTimeMinutes());
+        return bikeStationRepository.save(bikeStationEntity);
     }
 
     @Override
