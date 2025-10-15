@@ -15,5 +15,6 @@ public interface IBikeStationService {
     BikeStation updateStation(UUID id, BikeStation station);
     void deleteStation(UUID id);
     BikeStation updateStationStatus(UUID id, BikeStationStatus status);
+    void dockBike(UUID stationId, UUID bikeId);
 }
 

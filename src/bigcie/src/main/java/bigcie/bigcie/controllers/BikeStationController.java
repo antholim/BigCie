@@ -1,6 +1,7 @@
 package bigcie.bigcie.controllers;
 
 import bigcie.bigcie.dtos.BikeRequest.BikeStationRequest;
+import bigcie.bigcie.dtos.DockingRequest.DockBikeRequest;
 import bigcie.bigcie.entities.BikeStation;
 import bigcie.bigcie.entities.enums.BikeStationStatus;
 import bigcie.bigcie.entities.enums.UserType;
@@ -86,4 +87,18 @@ public class BikeStationController {
         BikeStation updatedStation = bikeStationService.updateStationStatus(id, status);
         return ResponseEntity.ok(updatedStation);
     }
+
+    @PostMapping("/{stationId}/dock")
+    public ResponseEntity<BikeStation> dockBike(
+            @PathVariable UUID stationId,
+            @RequestBody DockBikeRequest dockBikeRequest,
+            HttpServletRequest request) {
+        if (!authorizationService.hasRole(request, UserType.OPERATOR)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        BikeStation updatedStation = bikeStationService.dockBike(stationId, dockBikeRequest.getBikeId());
+        return ResponseEntity.ok(updatedStation);
+    }
+
+
 }
