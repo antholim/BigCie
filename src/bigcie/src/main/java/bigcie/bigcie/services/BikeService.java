@@ -1,5 +1,6 @@
 package bigcie.bigcie.services;
 
+import bigcie.bigcie.dtos.BikeRequest.BikeRequest;
 import bigcie.bigcie.entities.Bike;
 import bigcie.bigcie.entities.enums.BikeStatus;
 import bigcie.bigcie.repositories.BikeRepository;
@@ -18,11 +19,13 @@ public class BikeService implements IBikeService {
     }
 
     @Override
-    public Bike createBike(Bike bike) {
-        if (bike.getId() == null) {
-            bike.setId(UUID.randomUUID());
-        }
-        return bikeRepository.save(bike);
+    public Bike createBike(BikeRequest bike) {
+        Bike bikeEntity = new Bike();
+        bikeEntity.setId(UUID.randomUUID());
+        bikeEntity.setBikeType(bike.getBikeType());
+        bikeEntity.setStatus(bike.getStatus());
+        bikeEntity.setReservationExpiry(bike.getReservationExpiry());
+        return bikeRepository.save(bikeEntity);
     }
 
     @Override

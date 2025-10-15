@@ -2,7 +2,6 @@ package bigcie.bigcie.entities;
 
 import bigcie.bigcie.entities.enums.BikeStationStatus;
 
-import bigcie.bigcie.entities.enums.BikeType;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;

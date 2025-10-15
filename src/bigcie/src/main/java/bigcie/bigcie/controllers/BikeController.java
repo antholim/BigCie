@@ -1,5 +1,6 @@
 package bigcie.bigcie.controllers;
 
+import bigcie.bigcie.dtos.BikeRequest.BikeRequest;
 import bigcie.bigcie.entities.Bike;
 import bigcie.bigcie.entities.enums.BikeStatus;
 import bigcie.bigcie.entities.enums.UserType;
@@ -28,7 +29,7 @@ public class BikeController {
     }
 
     @PostMapping
-    public ResponseEntity<Bike> createBike(@RequestBody Bike bike, HttpServletRequest request) {
+    public ResponseEntity<Bike> createBike(@RequestBody BikeRequest bike, HttpServletRequest request) {
         if (authorizationService.hasRole(request, UserType.OPERATOR)) {
             Bike createdBike = bikeService.createBike(bike);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdBike);
