@@ -2,6 +2,8 @@ package bigcie.bigcie.entities;
 
 import bigcie.bigcie.entities.enums.UserType;
 import bigcie.bigcie.entities.factory.UserBuilder;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -11,12 +13,15 @@ import java.util.List;
 import java.util.UUID;
 
 @TypeAlias("rider")
+@Getter
+@Setter
 public class Rider extends User {
     public Rider() {
         this.type = UserType.RIDER;
     }
 
     private List<PaymentInfo> paymentInfos = new ArrayList<>();
+    private String address;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

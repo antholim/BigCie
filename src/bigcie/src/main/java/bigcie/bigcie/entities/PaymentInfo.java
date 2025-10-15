@@ -3,12 +3,15 @@ package bigcie.bigcie.entities;
 import bigcie.bigcie.entities.enums.CreditCardType;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.util.UUID;
 
 @Getter
 @Setter
 public class PaymentInfo {
+    @MongoId
+    private UUID id;
     private UUID userId;
     private String creditCardNumber; // Encrypted or tokenized card number
     private String cardExpiry; // MM/YY
