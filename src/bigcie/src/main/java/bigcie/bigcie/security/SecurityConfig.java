@@ -40,8 +40,14 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .requiresChannel(channel -> channel.anyRequest())
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/v1/register").permitAll()
-                        .requestMatchers("/api/v1/login").permitAll()
+                        .requestMatchers(
+                            "/api/v1/register",
+                            "/api/v1/login",
+                            "/swagger-ui.html",
+                            "/swagger-ui/**",
+                            "/v3/api-docs",
+                            "/v3/api-docs/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
@@ -64,4 +70,3 @@ public class SecurityConfig {
         return (CorsConfigurationSource) source;
     }
 }
-

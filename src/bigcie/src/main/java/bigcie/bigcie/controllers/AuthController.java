@@ -9,9 +9,12 @@ import org.springframework.web.bind.annotation.RestController;
 import bigcie.bigcie.dtos.auth.LoginRequest;
 import bigcie.bigcie.dtos.auth.RegisterRequest;
 import bigcie.bigcie.services.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/v1")
+@Tag(name = "Authentication", description = "Endpoints for user authentication and registration")
 public class AuthController {
     private final AuthService authService;
 
@@ -19,11 +22,13 @@ public class AuthController {
         this.authService = authService;
     }
 
+    @Operation(summary = "Authenticate user and return login response")
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         return ResponseEntity.ok(authService.login(loginRequest));
     }
 
+    @Operation(summary = "Register a new rider user")
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
         return ResponseEntity.ok(authService.register(registerRequest));

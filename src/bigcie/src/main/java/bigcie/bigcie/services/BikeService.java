@@ -2,6 +2,7 @@ package bigcie.bigcie.services;
 
 import bigcie.bigcie.dtos.BikeRequest.BikeRequest;
 import bigcie.bigcie.entities.Bike;
+import bigcie.bigcie.entities.BikeStation;
 import bigcie.bigcie.entities.enums.BikeStatus;
 import bigcie.bigcie.repositories.BikeRepository;
 import bigcie.bigcie.services.interfaces.IBikeService;
@@ -13,19 +14,26 @@ import java.util.UUID;
 @Service
 public class BikeService implements IBikeService {
     private final BikeRepository bikeRepository;
+    private final BikeStationService bikeStationService;
 
-    public BikeService(BikeRepository bikeRepository) {
+    public BikeService(BikeRepository bikeRepository, BikeStationService bikeStationService) {
+        this.bikeStationService = bikeStationService;
         this.bikeRepository = bikeRepository;
     }
 
     @Override
     public Bike createBike(BikeRequest bike) {
+        BikeStation station = bikeStationService.getStationById(bike.getBikeStationId());
         Bike bikeEntity = new Bike();
         bikeEntity.setId(UUID.randomUUID());
         bikeEntity.setBikeType(bike.getBikeType());
         bikeEntity.setStatus(bike.getStatus());
         bikeEntity.setReservationExpiry(bike.getReservationExpiry());
-        return bikeRepository.save(bikeEntity);
+
+        Bike savedBike = bikeRepository.save(bikeEntity);
+        station.getBikes().add(savedBike);
+        bikeStationService.updateStation(station.getId(), station);
+        return savedBike;
     }
 
     @Override
