@@ -1,0 +1,88 @@
+const styles = {
+    root: {
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        fontFamily: "Inter, Roboto, Arial, sans-serif",
+        color: "#1f2937",
+        background: "#f8fafc",
+    },
+    header: {
+        height: 60,
+        display: "flex",
+        alignItems: "center",
+        padding: "0 16px",
+        borderBottom: "1px solid #e6eef6",
+        background: "#fff",
+        boxShadow: "0 1px 0 rgba(16,24,40,0.03)",
+    },
+    body: {
+        display: "flex",
+        flex: 1,
+        overflow: "hidden",
+    },
+    sidebar: {
+        width: 260,
+        borderRight: "1px solid #e6eef6",
+        padding: 16,
+        background: "#fff",
+    },
+    panel: {
+        display: "flex",
+        flexDirection: "column",
+    },
+    button: {
+        padding: "10px 12px",
+        borderRadius: 6,
+        border: "1px solid #cbd5e1",
+        background: "#f1f5f9",
+        cursor: "pointer",
+    },
+    smallButton: {
+        padding: "6px 10px",
+        borderRadius: 6,
+        border: "1px solid #cbd5e1",
+        background: "#ffffff",
+        cursor: "pointer",
+    },
+    input: {
+        width: "100%",
+        padding: "8px 10px",
+        borderRadius: 6,
+        border: "1px solid #cbd5e1",
+    },
+    content: {
+        flex: 1,
+        background: "#eef2f7",
+        display: "flex",
+        flexDirection: "column",
+        padding: 16,
+    },
+    mapContainer: {
+        position: "relative",
+        flex: 1,
+        borderRadius: 8,
+        overflow: "hidden",
+        border: "1px solid #e2e8f0",
+    },
+    map: {
+        width: "100%",
+        height: "100%",
+    },
+    loadingOverlay: {
+        position: "absolute",
+        zIndex: 5,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "rgba(255,255,255,0.7)",
+        fontSize: 16,
+        color: "#334155",
+    },
+};
+
+export default styles;
