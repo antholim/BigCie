@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/payment")
 @Tag(name = "Payments", description = "Operations related to payment methods")
 public class PaymentController {
     private final IPaymentService paymentService;
