@@ -1,5 +1,6 @@
 package bigcie.bigcie.controllers;
 
+import bigcie.bigcie.dtos.PaymentInfoRequest.PaymentInfoRequest;
 import bigcie.bigcie.dtos.auth.LoginRequest;
 import bigcie.bigcie.dtos.auth.RegisterRequest;
 import bigcie.bigcie.entities.PaymentInfo;
@@ -7,6 +8,7 @@ import bigcie.bigcie.services.AuthorizationService;
 import bigcie.bigcie.services.PaymentService;
 import bigcie.bigcie.services.TokenService;
 import bigcie.bigcie.services.interfaces.ICookieService;
+import bigcie.bigcie.services.interfaces.IPaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +24,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1")
 @Tag(name = "Payments", description = "Operations related to payment methods")
 public class PaymentController {
-    private final PaymentService paymentService;
+    private final IPaymentService paymentService;
     private final TokenService tokenService;
     private final ICookieService cookieService;
 
@@ -34,10 +36,10 @@ public class PaymentController {
 
     @Operation(summary = "Add Payment Method", description = "Add a new payment method for the authenticated user")
     @PostMapping("/add-payment")
-    public ResponseEntity<?> addPaymentInfo(@RequestBody PaymentInfo paymentInfo, HttpServletRequest request) {
+    public ResponseEntity<?> addPaymentInfo(@RequestBody PaymentInfoRequest paymentInfoRequest, HttpServletRequest request) {
         String token = cookieService.getTokenFromCookie(request, "authToken");
         UUID userId = tokenService.extractUserId(token);
-        paymentService.addPaymentMethod(userId,paymentInfo);
+        paymentService.addPaymentMethod(userId,paymentInfoRequest);
         return ResponseEntity.ok("Payment method added successfully");
     }
 

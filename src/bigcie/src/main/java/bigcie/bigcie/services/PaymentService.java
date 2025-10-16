@@ -1,5 +1,6 @@
 package bigcie.bigcie.services;
 
+import bigcie.bigcie.dtos.PaymentInfoRequest.PaymentInfoRequest;
 import bigcie.bigcie.entities.PaymentInfo;
 import bigcie.bigcie.entities.Rider;
 import bigcie.bigcie.entities.User;
@@ -18,9 +19,18 @@ public class PaymentService implements IPaymentService {
         this.userService = userService;
     }
     @Override
-    public boolean addPaymentMethod(UUID userId, PaymentInfo paymentInfo) {
+    public boolean addPaymentMethod(UUID userId, PaymentInfoRequest paymentInfoRequest) {
         User user = userService.getUserByUUID(userId);
         Rider rider;
+        PaymentInfo paymentInfo = new PaymentInfo();
+        paymentInfo.setId(UUID.randomUUID());
+        paymentInfo.setUserId(user.getId());
+        paymentInfo.setCreditCardNumber(paymentInfoRequest.getCreditCardNumber());
+        paymentInfo.setCardExpiry(paymentInfoRequest.getCardExpiry());
+        paymentInfo.setCardHolderName(paymentInfoRequest.getCardHolderName());
+        paymentInfo.setLast4(paymentInfoRequest.getCreditCardNumber().substring(11, 15));
+        paymentInfo.setCardType(paymentInfoRequest.getCardType());
+        paymentInfo.setCvv(paymentInfoRequest.getCvv());
         if (user instanceof Rider) {
             rider = (Rider) user;
             rider.getPaymentInfos().add(paymentInfo);
