@@ -77,6 +77,11 @@ public class BikeStationService implements IBikeStationService {
     public void dockBike(UUID stationId, UUID bikeId) {
 
     }
+
+    @Override
+    public UUID undockBike(UUID stationId) {
+        return null;
+    }
 //    @Override
 //    public BikeStation dockBike(UUID stationId, UUID bikeId) {
 //        BikeStation station = getStationById(stationId);

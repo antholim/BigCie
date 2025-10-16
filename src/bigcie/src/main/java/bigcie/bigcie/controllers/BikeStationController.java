@@ -100,5 +100,16 @@ public class BikeStationController {
         return ResponseEntity.ok(null);
     }
 
+    @PostMapping("/{stationId}/undock")
+    public ResponseEntity<BikeStation> undockBike(
+            @PathVariable UUID stationId,
+            HttpServletRequest request) {
+        if (!authorizationService.hasRole(request, UserType.OPERATOR)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        return ResponseEntity.ok(null);
+    }
+
 
 }

@@ -17,6 +17,8 @@ export default function MapDashboard() {
     const [zoom, setZoom] = useState(13);
     const [stations, setStations] = useState([]);
     const [mapReady, setMapReady] = useState(false);
+    const [selectedStation, setSelectedStation] = useState(null);
+    const [stationMenuOpen, setStationMenuOpen] = useState(false);
 
     // Create station markers only after the map is initialized
     useEffect(() => {
@@ -79,7 +81,7 @@ export default function MapDashboard() {
 
         // marker
         markerRef.current = L.marker([center.lat, center.lng], { draggable: true }).addTo(leafletRef.current);
-        markerRef.current.bindPopup("A pretty CSS popup.<br> Easily customizable.").openPopup();
+        markerRef.current.bindPopup("A pretty CSS popup.<br> Easily customizable.", { maxWidth: 480 }).openPopup();
 
         markerRef.current.on("dragend", () => {
             const pos = markerRef.current.getLatLng();
@@ -154,10 +156,40 @@ export default function MapDashboard() {
             // create a temporary marker and open popup
             const tmp = L.marker([lat, lng]).addTo(leafletRef.current);
             const popupHtml = `<strong>${station.name ?? station.address}</strong><br/>Lat: ${lat.toFixed(5)}<br/>Lng: ${lng.toFixed(5)}`;
-            tmp.bindPopup(popupHtml).openPopup();
+                    m.bindPopup(popupHtml, { maxWidth: 420 });
             setTimeout(() => tmp.remove(), 5000);
         }
+        // open station action menu
+        setSelectedStation(station);
+        setStationMenuOpen(true);
     }, []);
+
+    const closeStationMenu = () => {
+        setStationMenuOpen(false);
+        setSelectedStation(null);
+    };
+
+    const performStationAction = async (action) => {
+        if (!selectedStation) return;
+        try {
+            // Assumes backend supports POST /api/v1/stations/:id/{action}
+            const path = `/api/v1/stations/${selectedStation.id}/${action}`;
+            const resp = await FetchingService.post(path);
+            // Simple feedback; you can wire this into context/state/UI
+            alert(`${action} successful`);
+            // optionally refresh stations
+            try {
+                const r = await FetchingService.get('/api/v1/stations');
+                setStations(r.data || []);
+            } catch (e) {
+                // ignore refresh error
+            }
+            closeStationMenu();
+        } catch (err) {
+            console.error(`${action} failed`, err);
+            alert(`${action} failed: ${err?.message ?? err}`);
+        }
+    };
 
     const zoomIn = useCallback(() => {
         const next = Math.min(21, zoom + 1);
@@ -261,6 +293,31 @@ export default function MapDashboard() {
                     </div>
                 </main>
             </div>
+
+            {/* Station action modal */}
+            {stationMenuOpen && selectedStation && (
+                <div style={{ position: 'fixed', left: 0, top: 0, right: 0, bottom: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div onClick={closeStationMenu} style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.35)' }} />
+                    <div style={{ position: 'relative', background: '#fff', padding: 20, borderRadius: 12, boxShadow: '0 12px 36px rgba(0,0,0,0.18)', width: 560, maxWidth: 'calc(100% - 48px)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <div style={{ fontWeight: 800, fontSize: 18 }}>{selectedStation.name ?? selectedStation.address}</div>
+                                <div style={{ fontSize: 13, color: '#666', marginTop: 4 }}>ID: {selectedStation.id}</div>
+                            </div>
+                            <button onClick={closeStationMenu} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 18 }}>✕</button>
+                        </div>
+                        <div style={{ marginTop: 16, display: 'flex', gap: 12, alignItems: 'center' }}>
+                            <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationAction('rent')}>Rent</button>
+                            <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationAction('reserve')}>Reserve</button>
+                            <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationAction('dock')}>Dock</button>
+                        </div>
+                        <div style={{ marginTop: 14, color: '#444' }}>
+                            <div style={{ fontSize: 14 }}>Location</div>
+                            <div style={{ fontSize: 13, color: '#666' }}>{(selectedStation.latitude ?? selectedStation.lat ?? selectedStation.longitude ?? selectedStation.lng) ? `${Number(selectedStation.latitude ?? selectedStation.lat ?? 0).toFixed(5)}, ${Number(selectedStation.longitude ?? selectedStation.lng ?? 0).toFixed(5)}` : 'Unknown'}</div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
