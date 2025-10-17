@@ -36,10 +36,11 @@ public class PaymentController {
 
     @Operation(summary = "Add Payment Method", description = "Add a new payment method for the authenticated user")
     @PostMapping("/add-payment")
-    public ResponseEntity<?> addPaymentInfo(@RequestBody PaymentInfoRequest paymentInfoRequest, HttpServletRequest request) {
+    public ResponseEntity<?> addPaymentInfo(@RequestBody PaymentInfoRequest paymentInfoRequest,
+            HttpServletRequest request) {
         String token = cookieService.getTokenFromCookie(request, "authToken");
         UUID userId = tokenService.extractUserId(token);
-        paymentService.addPaymentMethod(userId,paymentInfoRequest);
+        paymentService.addPaymentMethod(userId, paymentInfoRequest);
         return ResponseEntity.ok("Payment method added successfully");
     }
 

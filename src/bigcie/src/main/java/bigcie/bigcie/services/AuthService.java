@@ -34,9 +34,7 @@ public class AuthService {
     public LoginResponse login(LoginRequest loginRequest, HttpServletResponse response) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsernameOrEmail(), loginRequest.getPassword()
-                )
-        );
+                        loginRequest.getUsernameOrEmail(), loginRequest.getPassword()));
         if (authentication.isAuthenticated()) {
             User user = userRepository.findByUsername(loginRequest.getUsernameOrEmail())
                     .orElseGet(() -> userRepository.findByEmail(loginRequest.getUsernameOrEmail()).orElse(null));
@@ -60,7 +58,6 @@ public class AuthService {
         }
         throw new IllegalArgumentException("Invalid username/email or password");
     }
-
 
     public RegisterResponse register(RegisterRequest registerRequest) {
         if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {

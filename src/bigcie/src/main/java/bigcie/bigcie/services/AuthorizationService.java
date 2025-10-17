@@ -20,7 +20,8 @@ public class AuthorizationService implements IAuthorizationService {
     private final ITokenService tokenService;
     private final UserRepository userRepository;
 
-    public AuthorizationService(ICookieService cookieService, ITokenService tokenService, UserRepository userRepository) {
+    public AuthorizationService(ICookieService cookieService, ITokenService tokenService,
+            UserRepository userRepository) {
         this.cookieService = cookieService;
         this.tokenService = tokenService;
         this.userRepository = userRepository;
@@ -73,4 +74,3 @@ public class AuthorizationService implements IAuthorizationService {
         requireRole(request, UserType.OPERATOR);
     }
 }
-

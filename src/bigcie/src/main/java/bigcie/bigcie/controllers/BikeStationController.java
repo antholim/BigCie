@@ -26,7 +26,6 @@ public class BikeStationController {
     private final IBikeStationService bikeStationService;
     private final IAuthorizationService authorizationService;
 
-
     public BikeStationController(IBikeStationService bikeStationService, IAuthorizationService authorizationService) {
         this.bikeStationService = bikeStationService;
         this.authorizationService = authorizationService;
@@ -34,7 +33,8 @@ public class BikeStationController {
 
     @Operation(summary = "Create a new bike station")
     @PostMapping
-    public ResponseEntity<BikeStation> createStation(@RequestBody BikeStationRequest station, HttpServletRequest request) {
+    public ResponseEntity<BikeStation> createStation(@RequestBody BikeStationRequest station,
+            HttpServletRequest request) {
         if (!authorizationService.hasRole(request, UserType.OPERATOR)) {
             log.warn("Unauthorized attempt to create bike station");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -83,11 +83,13 @@ public class BikeStationController {
 
     @Operation(summary = "Update bike station status")
     @PatchMapping("/{id}/status")
-    public ResponseEntity<BikeStation> updateStationStatus(@PathVariable UUID id, @RequestParam BikeStationStatus status) {
+    public ResponseEntity<BikeStation> updateStationStatus(@PathVariable UUID id,
+            @RequestParam BikeStationStatus status) {
         BikeStation updatedStation = bikeStationService.updateStationStatus(id, status);
         return ResponseEntity.ok(updatedStation);
     }
 
+    @Operation(summary = "Dock a bike at a station")
     @PostMapping("/{stationId}/dock")
     public ResponseEntity<BikeStation> dockBike(
             @PathVariable UUID stationId,
@@ -100,6 +102,7 @@ public class BikeStationController {
         return ResponseEntity.ok(null);
     }
 
+    @Operation(summary = "Undock a bike from a station")
     @PostMapping("/{stationId}/undock")
     public ResponseEntity<BikeStation> undockBike(
             @PathVariable UUID stationId,
@@ -110,6 +113,5 @@ public class BikeStationController {
 
         return ResponseEntity.ok(null);
     }
-
 
 }

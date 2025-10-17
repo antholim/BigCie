@@ -12,9 +12,11 @@ import java.util.UUID;
 @Service
 public class UserService implements IUserService {
     private final UserRepository userRepository;
+
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
+
     @Override
     public User getUserByUUID(UUID username) {
         try {

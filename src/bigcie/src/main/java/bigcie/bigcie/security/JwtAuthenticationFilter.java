@@ -38,8 +38,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwtToken = cookieService.getTokenFromCookie(request, tokenConfigProperties.getTokenName());
             String refreshToken = cookieService.getTokenFromCookie(request, rtConfigProperties.getTokenName());
@@ -81,7 +81,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return null;
     }
 
-    private UserDetails authenticateUsingRefreshToken(String refreshToken, HttpServletRequest request, HttpServletResponse response) {
+    private UserDetails authenticateUsingRefreshToken(String refreshToken, HttpServletRequest request,
+            HttpServletResponse response) {
         try {
             String username = tokenService.extractUsername(refreshToken, TokenType.REFRESH_TOKEN);
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -90,7 +91,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     log.debug("Generating new access token for user: {}", userDetails.getUsername());
                     User user = userRepository.findByUsername(userDetails.getUsername())
                             .orElseThrow(() -> new UsernameNotFoundException("User not found with username: ${}"));
-                    String newJwtToken = tokenService.generateToken(user.getId(),userDetails, TokenType.ACCESS_TOKEN);
+                    String newJwtToken = tokenService.generateToken(user.getId(), userDetails, TokenType.ACCESS_TOKEN);
                     cookieService.addTokenCookie(response, newJwtToken, TokenType.ACCESS_TOKEN, "authToken");
                     setAuthenticationContext(userDetails, request);
                     return userDetails;

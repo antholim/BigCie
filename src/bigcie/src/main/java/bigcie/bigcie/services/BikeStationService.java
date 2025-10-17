@@ -69,12 +69,18 @@ public class BikeStationService implements IBikeStationService {
 
     @Override
     public BikeStation updateStationStatus(UUID id, BikeStationStatus status) {
+
         BikeStation station = getStationById(id);
         station.setStatus(status);
         return bikeStationRepository.save(station);
     }
+
     @Override
     public void dockBike(UUID stationId, UUID bikeId) {
+
+        // To dock a bike, the bike needs to be of status "ON_TRIP"
+        // Check if station is not full
+        // Check if dock is not out of service
 
     }
 
@@ -82,43 +88,43 @@ public class BikeStationService implements IBikeStationService {
     public UUID undockBike(UUID stationId) {
         return null;
     }
-//    @Override
-//    public BikeStation dockBike(UUID stationId, UUID bikeId) {
-//        BikeStation station = getStationById(stationId);
-//
-//        // R-BMS-05: Block if out of service
-//        if (station.getStatus() == BikeStationStatus.OUT_OF_SERVICE) {
-//            throw new IllegalStateException("Station is out of service");
-//        }
-//
-//        // R-BMS-02: Prevent docking to a full station
-//        if (station.getBikes().size() >= station.getCapacity()) {
-//            emitDockEvent(station, "FULL");
-//            throw new IllegalStateException("Station is full");
-//        }
-//
-//        // R-BMS-06: Only allow return if bike is reserved (example logic)
-//        Bike bike = bikeRepository.findById(bikeId)
-//                .orElseThrow(() -> new RuntimeException("Bike not found"));
-//        if (!bike.isReserved()) {
-//            throw new IllegalStateException("Bike is not reserved for return");
-//        }
-//
-//        // Dock the bike
-//        station.getBikes().add(bike);
-//        station.setNumberOfBikesDocked(station.getBikes().size());
-//
-//        // R-BMS-04: Record state transition with event ID
-//        String eventId = UUID.randomUUID().toString();
-//        recordStateTransition(station, bike, "DOCKED", eventId);
-//
-//        // R-BMS-06/07: Emit events
-//        emitBikeStatusEvent(bike, "RETURNED", eventId);
-//        if (station.getBikes().size() == station.getCapacity()) {
-//            emitDockEvent(station, "FULL");
-//        }
-//
-//        return bikeStationRepository.save(station);
-//    }
+    // @Override
+    // public BikeStation dockBike(UUID stationId, UUID bikeId) {
+    // BikeStation station = getStationById(stationId);
+    //
+    // // R-BMS-05: Block if out of service
+    // if (station.getStatus() == BikeStationStatus.OUT_OF_SERVICE) {
+    // throw new IllegalStateException("Station is out of service");
+    // }
+    //
+    // // R-BMS-02: Prevent docking to a full station
+    // if (station.getBikes().size() >= station.getCapacity()) {
+    // emitDockEvent(station, "FULL");
+    // throw new IllegalStateException("Station is full");
+    // }
+    //
+    // // R-BMS-06: Only allow return if bike is reserved (example logic)
+    // Bike bike = bikeRepository.findById(bikeId)
+    // .orElseThrow(() -> new RuntimeException("Bike not found"));
+    // if (!bike.isReserved()) {
+    // throw new IllegalStateException("Bike is not reserved for return");
+    // }
+    //
+    // // Dock the bike
+    // station.getBikes().add(bike);
+    // station.setNumberOfBikesDocked(station.getBikes().size());
+    //
+    // // R-BMS-04: Record state transition with event ID
+    // String eventId = UUID.randomUUID().toString();
+    // recordStateTransition(station, bike, "DOCKED", eventId);
+    //
+    // // R-BMS-06/07: Emit events
+    // emitBikeStatusEvent(bike, "RETURNED", eventId);
+    // if (station.getBikes().size() == station.getCapacity()) {
+    // emitDockEvent(station, "FULL");
+    // }
+    //
+    // return bikeStationRepository.save(station);
+    // }
 
 }

@@ -9,13 +9,20 @@ import java.util.UUID;
 
 public interface IBikeStationService {
     BikeStation createStation(BikeStationRequest station);
+
     BikeStation getStationById(UUID id);
+
     List<BikeStation> getAllStations();
+
     List<BikeStation> getStationsByStatus(BikeStationStatus status);
+
     BikeStation updateStation(UUID id, BikeStation station);
+
     void deleteStation(UUID id);
+
     BikeStation updateStationStatus(UUID id, BikeStationStatus status);
+
     void dockBike(UUID stationId, UUID bikeId);
+
     UUID undockBike(UUID stationId);
 }
-

@@ -1,4 +1,5 @@
 package bigcie.bigcie.dtos.auth;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 @JsonDeserialize(using = LoginRequestDeserializer.class)
@@ -22,4 +23,3 @@ public class LoginRequest {
         this.password = password;
     }
 }
-

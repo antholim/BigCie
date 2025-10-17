@@ -1,6 +1,5 @@
 package bigcie.bigcie.dtos.BikeRequest;
 
-
 import bigcie.bigcie.entities.enums.BikeStatus;
 import bigcie.bigcie.entities.enums.BikeType;
 import io.swagger.v3.oas.annotations.media.Schema;

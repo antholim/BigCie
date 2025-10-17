@@ -13,8 +13,7 @@ public class BikeStationRequest {
     private double longitude;
     private String address;
     private int capacity;
-//    private int numberOfBikesDocked;
-//    private Bike bikes[];
+    // private int numberOfBikesDocked;
+    // private Bike bikes[];
     private int reservationHoldTimeMinutes; // in minutes
 }
-

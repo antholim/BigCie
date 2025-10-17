@@ -41,20 +41,18 @@ public class SecurityConfig {
                 .requiresChannel(channel -> channel.anyRequest())
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(
-                            "/api/v1/register",
-                            "/api/v1/login",
-                            "/swagger-ui.html",
-                            "/swagger-ui/**",
-                            "/v3/api-docs",
-                            "/v3/api-docs/**",
-                            "/api/v1/**"
-                        ).permitAll()
-                        .anyRequest().authenticated()
-                )
+                                "/api/v1/register",
+                                "/api/v1/login",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs",
+                                "/v3/api-docs/**",
+                                "/api/v1/**")
+                        .permitAll()
+                        .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable())
                 .build();
     }
-
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

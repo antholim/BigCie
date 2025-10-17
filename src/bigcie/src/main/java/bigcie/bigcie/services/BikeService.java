@@ -34,10 +34,9 @@ public class BikeService implements IBikeService {
         Bike savedBike = bikeRepository.save(bikeEntity);
         List<Bike> bikes = station.getBikes();
         bikes.add(savedBike);
-        int numberOfBikesDocked = bikes.stream().filter(b ->
-                b.getStatus() == BikeStatus.AVAILABLE ||
-                        b.getStatus() == BikeStatus.MAINTENANCE ||
-                        b.getStatus() == BikeStatus.RESERVED).toList().size();
+        int numberOfBikesDocked = bikes.stream().filter(b -> b.getStatus() == BikeStatus.AVAILABLE ||
+                b.getStatus() == BikeStatus.MAINTENANCE ||
+                b.getStatus() == BikeStatus.RESERVED).toList().size();
         station.setNumberOfBikesDocked(numberOfBikesDocked);
         bikeStationService.updateStation(station.getId(), station);
         return savedBike;
@@ -79,6 +78,7 @@ public class BikeService implements IBikeService {
         bike.setStatus(status);
         return bikeRepository.save(bike);
     }
+
     @Override
     public List<Bike> bulkCreateBikes(List<BikeRequest> bikes) {
         return bikes.stream()

@@ -4,4 +4,3 @@ public enum UserType {
     RIDER,
     OPERATOR
 }
-

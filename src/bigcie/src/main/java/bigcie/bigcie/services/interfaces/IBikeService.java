@@ -9,11 +9,18 @@ import java.util.UUID;
 
 public interface IBikeService {
     Bike createBike(BikeRequest bike);
+
     Bike getBikeById(UUID id);
+
     List<Bike> getAllBikes();
+
     List<Bike> getBikesByStatus(BikeStatus status);
+
     Bike updateBike(UUID id, Bike bike);
+
     void deleteBike(UUID id);
+
     Bike updateBikeStatus(UUID id, BikeStatus status);
+
     List<Bike> bulkCreateBikes(List<BikeRequest> bikes);
 }

@@ -22,4 +22,3 @@ public class LoginRequestDeserializer extends JsonDeserializer<LoginRequest> {
         return req;
     }
 }
-

@@ -35,17 +35,17 @@ public class CookieService implements ICookieService {
         }
         return null;
     }
+
     @Override
     public void clearTokenCookie(HttpServletResponse response) {
 
     }
 
-
     @Override
     public void addTokenCookie(HttpServletResponse response, String token, TokenType tokenType, String cookieName) {
 
-        long maxAge = tokenType == TokenType.ACCESS_TOKEN ?
-                tokenConfigProperties.getExp() : rtConfigProperties.getExp();
+        long maxAge = tokenType == TokenType.ACCESS_TOKEN ? tokenConfigProperties.getExp()
+                : rtConfigProperties.getExp();
 
         ResponseCookie cookie = ResponseCookie.from(cookieName, token)
                 .httpOnly(cookieConfigProperties.isHttpOnly())
@@ -67,4 +67,3 @@ public class CookieService implements ICookieService {
 
     }
 }
-

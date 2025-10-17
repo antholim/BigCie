@@ -59,21 +59,25 @@ public class Rider extends User {
             this.id = id;
             return this;
         }
+
         @Override
         public Rider.Builder username(String username) {
             this.username = username;
             return this;
         }
+
         @Override
         public Rider.Builder email(String email) {
             this.email = email;
             return this;
         }
+
         @Override
         public Rider.Builder password(String password) {
             this.password = password;
             return this;
         }
+
         @Override
         public Rider build() {
             Rider Rider = new Rider();

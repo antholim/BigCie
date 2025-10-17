@@ -25,7 +25,8 @@ public class BikeController {
     private final ICookieService cookieService;
     private final IAuthorizationService authorizationService;
 
-    public BikeController(IBikeService bikeService, ICookieService cookieService, IAuthorizationService authorizationService) {
+    public BikeController(IBikeService bikeService, ICookieService cookieService,
+            IAuthorizationService authorizationService) {
         this.authorizationService = authorizationService;
         this.cookieService = cookieService;
         this.bikeService = bikeService;
@@ -43,14 +44,14 @@ public class BikeController {
 
     @PostMapping("/bulk-create")
     @Operation(summary = "Bulk create bikes")
-    public ResponseEntity<List<Bike>> bulkCreateBikes(@RequestBody List<BikeRequest> bikes, HttpServletRequest request) {
+    public ResponseEntity<List<Bike>> bulkCreateBikes(@RequestBody List<BikeRequest> bikes,
+            HttpServletRequest request) {
         if (authorizationService.hasRole(request, UserType.OPERATOR)) {
             List<Bike> createdBikes = bikeService.bulkCreateBikes(bikes);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdBikes);
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
-
 
     @Operation(summary = "Get a bike by ID")
     @GetMapping("/{id}")

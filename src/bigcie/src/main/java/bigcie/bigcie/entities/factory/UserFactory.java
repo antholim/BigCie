@@ -9,7 +9,8 @@ public class UserFactory {
 
     private static final UserFactory INSTANCE = new UserFactory();
 
-    private UserFactory() {}
+    private UserFactory() {
+    }
 
     public static UserFactory getInstance() {
         return INSTANCE;

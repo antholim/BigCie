@@ -21,4 +21,3 @@ public class PaymentInfo {
     private String cvv; // Card Verification Value
 
 }
-

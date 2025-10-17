@@ -15,9 +15,11 @@ import java.util.UUID;
 @Service
 public class PaymentService implements IPaymentService {
     private final IUserService userService;
+
     public PaymentService(IUserService userService) {
         this.userService = userService;
     }
+
     @Override
     public boolean addPaymentMethod(UUID userId, PaymentInfoRequest paymentInfoRequest) {
         User user = userService.getUserByUUID(userId);

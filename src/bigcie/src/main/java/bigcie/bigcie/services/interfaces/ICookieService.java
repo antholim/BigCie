@@ -7,8 +7,12 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public interface ICookieService {
     String getTokenFromCookie(HttpServletRequest request, String tokenName);
+
     void clearTokenCookie(HttpServletResponse response);
+
     void addTokenCookie(HttpServletResponse response, String token, TokenType type, String cookieName);
+
     void addTokenCookies(HttpServletResponse response, AuthenticationResponse res);
+
     void clearTokenCookies(HttpServletResponse response);
 }

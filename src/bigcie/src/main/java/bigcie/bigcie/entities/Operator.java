@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 @TypeAlias("operator")
-public class Operator extends User  {
+public class Operator extends User {
     public Operator() {
         this.type = UserType.OPERATOR;
     }
@@ -51,21 +51,25 @@ public class Operator extends User  {
             this.id = id;
             return this;
         }
+
         @Override
         public Builder username(String username) {
             this.username = username;
             return this;
         }
+
         @Override
         public Builder email(String email) {
             this.email = email;
             return this;
         }
+
         @Override
         public Builder password(String password) {
             this.password = password;
             return this;
         }
+
         @Override
         public Operator build() {
             Operator operator = new Operator();

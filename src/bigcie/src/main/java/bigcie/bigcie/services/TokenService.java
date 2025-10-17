@@ -28,13 +28,16 @@ public class TokenService implements ITokenService {
 
     public TokenService(TokenConfigProperties tokenConfigProperties, RtConfigProperties rtConfigProperties) {
         this.tokenConfigProperties = tokenConfigProperties;
-        log.info("Loaded signInKey length: {}", this.tokenConfigProperties.getSignInKey() != null ? this.tokenConfigProperties.getSignInKey().length() : "null");
+        log.info("Loaded signInKey length: {}",
+                this.tokenConfigProperties.getSignInKey() != null ? this.tokenConfigProperties.getSignInKey().length()
+                        : "null");
         this.signInKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(this.tokenConfigProperties.getSignInKey()));
         this.rtConfigProperties = rtConfigProperties;
-        log.info("Loaded refreshKey length: {}", this.rtConfigProperties.getRefreshKey() != null ? this.rtConfigProperties.getRefreshKey().length() : "null");
+        log.info("Loaded refreshKey length: {}",
+                this.rtConfigProperties.getRefreshKey() != null ? this.rtConfigProperties.getRefreshKey().length()
+                        : "null");
         this.refreshKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(this.rtConfigProperties.getRefreshKey()));
     }
-
 
     @Override
     public String extractUsername(String token) {
@@ -55,7 +58,6 @@ public class TokenService implements ITokenService {
         return extractClaim(token, claims -> UUID.fromString(claims.get("userId", String.class)), tokenType);
     }
 
-
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver, TokenType tokenType) {
         final Claims claims = extractAllClaims(token, tokenType);
         return claimsResolver.apply(claims);
@@ -70,8 +72,7 @@ public class TokenService implements ITokenService {
     private String generateToken(
             Map<String, Object> claims,
             UserDetails userDetails,
-            TokenType tokenType
-    ) {
+            TokenType tokenType) {
         log.info("Generating token for user: {}", userDetails.getUsername());
         long expirationTimeMillis = (tokenType == TokenType.ACCESS_TOKEN)
                 ? tokenConfigProperties.getExp() * 1000L // Convert seconds to milliseconds
@@ -91,7 +92,8 @@ public class TokenService implements ITokenService {
 
     @Override
     public String generateToken(UserDetails userDetails, TokenType tokenType) {
-        // This implementation assumes the userId is not available; returns a token with only username as subject
+        // This implementation assumes the userId is not available; returns a token with
+        // only username as subject
         Map<String, Object> claims = new HashMap<>();
         try {
             if (userDetails instanceof User) {

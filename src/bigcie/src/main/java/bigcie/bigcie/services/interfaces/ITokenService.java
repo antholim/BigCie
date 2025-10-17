@@ -7,12 +7,19 @@ import java.util.UUID;
 
 public interface ITokenService {
     String extractUsername(String token);
+
     String extractUsername(String token, TokenType tokenType);
+
     boolean isTokenValid(String token, UserDetails userDetails, TokenType tokenType);
+
     String generateToken(UserDetails userDetails, TokenType tokenType);
+
     boolean isTokenExpired(String token, TokenType tokenType);
+
     Date extractExpiration(String token, TokenType tokenType);
+
     UUID extractUserId(String token);
+
     UUID extractUserId(String token, TokenType tokenType);
 
 }

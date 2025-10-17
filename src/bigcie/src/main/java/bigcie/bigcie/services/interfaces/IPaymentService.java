@@ -7,5 +7,6 @@ import java.util.UUID;
 
 public interface IPaymentService {
     boolean addPaymentMethod(UUID userId, PaymentInfoRequest paymentInfoRequest);
+
     boolean removePaymentMethod(UUID userId, UUID paymentMethodId);
 }
