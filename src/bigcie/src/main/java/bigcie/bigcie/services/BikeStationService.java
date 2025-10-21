@@ -8,6 +8,7 @@ import bigcie.bigcie.services.interfaces.IBikeStationService;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
+import bigcie.bigcie.entities.enums.BikeStatus;
 
 @Service
 public class BikeStationService implements IBikeStationService {
@@ -88,6 +89,32 @@ public class BikeStationService implements IBikeStationService {
     public UUID undockBike(UUID stationId) {
         return null;
     }
+
+    @Override
+    public boolean hasAvailableDocks(UUID stationId) {
+        BikeStation station = getStationById(stationId);
+        return station.getNumberOfBikesDocked() < station.getCapacity();
+    }
+
+    // Different from isempty cuz bikes can be docked but reserved
+    @Override
+    public boolean hasAvailableBikes(UUID stationId) {
+        BikeStation station = getStationById(stationId);
+        // Check for bikes that are not reserved
+        for (var bike : station.getBikes()) {
+            if (!bike.getStatus().equals(BikeStatus.RESERVED)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isEmpty(UUID stationId) {
+        BikeStation station = getStationById(stationId);
+        return station.getNumberOfBikesDocked() == 0;
+    }
+
     // @Override
     // public BikeStation dockBike(UUID stationId, UUID bikeId) {
     // BikeStation station = getStationById(stationId);

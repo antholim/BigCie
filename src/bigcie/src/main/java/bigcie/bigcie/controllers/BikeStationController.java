@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import bigcie.bigcie.exceptions.responses.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -91,13 +92,20 @@ public class BikeStationController {
 
     @Operation(summary = "Dock a bike at a station")
     @PostMapping("/{stationId}/dock")
-    public ResponseEntity<BikeStation> dockBike(
+    public ResponseEntity<?> dockBike(
             @PathVariable UUID stationId,
             @RequestBody DockBikeRequest dockBikeRequest,
             HttpServletRequest request) {
         if (!authorizationService.hasRole(request, UserType.OPERATOR)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+
+        // Implement checks for docking here
+        if (!bikeStationService.hasAvailableDocks(stationId)) {
+            ErrorResponse err = new ErrorResponse("No available docks at this station");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
+        }
+
         bikeStationService.dockBike(stationId, dockBikeRequest.getBikeId());
         return ResponseEntity.ok(null);
     }
