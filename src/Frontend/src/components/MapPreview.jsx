@@ -4,7 +4,7 @@ import "leaflet/dist/leaflet.css";
 
 const DEFAULT_CENTER = [45.5019, -73.5674]; // Downtown Montreal demo
 
-export default function MapPreview() {
+export default function MapPreview({ height = 260, className, style = {} }) {
   const mapRef = useRef(null);
   const leafletInstanceRef = useRef(null);
 
@@ -40,16 +40,22 @@ export default function MapPreview() {
     };
   }, []);
 
-  return (
-    <div
-      ref={mapRef}
-      style={{
-        width: "100%",
-        height: "260px",
-        borderRadius: "16px",
-        overflow: "hidden",
-        boxShadow: "0 10px 30px rgba(15, 23, 42, 0.18)",
-      }}
-    />
-  );
+  useEffect(() => {
+    if (!leafletInstanceRef.current) return;
+    const timeout = setTimeout(() => {
+      leafletInstanceRef.current.invalidateSize();
+    }, 0);
+    return () => clearTimeout(timeout);
+  }, [height]);
+
+  const computedStyle = {
+    width: "100%",
+    height: typeof height === "number" ? `${height}px` : height,
+    borderRadius: "16px",
+    overflow: "hidden",
+    boxShadow: "0 10px 30px rgba(15, 23, 42, 0.18)",
+    ...style,
+  };
+
+  return <div ref={mapRef} className={className} style={computedStyle} />;
 }

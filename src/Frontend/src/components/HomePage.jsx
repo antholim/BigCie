@@ -7,7 +7,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 export default function DowntownBikeLanding() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { user, isAuthenticated, loading: authLoading, logout } = useAuth();
   const [startingRide, setStartingRide] = useState(false);
   const [returningRide, setReturningRide] = useState(false);
   const [activeRideIds, setActiveRideIds] = useState(() => {
@@ -92,6 +92,16 @@ export default function DowntownBikeLanding() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (err) {
+      console.warn("Failed to log out", err);
+    } finally {
+      navigate("/");
+    }
+  };
+
   return (
     <div className="db-page">
       {/* Top bar */}
@@ -116,8 +126,27 @@ export default function DowntownBikeLanding() {
             <a href="#faq">FAQ</a>
           </nav>
           <div className="db-actions">
-            <button className="db-btn primary" onClick={() => navigate("/login")}>Log in</button>
-            <button className="db-btn" onClick={() => navigate("/coming-soon")}>Get the app</button>
+            {authLoading ? (
+              <button className="db-btn" disabled type="button">Loading...</button>
+            ) : isAuthenticated ? (
+              <>
+                <button className="db-btn primary" type="button" onClick={() => navigate("/profile")}>
+                  My profile
+                </button>
+                <button className="db-btn" type="button" onClick={handleLogout}>
+                  Log out
+                </button>
+              </>
+            ) : (
+              <>
+                <button className="db-btn primary" type="button" onClick={() => navigate("/login")}>
+                  Log in
+                </button>
+                <button className="db-btn" type="button" onClick={() => navigate("/coming-soon")}>
+                  Get the app
+                </button>
+              </>
+            )}
           </div>
         </div>
       </header>

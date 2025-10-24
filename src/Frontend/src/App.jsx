@@ -6,6 +6,7 @@ import MapDashboard from './pages/MapDashboard/MapDashboard';
 import ComingSoon from "./pages/ComingSoon";
 import RideConfirmation from "./pages/RideConfirmation";
 import OperatorDashboard from './pages/OperatorDashboard/OperatorDashboard';
+import ProfilePage from "./pages/Profile/ProfilePage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/map" element={<MapDashboard />} />
         <Route path="/coming-soon" element={<ComingSoon />} />
         <Route path="/ride-confirmation" element={<RideConfirmation />} />

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import FetchingService from "../../services/FetchingService";
+import { useAuth } from "../../contexts/AuthContext";
 
 // Ensure axios sends cookies with requests
 // axios.defaults.withCredentials = true; // This line is no longer needed
@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -21,9 +22,8 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await FetchingService.post("/api/v1/login", form);
-      // Optionally handle login response (e.g., save token)
-      navigate("/");
+      await login(form);
+      navigate("/profile", { replace: true });
     } catch (err) {
       setError(
         err.response?.data?.message || err.message || "Login failed"
