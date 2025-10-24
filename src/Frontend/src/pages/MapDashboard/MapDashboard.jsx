@@ -5,6 +5,7 @@ import "leaflet/dist/leaflet.css";
 import styles from "./styles/MapDashboard.styles";
 import FetchingService from "../../services/FetchingService";
 import NotificationService from "../../services/NotificationService";
+import { useBike } from "../../contexts/BikeContext";
 
 
 export default function MapDashboard() {
@@ -23,6 +24,7 @@ export default function MapDashboard() {
     const [selectedStation, setSelectedStation] = useState(null);
     const [stationMenuOpen, setStationMenuOpen] = useState(false);
     const [tripEvents, setTripEvents] = useState([]);
+    const { bikeIds, selectedBikeId, setSelectedBikeId } = useBike();
 
     useEffect(() => {
         const unsubscribe = NotificationService.subscribeToTripEvents((event) => {
@@ -222,6 +224,30 @@ export default function MapDashboard() {
         }
     };
 
+        const performStationActionBody = async (action) => {
+        if (!selectedStation) return;
+        try {
+            // Assumes backend supports POST /api/v1/stations/:id/{action}
+            const path = `/api/v1/stations/${selectedStation.id}/${action}`;
+            const resp = await FetchingService.post(path, {
+                bikeId: selectedBikeId,
+            });
+            // Simple feedback; you can wire this into context/state/UI
+            alert(`${action} successful`);
+            // optionally refresh stations
+            try {
+                const r = await FetchingService.get('/api/v1/stations');
+                setStations(r.data || []);
+            } catch (e) {
+                // ignore refresh error
+            }
+            closeStationMenu();
+        } catch (err) {
+            console.error(`${action} failed`, err);
+            alert(`${action} failed: ${err?.message ?? err}`);
+        }
+    };
+
     const zoomIn = useCallback(() => {
         const next = Math.min(21, zoom + 1);
         setZoom(next);
@@ -328,6 +354,33 @@ export default function MapDashboard() {
                             </div>
                         </div>
                         <div style={{ marginTop: 16 }}>
+                            <h3 style={{ margin: '12px 0 8px', fontSize: 14 }}>Reserved Bikes</h3>
+                            <div style={{ maxHeight: 120, overflowY: 'auto' }}>
+                                {(!bikeIds || bikeIds.length === 0) ? (
+                                    <div style={{ color: '#666', fontSize: 13 }}>No reserved bikes</div>
+                                ) : (
+                                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                        {bikeIds.map((id) => (
+                                            <button
+                                                key={id}
+                                                onClick={() => setSelectedBikeId?.(String(id))}
+                                                style={{
+                                                    padding: '6px 10px',
+                                                    borderRadius: 6,
+                                                    border: selectedBikeId === String(id) ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                                                    background: selectedBikeId === String(id) ? '#e0f2ff' : '#fff',
+                                                    cursor: 'pointer',
+                                                }}
+                                            >
+                                                {String(id).slice(0, 8)}...
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div style={{ marginTop: 16 }}>
                             <h3 style={{ margin: '12px 0 8px', fontSize: 14 }}>Trip Events</h3>
                             <div style={{ maxHeight: 240, overflowY: 'auto', fontSize: 12, color: '#222' }}>
                                 {tripEvents.length === 0 ? (
@@ -378,7 +431,9 @@ export default function MapDashboard() {
                         <div style={{ marginTop: 16, display: 'flex', gap: 12, alignItems: 'center' }}>
                             <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationAction('undock')}>Rent</button>
                             <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationAction('reserve')}>Reserve</button>
-                            <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationAction('dock')}>Dock</button>
+                            <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationActionBody('dock', {
+
+                            })}>Dock</button>
                         </div>
                         <div style={{ marginTop: 14, color: '#444' }}>
                             <div style={{ fontSize: 14 }}>Location</div>
