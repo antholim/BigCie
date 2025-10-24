@@ -1,0 +1,16 @@
+package bigcie.bigcie.services.interfaces;
+
+import java.util.UUID;
+
+public interface IEventService {
+
+    /**
+     * Records a state transition for a given entity type and ID.
+     *
+     * @param entityType The type of entity (e.g., "BikeStation", "Bike").
+     * @param entityId   The unique ID of the entity whose state changed.
+     * @param oldState   The previous state before transition.
+     * @param newState   The new state after transition.
+     */
+    void recordStateTransition(String entityType, UUID entityId, String oldState, String newState);
+}
