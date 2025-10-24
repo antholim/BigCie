@@ -6,6 +6,7 @@ import bigcie.bigcie.entities.BikeStation;
 import bigcie.bigcie.entities.enums.BikeStatus;
 import bigcie.bigcie.repositories.ReservationRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,6 +35,12 @@ public class ReservationService {
      */
     public Reservation createReservation(UUID userId, UUID bikeStationId) {
         BikeStation station = bikeStationService.getStationById(bikeStationId);
+
+        // check if client has reservation already
+        if (reservationRepository.findByUserId(userId).stream()
+                .anyMatch(reservation -> reservation.getBikeStationId().equals(bikeStationId))) {
+            throw new RuntimeException("User already has a reservation at this station: " + bikeStationId);
+        }
 
         // Find an available bike at the station
         Bike availableBike = station.getBikes().stream()
@@ -182,10 +189,10 @@ public class ReservationService {
     /**
      * Clean up expired reservations and release reserved bikes
      */
+    @Scheduled(fixedDelay = 60000) // Runs every minute
     public void cleanupExpiredReservations() {
-        List<Reservation> expiredReservations = reservationRepository.findAll().stream()
-                .filter(reservation -> isReservationExpired(reservation.getId()))
-                .toList();
+        // Use MongoDB query to find expired reservations efficiently
+        List<Reservation> expiredReservations = reservationRepository.findExpiredReservations(LocalDateTime.now());
 
         for (Reservation reservation : expiredReservations) {
             Bike bike = bikeService.getBikeById(reservation.getBikeId());

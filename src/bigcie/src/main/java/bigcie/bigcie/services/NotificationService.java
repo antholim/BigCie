@@ -1,6 +1,7 @@
 package bigcie.bigcie.services;
 
 import bigcie.bigcie.dtos.events.TripEventDto;
+import bigcie.bigcie.entities.Bike;
 import bigcie.bigcie.services.interfaces.INotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import bigcie.bigcie.entities.enums.BikeStatus;
+import bigcie.bigcie.dtos.events.BikeStatusChangeDTO;
+import bigcie.bigcie.entities.enums.BikeStationStatus;
+import bigcie.bigcie.dtos.events.DockStatusDTO;
+import bigcie.bigcie.dtos.events.ReservationChangeDTO;
 
 @Service
 @Slf4j
@@ -33,7 +39,30 @@ public class NotificationService implements INotificationService {
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 TripEventDto.TripEventType.TRIP_STARTED,
-                OffsetDateTime.now()
-                ));
+                OffsetDateTime.now()));
     }
+
+    @Override
+    public void notifyBikeStatusChange(UUID bikeId, BikeStatus newStatus) {
+        log.debug("Notifying bike {} status change to {}", bikeId, newStatus);
+        // Here you can implement the logic to notify about bike status change
+        // For example, sending a message to a specific topic
+        messagingTemplate.convertAndSend(OPERATOR_DESTINATION,
+                new BikeStatusChangeDTO(bikeId.toString(), newStatus.name()));
+    }
+
+    @Override
+    public void notifyBikeStationStatusChange(UUID stationId, BikeStationStatus newStatus) {
+        log.debug("Notifying bike station {} status change to {}", stationId, newStatus);
+        messagingTemplate.convertAndSend(OPERATOR_DESTINATION,
+                new DockStatusDTO(stationId.toString(), newStatus.name()));
+    }
+
+    @Override
+    public void notifyReservationChange(UUID reservationId, String newStatus) {
+        log.debug("Notifying reservation {} status change to {}", reservationId, newStatus);
+        messagingTemplate.convertAndSend(OPERATOR_DESTINATION,
+                new ReservationChangeDTO(reservationId.toString(), newStatus));
+    }
+
 }

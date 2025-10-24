@@ -24,8 +24,7 @@ public class BikeService implements IBikeService {
     public BikeService(
             BikeRepository bikeRepository,
             BikeStationService bikeStationService,
-            INotificationService notificationService
-    ) {
+            INotificationService notificationService) {
         this.bikeStationService = bikeStationService;
         this.bikeRepository = bikeRepository;
         this.notificationService = notificationService;
@@ -71,6 +70,7 @@ public class BikeService implements IBikeService {
     public Bike updateBike(UUID id, Bike bike) {
         Bike existingBike = getBikeById(id);
         BikeStatus previousStatus = existingBike.getStatus();
+        notificationService.notifyBikeStatusChange(id, bike.getStatus());
         existingBike.setStatus(bike.getStatus());
         existingBike.setBikeType(bike.getBikeType());
         existingBike.setReservationExpiry(bike.getReservationExpiry());
@@ -88,6 +88,7 @@ public class BikeService implements IBikeService {
     public Bike updateBikeStatus(UUID id, BikeStatus status) {
         Bike bike = getBikeById(id);
         BikeStatus previousStatus = bike.getStatus();
+        notificationService.notifyBikeStatusChange(id, status);
         bike.setStatus(status);
         Bike updatedBike = bikeRepository.save(bike);
         emitTripEventIfNeeded(updatedBike, previousStatus);
@@ -120,8 +121,7 @@ public class BikeService implements IBikeService {
                     null,
                     null,
                     eventType,
-                    OffsetDateTime.now()
-            );
+                    OffsetDateTime.now());
             notificationService.publishTripEvent(event);
         }
     }

@@ -6,6 +6,8 @@ import bigcie.bigcie.entities.enums.BikeStationStatus;
 import bigcie.bigcie.repositories.BikeRepository;
 import bigcie.bigcie.repositories.BikeStationRepository;
 import bigcie.bigcie.services.interfaces.IBikeStationService;
+import bigcie.bigcie.services.interfaces.INotificationService;
+
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
@@ -22,13 +24,15 @@ public class BikeStationService implements IBikeStationService {
     private final BikeStationRepository bikeStationRepository;
     private final ReservationRepository reservationRepository;
     private final BikeService bikeService;
+    private final INotificationService notificationService;
 
     public BikeStationService(BikeStationRepository bikeStationRepository, ReservationRepository reservationRepository,
-            BikeRepository bikeRepository, BikeService bikeService) {
+            BikeRepository bikeRepository, BikeService bikeService, INotificationService notificationService) {
         this.bikeStationRepository = bikeStationRepository;
         this.reservationRepository = reservationRepository;
         this.bikeRepository = bikeRepository;
         this.bikeService = bikeService;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -85,6 +89,7 @@ public class BikeStationService implements IBikeStationService {
     public BikeStation updateStationStatus(UUID id, BikeStationStatus status) {
 
         BikeStation station = getStationById(id);
+
         station.setStatus(status);
         return bikeStationRepository.save(station);
     }
@@ -114,8 +119,16 @@ public class BikeStationService implements IBikeStationService {
 
         station.getBikes().add(bike);
         station.setNumberOfBikesDocked(station.getNumberOfBikesDocked() + 1);
+        notificationService.notifyBikeStatusChange(bike.getId(), BikeStatus.AVAILABLE);
         bike.setStatus(BikeStatus.AVAILABLE);
         bikeService.updateBike(bike.getId(), bike);
+
+        // check if the bike is full
+        if (station.getNumberOfBikesDocked() == station.getCapacity()) {
+            notificationService.notifyBikeStationStatusChange(station.getId(), BikeStationStatus.FULL);
+            station.setStatus(BikeStationStatus.FULL);
+        }
+
         bikeStationRepository.save(station);
 
     }
@@ -141,18 +154,29 @@ public class BikeStationService implements IBikeStationService {
                 .filter(b -> b.getStatus() == BikeStatus.AVAILABLE)
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("No available bikes found"));
+        notificationService.notifyBikeStatusChange(bike.getId(), BikeStatus.AVAILABLE);
         bike.setStatus(BikeStatus.AVAILABLE);
 
         // make reservation null if any
         station.getBikes().remove(bike);
         station.setNumberOfBikesDocked(station.getNumberOfBikesDocked() - 1);
+        bikeStationRepository.save(station);
+
+        notificationService.notifyBikeStatusChange(bike.getId(), BikeStatus.ON_TRIP);
         bike.setStatus(BikeStatus.ON_TRIP);
-        /*
-         * Reservation reservation = reservationRepository.findByBikeId(bike.getId());
-         * if (reservation != null) {
-         * reservation.setActive(false);
-         * }
-         */
+
+        // check if reserved bike exists and remove reservation
+        reservationRepository.findAllByBikeId(bike.getId()).forEach(reservation -> {
+            notificationService.notifyReservationChange(reservation.getId(), "CANCELLED");
+            reservationRepository.delete(reservation);
+        });
+
+        // check if empty
+        if (station.getNumberOfBikesDocked() == 0) {
+            notificationService.notifyBikeStationStatusChange(station.getId(), BikeStationStatus.EMPTY);
+            station.setStatus(BikeStationStatus.EMPTY);
+            bikeStationRepository.save(station);
+        }
 
         return bike.getId();
 
@@ -201,7 +225,11 @@ public class BikeStationService implements IBikeStationService {
         reservationRepository.save(reservation);
 
         // Update bike status to RESERVED
+        notificationService.notifyBikeStatusChange(bike.getId(), BikeStatus.RESERVED);
         bike.setStatus(BikeStatus.RESERVED);
+
+        bikeService.updateBike(bike.getId(), bike);
+
     }
 
     // @Override
