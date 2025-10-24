@@ -1,11 +1,14 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import styles from "./styles/MapDashboard.styles";
 import FetchingService from "../../services/FetchingService";
+import NotificationService from "../../services/NotificationService";
 
 
 export default function MapDashboard() {
+    const navigate = useNavigate();
     const mapRef = useRef(null);
     const leafletRef = useRef(null);
     const markerRef = useRef(null);
@@ -19,6 +22,34 @@ export default function MapDashboard() {
     const [mapReady, setMapReady] = useState(false);
     const [selectedStation, setSelectedStation] = useState(null);
     const [stationMenuOpen, setStationMenuOpen] = useState(false);
+    const [tripEvents, setTripEvents] = useState([]);
+
+    useEffect(() => {
+        const unsubscribe = NotificationService.subscribeToTripEvents((event) => {
+            console.log("Trip event received", event);
+            const normalized = {
+                ...event,
+                occurredAt: event?.occurredAt ? new Date(event.occurredAt) : null,
+            };
+            setTripEvents((prev) => [normalized, ...prev].slice(0, 25));
+        });
+
+        return () => {
+            unsubscribe?.();
+        };
+    }, []);
+
+    const renderEventLabel = (event) => {
+        if (!event) return "Unknown event";
+        const timeLabel = event.occurredAt
+            ? event.occurredAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+            : "Unknown time";
+        const bikeToken = event.bikeId ? `Bike ${event.bikeId.slice(0, 8)}` : "Bike N/A";
+        const stationToken = event.stationId ? ` @ Station ${event.stationId.slice(0, 8)}` : "";
+        const riderToken = event.riderId ? ` by Rider ${event.riderId.slice(0, 8)}` : "";
+        const verb = event.type === "TRIP_STARTED" ? "Trip started" : "Trip ended";
+        return `${verb}: ${bikeToken}${stationToken}${riderToken} (${timeLabel})`;
+    };
 
     // Create station markers only after the map is initialized
     useEffect(() => {
@@ -232,6 +263,21 @@ export default function MapDashboard() {
         <div style={styles.root}>
             <header style={styles.header}>
                 <h1 style={{ margin: 0, fontSize: 18 }}>Map Dashboard</h1>
+                <button
+                    style={{
+                        marginLeft: "auto",
+                        padding: "8px 16px",
+                        borderRadius: "9999px",
+                        border: "1px solid rgba(59, 130, 246, 0.6)",
+                        background: "#fff",
+                        color: "#2563eb",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                    }}
+                    onClick={() => navigate("/")}
+                >
+                    Back to Home
+                </button>
             </header>
 
             <div style={styles.body}>
@@ -281,6 +327,29 @@ export default function MapDashboard() {
                                 )}
                             </div>
                         </div>
+                        <div style={{ marginTop: 16 }}>
+                            <h3 style={{ margin: '12px 0 8px', fontSize: 14 }}>Trip Events</h3>
+                            <div style={{ maxHeight: 240, overflowY: 'auto', fontSize: 12, color: '#222' }}>
+                                {tripEvents.length === 0 ? (
+                                    <div style={{ color: '#666' }}>No events yet</div>
+                                ) : (
+                                    tripEvents.map((event, idx) => (
+                                        <div
+                                            key={`${event.occurredAt?.getTime?.() ?? idx}-${event.bikeId ?? idx}`}
+                                            style={{
+                                                padding: '8px',
+                                                borderRadius: 6,
+                                                background: '#fff',
+                                                marginBottom: 8,
+                                                boxShadow: '0 0 0 1px rgba(0,0,0,0.04)',
+                                            }}
+                                        >
+                                            {renderEventLabel(event)}
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </aside>
 
@@ -321,4 +390,3 @@ export default function MapDashboard() {
         </div>
     );
 }
-
