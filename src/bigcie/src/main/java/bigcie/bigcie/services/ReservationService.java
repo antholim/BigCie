@@ -5,6 +5,7 @@ import bigcie.bigcie.entities.Reservation;
 import bigcie.bigcie.entities.BikeStation;
 import bigcie.bigcie.entities.enums.BikeStatus;
 import bigcie.bigcie.repositories.ReservationRepository;
+import bigcie.bigcie.services.interfaces.IReservationService;
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class ReservationService {
+public class ReservationService implements IReservationService {
     private final ReservationRepository reservationRepository;
     private final BikeService bikeService;
     private final BikeStationService bikeStationService;

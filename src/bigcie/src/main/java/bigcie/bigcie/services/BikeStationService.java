@@ -23,15 +23,13 @@ public class BikeStationService implements IBikeStationService {
     private final BikeRepository bikeRepository;
     private final BikeStationRepository bikeStationRepository;
     private final ReservationRepository reservationRepository;
-    private final BikeService bikeService;
     private final INotificationService notificationService;
 
     public BikeStationService(BikeStationRepository bikeStationRepository, ReservationRepository reservationRepository,
-            BikeRepository bikeRepository, BikeService bikeService, INotificationService notificationService) {
+            BikeRepository bikeRepository, INotificationService notificationService) {
         this.bikeStationRepository = bikeStationRepository;
         this.reservationRepository = reservationRepository;
         this.bikeRepository = bikeRepository;
-        this.bikeService = bikeService;
         this.notificationService = notificationService;
     }
 
@@ -121,7 +119,7 @@ public class BikeStationService implements IBikeStationService {
         station.setNumberOfBikesDocked(station.getNumberOfBikesDocked() + 1);
         notificationService.notifyBikeStatusChange(bike.getId(), BikeStatus.AVAILABLE);
         bike.setStatus(BikeStatus.AVAILABLE);
-        bikeService.updateBike(bike.getId(), bike);
+        bikeRepository.save(bike);
 
         // check if the bike is full
         if (station.getNumberOfBikesDocked() == station.getCapacity()) {
@@ -228,7 +226,7 @@ public class BikeStationService implements IBikeStationService {
         notificationService.notifyBikeStatusChange(bike.getId(), BikeStatus.RESERVED);
         bike.setStatus(BikeStatus.RESERVED);
 
-        bikeService.updateBike(bike.getId(), bike);
+        bikeRepository.save(bike);
 
     }
 

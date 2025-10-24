@@ -6,7 +6,6 @@ import bigcie.bigcie.entities.BikeStation;
 import bigcie.bigcie.entities.Reservation;
 import bigcie.bigcie.entities.enums.BikeStationStatus;
 import bigcie.bigcie.entities.enums.UserType;
-import bigcie.bigcie.services.ReservationService;
 import bigcie.bigcie.services.interfaces.IAuthorizationService;
 import bigcie.bigcie.services.interfaces.IBikeStationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -74,12 +73,12 @@ public class BikeStationController {
 
     @Operation(summary = "Make a reservation at a bike station")
     @PostMapping("/{stationId}/reservations")
-    public ResponseEntity<ReservationRequest> makeReservation(
+    public ResponseEntity<Reservation> makeReservation(
             @PathVariable UUID stationId,
             @RequestBody ReservationRequest reservationRequest,
             @RequestParam UUID userId) {
 
-        ReservationRequest reservation = reservationService.createReservation(userId, stationId);
+        Reservation reservation = reservationService.createReservation(userId, stationId);
         return ResponseEntity.status(HttpStatus.CREATED).body(reservation);
     }
 

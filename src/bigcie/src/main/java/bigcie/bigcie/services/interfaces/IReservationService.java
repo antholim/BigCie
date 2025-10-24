@@ -1,6 +1,5 @@
 package bigcie.bigcie.services.interfaces;
 
-import bigcie.bigcie.dtos.ReservationRequest.ReservationRequest;
 import bigcie.bigcie.entities.Reservation;
 
 import java.util.List;
@@ -8,7 +7,7 @@ import java.util.UUID;
 
 public interface IReservationService {
 
-    public ReservationRequest createReservation(UUID userId, UUID stationId);
+    public Reservation createReservation(UUID userId, UUID stationId);
 
     public Reservation getReservationById(UUID reservationId);
 
