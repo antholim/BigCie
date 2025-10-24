@@ -13,6 +13,7 @@ export default function ProfilePage() {
   const [reservationsError, setReservationsError] = useState("");
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [unreservingIds, setUnreservingIds] = useState(new Set());
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -57,6 +58,27 @@ export default function ProfilePage() {
       // Ignore logout network errors; user is forced to sign in again regardless.
     } finally {
       setIsLoggingOut(false);
+    }
+  };
+
+  const handleUnreserve = async (reservationId) => {
+    setUnreservingIds(prev => new Set(prev).add(reservationId));
+    try {
+      await FetchingService.delete(`/api/v1/stations/reservations/${reservationId}`);
+      // Refresh reservations after successful cancellation
+      await loadReservations();
+    } catch (err) {
+      console.error("Failed to unreserve:", err);
+      // Optionally show an error message to the user
+      setReservationsError(
+        err.response?.data?.message || err.message || "Failed to cancel reservation. Please try again."
+      );
+    } finally {
+      setUnreservingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(reservationId);
+        return newSet;
+      });
     }
   };
 
@@ -164,54 +186,79 @@ export default function ProfilePage() {
               )}
               {!reservationsLoading && !reservationsError && hasReservations && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                  {reservations.map((reservation) => (
-                    <div
-                      key={reservation.id ?? reservation._id}
-                      style={{
-                        border: "1px solid #e2e8f0",
-                        borderRadius: "12px",
-                        padding: "16px",
-                        background: "#fff",
-                      }}
-                    >
+                  {reservations.map((reservation) => {
+                    const reservationId = reservation.id ?? reservation._id;
+                    const isUnreserving = unreservingIds.has(reservationId);
+                    
+                    return (
                       <div
+                        key={reservationId}
                         style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          marginBottom: "8px",
-                          gap: "12px",
+                          border: "1px solid #e2e8f0",
+                          borderRadius: "12px",
+                          padding: "16px",
+                          background: "#fff",
                         }}
                       >
-                        <strong>Reservation</strong>
-                        <span style={{ fontSize: "12px", color: "#475569" }}>
-                          {formatDateTime(reservation.startTime)}
-                        </span>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: "8px",
+                            gap: "12px",
+                          }}
+                        >
+                          <strong>Reservation</strong>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <span style={{ fontSize: "12px", color: "#475569" }}>
+                              {formatDateTime(reservation.startTime)}
+                            </span>
+                            <button
+                              className="db-btn"
+                              type="button"
+                              onClick={() => handleUnreserve(reservationId)}
+                              disabled={isUnreserving}
+                              style={{
+                                fontSize: "12px",
+                                padding: "4px 8px",
+                                backgroundColor: "#dc2626",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "6px",
+                                cursor: isUnreserving ? "not-allowed" : "pointer",
+                                opacity: isUnreserving ? 0.6 : 1,
+                              }}
+                            >
+                              {isUnreserving ? "Unreserving..." : "Unreserve"}
+                            </button>
+                          </div>
+                        </div>
+                        <dl
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "auto 1fr",
+                            rowGap: "6px",
+                            columnGap: "12px",
+                            margin: 0,
+                          }}
+                        >
+                          <dt style={{ fontWeight: 600, color: "#1e293b" }}>Station</dt>
+                          <dd style={{ margin: 0, color: "#475569" }}>
+                            {truncateId(reservation.bikeStationId)}
+                          </dd>
+                          <dt style={{ fontWeight: 600, color: "#1e293b" }}>Bike</dt>
+                          <dd style={{ margin: 0, color: "#475569" }}>
+                            {truncateId(reservation.bikeId)}
+                          </dd>
+                          <dt style={{ fontWeight: 600, color: "#1e293b" }}>Expires</dt>
+                          <dd style={{ margin: 0, color: "#475569" }}>
+                            {formatDateTime(reservation.expiry)}
+                          </dd>
+                        </dl>
                       </div>
-                      <dl
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "auto 1fr",
-                          rowGap: "6px",
-                          columnGap: "12px",
-                          margin: 0,
-                        }}
-                      >
-                        <dt style={{ fontWeight: 600, color: "#1e293b" }}>Station</dt>
-                        <dd style={{ margin: 0, color: "#475569" }}>
-                          {truncateId(reservation.bikeStationId)}
-                        </dd>
-                        <dt style={{ fontWeight: 600, color: "#1e293b" }}>Bike</dt>
-                        <dd style={{ margin: 0, color: "#475569" }}>
-                          {truncateId(reservation.bikeId)}
-                        </dd>
-                        <dt style={{ fontWeight: 600, color: "#1e293b" }}>Expires</dt>
-                        <dd style={{ margin: 0, color: "#475569" }}>
-                          {formatDateTime(reservation.expiry)}
-                        </dd>
-                      </dl>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
