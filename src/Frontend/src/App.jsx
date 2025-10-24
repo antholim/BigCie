@@ -8,20 +8,23 @@ import RideConfirmation from "./pages/RideConfirmation";
 import OperatorDashboard from './pages/OperatorDashboard/OperatorDashboard';
 import ProfilePage from "./pages/Profile/ProfilePage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BikeProvider } from "./contexts/BikeContext";
 
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/map" element={<MapDashboard />} />
-        <Route path="/coming-soon" element={<ComingSoon />} />
-        <Route path="/ride-confirmation" element={<RideConfirmation />} />
-        <Route path="/operator-dashboard" element={<OperatorDashboard />} />
-      </Routes>
+      <BikeProvider>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/map" element={<MapDashboard />} />
+          <Route path="/coming-soon" element={<ComingSoon />} />
+          <Route path="/ride-confirmation" element={<RideConfirmation />} />
+          <Route path="/operator-dashboard" element={<OperatorDashboard />} />
+        </Routes>
+      </BikeProvider>
     </Router>
   );
 }

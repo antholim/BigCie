@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FetchingService from "../../services/FetchingService";
 import { useAuth } from "../../contexts/AuthContext";
+import { useBike } from "../../contexts/BikeContext";
 import MapPreview from "../../components/MapPreview";
 import "../../components/home.css";
 
@@ -14,6 +15,7 @@ export default function ProfilePage() {
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [unreservingIds, setUnreservingIds] = useState(new Set());
+  const { setBikeIds, setSelectedBikeId } = useBike();
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -36,6 +38,18 @@ export default function ProfilePage() {
         return String(reservationUserId).toLowerCase() === String(identifier).toLowerCase();
       });
       setReservations(filtered);
+      // extract bike ids from reservations and store in shared context
+      try {
+        const ids = filtered
+          .map((r) => r.bikeId ?? r.bike?.id ?? r.bike_id)
+          .filter((v) => v !== undefined && v !== null)
+          .map((v) => String(v));
+        if (typeof setBikeIds === "function") setBikeIds(ids);
+        if (typeof setSelectedBikeId === "function") setSelectedBikeId(ids.length > 0 ? ids[0] : null);
+      } catch (e) {
+        // non-fatal
+        console.warn("Failed to set bike ids in context", e);
+      }
     } catch (err) {
       setReservationsError(
         err.response?.data?.message || err.message || "Unable to load reservations right now."

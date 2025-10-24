@@ -6,6 +6,7 @@ import styles from "./styles/MapDashboard.styles";
 import FetchingService from "../../services/FetchingService";
 import NotificationService from "../../services/NotificationService";
 import { useAuth } from "../../contexts/AuthContext";
+import { useBike } from "../../contexts/BikeContext";
 
 
 export default function MapDashboard() {
@@ -25,10 +26,6 @@ export default function MapDashboard() {
     const [selectedStation, setSelectedStation] = useState(null);
     const [stationMenuOpen, setStationMenuOpen] = useState(false);
     const [tripEvents, setTripEvents] = useState([]);
-    const [updatingStatus, setUpdatingStatus] = useState(false);
-
-    // Check if user is an operator
-    const isOperator = user?.userType === 'OPERATOR' || user?.type === 'OPERATOR';
 
     useEffect(() => {
         const unsubscribe = NotificationService.subscribeToTripEvents((event) => {
@@ -239,40 +236,6 @@ export default function MapDashboard() {
         }
     };
 
-    const updateStationStatus = async (newStatus) => {
-        if (!selectedStation || !isOperator) return;
-        setUpdatingStatus(true);
-        try {
-            const path = `/api/v1/stations/${selectedStation.id}/status?status=${newStatus}`;
-            await FetchingService.patch(path);
-            alert(`Station status updated to ${newStatus}`);
-            // Refresh stations to show updated status
-            try {
-                const r = await FetchingService.get('/api/v1/stations');
-                const refreshedData = r.data || [];
-                // Filter out OUT_OF_SERVICE stations for regular users
-                const filteredData = isOperator 
-                    ? refreshedData 
-                    : refreshedData.filter(station => station.status !== 'OUT_OF_SERVICE');
-                setStations(filteredData);
-                // Update selected station with new status
-                setSelectedStation(prev => ({ ...prev, status: newStatus }));
-                
-                // Close modal if station is now OUT_OF_SERVICE and user is not an operator
-                if (newStatus === 'OUT_OF_SERVICE' && !isOperator) {
-                    closeStationMenu();
-                }
-            } catch (e) {
-                // ignore refresh error
-            }
-        } catch (err) {
-            console.error(`Status update failed`, err);
-            alert(`Status update failed: ${err?.response?.data?.message || err?.message || 'Unknown error'}`);
-        } finally {
-            setUpdatingStatus(false);
-        }
-    };
-
     const zoomIn = useCallback(() => {
         const next = Math.min(21, zoom + 1);
         setZoom(next);
@@ -400,6 +363,33 @@ export default function MapDashboard() {
                             </div>
                         </div>
                         <div style={{ marginTop: 16 }}>
+                            <h3 style={{ margin: '12px 0 8px', fontSize: 14 }}>Reserved Bikes</h3>
+                            <div style={{ maxHeight: 120, overflowY: 'auto' }}>
+                                {(!bikeIds || bikeIds.length === 0) ? (
+                                    <div style={{ color: '#666', fontSize: 13 }}>No reserved bikes</div>
+                                ) : (
+                                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                        {bikeIds.map((id) => (
+                                            <button
+                                                key={id}
+                                                onClick={() => setSelectedBikeId?.(String(id))}
+                                                style={{
+                                                    padding: '6px 10px',
+                                                    borderRadius: 6,
+                                                    border: selectedBikeId === String(id) ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                                                    background: selectedBikeId === String(id) ? '#e0f2ff' : '#fff',
+                                                    cursor: 'pointer',
+                                                }}
+                                            >
+                                                {String(id).slice(0, 8)}...
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div style={{ marginTop: 16 }}>
                             <h3 style={{ margin: '12px 0 8px', fontSize: 14 }}>Trip Events</h3>
                             <div style={{ maxHeight: 240, overflowY: 'auto', fontSize: 12, color: '#222' }}>
                                 {tripEvents.length === 0 ? (
@@ -455,7 +445,9 @@ export default function MapDashboard() {
                         <div style={{ marginTop: 16, display: 'flex', gap: 12, alignItems: 'center' }}>
                             <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationAction('undock')}>Rent</button>
                             <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationAction('reserve')}>Reserve</button>
-                            <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationAction('dock')}>Dock</button>
+                            <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationActionBody('dock', {
+
+                            })}>Dock</button>
                         </div>
 
                         {/* Operator-only station status controls */}
