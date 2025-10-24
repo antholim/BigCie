@@ -3,8 +3,10 @@ package bigcie.bigcie.controllers;
 import bigcie.bigcie.dtos.BikeRequest.BikeStationRequest;
 import bigcie.bigcie.dtos.DockingRequest.DockBikeRequest;
 import bigcie.bigcie.entities.BikeStation;
+import bigcie.bigcie.entities.Reservation;
 import bigcie.bigcie.entities.enums.BikeStationStatus;
 import bigcie.bigcie.entities.enums.UserType;
+import bigcie.bigcie.services.ReservationService;
 import bigcie.bigcie.services.interfaces.IAuthorizationService;
 import bigcie.bigcie.services.interfaces.IBikeStationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import bigcie.bigcie.exceptions.responses.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
+import bigcie.bigcie.dtos.ReservationRequest.ReservationRequest;
+import bigcie.bigcie.services.interfaces.IReservationService;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,10 +30,13 @@ import java.util.UUID;
 public class BikeStationController {
     private final IBikeStationService bikeStationService;
     private final IAuthorizationService authorizationService;
+    private final IReservationService reservationService;
 
-    public BikeStationController(IBikeStationService bikeStationService, IAuthorizationService authorizationService) {
+    public BikeStationController(IBikeStationService bikeStationService, IAuthorizationService authorizationService,
+            IReservationService reservationService) {
         this.bikeStationService = bikeStationService;
         this.authorizationService = authorizationService;
+        this.reservationService = reservationService;
     }
 
     @Operation(summary = "Create a new bike station")
@@ -63,6 +70,46 @@ public class BikeStationController {
     public ResponseEntity<List<BikeStation>> getStationsByStatus(@PathVariable BikeStationStatus status) {
         List<BikeStation> stations = bikeStationService.getStationsByStatus(status);
         return ResponseEntity.ok(stations);
+    }
+
+    @Operation(summary = "Make a reservation at a bike station")
+    @PostMapping("/{stationId}/reservations")
+    public ResponseEntity<ReservationRequest> makeReservation(
+            @PathVariable UUID stationId,
+            @RequestBody ReservationRequest reservationRequest,
+            @RequestParam UUID userId) {
+
+        ReservationRequest reservation = reservationService.createReservation(userId, stationId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(reservation);
+    }
+
+    @Operation(summary = "Cancel a reservation")
+    @DeleteMapping("/reservations/{reservationId}")
+    public ResponseEntity<Void> cancelReservation(@PathVariable UUID reservationId) {
+        reservationService.cancelReservation(reservationId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Get a reservation by ID")
+    @GetMapping("/reservations/{reservationId}")
+    public ResponseEntity<Reservation> getReservationById(@PathVariable UUID reservationId) {
+        Reservation reservation = reservationService.getReservationById(reservationId);
+        return ResponseEntity.ok(reservation);
+    }
+
+    @Operation(summary = "Get all reservations")
+    @GetMapping("/reservations")
+    public ResponseEntity<List<Reservation>> getAllReservations() {
+        List<Reservation> reservations = reservationService.getAllReservations();
+        return ResponseEntity.ok(reservations);
+    }
+
+    @Operation(summary = "update a reservation")
+    @PutMapping("/reservations/{reservationId}")
+    public ResponseEntity<Reservation> updateReservation(@PathVariable UUID reservationId,
+            @RequestBody Reservation reservation) {
+        Reservation updatedReservation = reservationService.updateReservation(reservationId, reservation);
+        return ResponseEntity.ok(updatedReservation);
     }
 
     @Operation(summary = "Update a bike station")
