@@ -5,10 +5,12 @@ import "leaflet/dist/leaflet.css";
 import styles from "./styles/MapDashboard.styles";
 import FetchingService from "../../services/FetchingService";
 import NotificationService from "../../services/NotificationService";
+import { useAuth } from "../../contexts/AuthContext";
 
 
 export default function MapDashboard() {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const mapRef = useRef(null);
     const leafletRef = useRef(null);
     const markerRef = useRef(null);
@@ -23,6 +25,10 @@ export default function MapDashboard() {
     const [selectedStation, setSelectedStation] = useState(null);
     const [stationMenuOpen, setStationMenuOpen] = useState(false);
     const [tripEvents, setTripEvents] = useState([]);
+    const [updatingStatus, setUpdatingStatus] = useState(false);
+
+    // Check if user is an operator
+    const isOperator = user?.userType === 'OPERATOR' || user?.type === 'OPERATOR';
 
     useEffect(() => {
         const unsubscribe = NotificationService.subscribeToTripEvents((event) => {
@@ -62,13 +68,19 @@ export default function MapDashboard() {
                 const resp = await FetchingService.get("/api/v1/stations");
                 const data = resp?.data ?? [];
                 if (cancelled) return;
-                setStations(data);
+                
+                // Filter out OUT_OF_SERVICE stations for regular users
+                const filteredData = isOperator 
+                    ? data 
+                    : data.filter(station => station.status !== 'OUT_OF_SERVICE');
+                
+                setStations(filteredData);
 
                 // remove any existing markers
                 stationMarkersRef.current.forEach((m) => m.remove());
 
                 // create markers using either lat/lng or latitude/longitude fields
-                stationMarkersRef.current = data.map((s) => {
+                stationMarkersRef.current = filteredData.map((s) => {
                     const lat = Number(s.lat ?? s.latitude ?? 0);
                     const lng = Number(s.lng ?? s.longitude ?? 0);
                     const name = s.name ?? s.address ?? `Station ${s.id ?? ''}`;
@@ -93,7 +105,7 @@ export default function MapDashboard() {
             stationMarkersRef.current.forEach((m) => m.remove());
             stationMarkersRef.current = [];
         };
-    }, [mapReady]);
+    }, [mapReady, isOperator]); // Added isOperator dependency
 
     useEffect(() => {
         setLoading(true);
@@ -211,7 +223,12 @@ export default function MapDashboard() {
             // optionally refresh stations
             try {
                 const r = await FetchingService.get('/api/v1/stations');
-                setStations(r.data || []);
+                const refreshedData = r.data || [];
+                // Filter out OUT_OF_SERVICE stations for regular users
+                const filteredData = isOperator 
+                    ? refreshedData 
+                    : refreshedData.filter(station => station.status !== 'OUT_OF_SERVICE');
+                setStations(filteredData);
             } catch (e) {
                 // ignore refresh error
             }
@@ -219,6 +236,40 @@ export default function MapDashboard() {
         } catch (err) {
             console.error(`${action} failed`, err);
             alert(`${action} failed: ${err?.message ?? err}`);
+        }
+    };
+
+    const updateStationStatus = async (newStatus) => {
+        if (!selectedStation || !isOperator) return;
+        setUpdatingStatus(true);
+        try {
+            const path = `/api/v1/stations/${selectedStation.id}/status?status=${newStatus}`;
+            await FetchingService.patch(path);
+            alert(`Station status updated to ${newStatus}`);
+            // Refresh stations to show updated status
+            try {
+                const r = await FetchingService.get('/api/v1/stations');
+                const refreshedData = r.data || [];
+                // Filter out OUT_OF_SERVICE stations for regular users
+                const filteredData = isOperator 
+                    ? refreshedData 
+                    : refreshedData.filter(station => station.status !== 'OUT_OF_SERVICE');
+                setStations(filteredData);
+                // Update selected station with new status
+                setSelectedStation(prev => ({ ...prev, status: newStatus }));
+                
+                // Close modal if station is now OUT_OF_SERVICE and user is not an operator
+                if (newStatus === 'OUT_OF_SERVICE' && !isOperator) {
+                    closeStationMenu();
+                }
+            } catch (e) {
+                // ignore refresh error
+            }
+        } catch (err) {
+            console.error(`Status update failed`, err);
+            alert(`Status update failed: ${err?.response?.data?.message || err?.message || 'Unknown error'}`);
+        } finally {
+            setUpdatingStatus(false);
         }
     };
 
@@ -303,6 +354,7 @@ export default function MapDashboard() {
                                     stations.map((s) => {
                                         const lat = Number(s.lat ?? s.latitude ?? 0);
                                         const lng = Number(s.lng ?? s.longitude ?? 0);
+                                        const isOutOfService = s.status === 'OUT_OF_SERVICE';
                                         return (
                                             <div
                                                 key={s.id}
@@ -311,12 +363,32 @@ export default function MapDashboard() {
                                                     padding: '8px',
                                                     borderRadius: 6,
                                                     cursor: 'pointer',
-                                                    background: '#fff',
+                                                    background: isOutOfService && isOperator ? '#fef2f2' : '#fff',
                                                     marginBottom: 8,
-                                                    boxShadow: '0 0 0 1px rgba(0,0,0,0.04)'
+                                                    boxShadow: '0 0 0 1px rgba(0,0,0,0.04)',
+                                                    border: isOutOfService && isOperator ? '1px solid #fecaca' : 'none'
                                                 }}
                                             >
-                                                <div style={{ fontWeight: 600 }}>{s.name ?? s.address ?? 'Unnamed'}</div>
+                                                <div style={{ 
+                                                    fontWeight: 600,
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center'
+                                                }}>
+                                                    <span>{s.name ?? s.address ?? 'Unnamed'}</span>
+                                                    {isOperator && s.status && (
+                                                        <span style={{
+                                                            fontSize: 10,
+                                                            padding: '2px 6px',
+                                                            borderRadius: 4,
+                                                            background: isOutOfService ? '#dc2626' : '#16a34a',
+                                                            color: '#fff',
+                                                            fontWeight: 500
+                                                        }}>
+                                                            {s.status.replace(/_/g, ' ')}
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <div style={{ fontSize: 12, color: '#555' }}>{lat.toFixed(5)}, {lng.toFixed(5)}</div>
                                                 <div style={{ fontSize: 12, color: '#666' }}>Bikes: {s.numberOfBikesDocked ?? s.bikes?.length ?? 0}</div>
                                             </div>
@@ -372,6 +444,11 @@ export default function MapDashboard() {
                             <div>
                                 <div style={{ fontWeight: 800, fontSize: 18 }}>{selectedStation.name ?? selectedStation.address}</div>
                                 <div style={{ fontSize: 13, color: '#666', marginTop: 4 }}>ID: {selectedStation.id}</div>
+                                {selectedStation.status && (
+                                    <div style={{ fontSize: 13, color: '#666', marginTop: 2 }}>
+                                        Status: <span style={{ fontWeight: 600 }}>{selectedStation.status}</span>
+                                    </div>
+                                )}
                             </div>
                             <button onClick={closeStationMenu} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 18 }}>✕</button>
                         </div>
@@ -380,6 +457,37 @@ export default function MapDashboard() {
                             <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationAction('reserve')}>Reserve</button>
                             <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationAction('dock')}>Dock</button>
                         </div>
+
+                        {/* Operator-only station status controls */}
+                        {isOperator && (
+                            <div style={{ marginTop: 16, padding: '12px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, color: '#374151' }}>
+                                    Operator Controls - Change Station Status
+                                </div>
+                                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                    {['EMPTY', 'OCCUPIED', 'FULL', 'OUT_OF_SERVICE'].map((status) => (
+                                        <button
+                                            key={status}
+                                            style={{
+                                                padding: '8px 12px',
+                                                fontSize: 12,
+                                                border: '1px solid #d1d5db',
+                                                borderRadius: '6px',
+                                                background: selectedStation.status === status ? '#3b82f6' : '#fff',
+                                                color: selectedStation.status === status ? '#fff' : '#374151',
+                                                cursor: updatingStatus ? 'not-allowed' : 'pointer',
+                                                opacity: updatingStatus ? 0.6 : 1,
+                                                fontWeight: selectedStation.status === status ? 600 : 400,
+                                            }}
+                                            onClick={() => updateStationStatus(status)}
+                                            disabled={updatingStatus || selectedStation.status === status}
+                                        >
+                                            {updatingStatus ? 'Updating...' : status.replace(/_/g, ' ')}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         <div style={{ marginTop: 14, color: '#444' }}>
                             <div style={{ fontSize: 14 }}>Location</div>
                             <div style={{ fontSize: 13, color: '#666' }}>{(selectedStation.latitude ?? selectedStation.lat ?? selectedStation.longitude ?? selectedStation.lng) ? `${Number(selectedStation.latitude ?? selectedStation.lat ?? 0).toFixed(5)}, ${Number(selectedStation.longitude ?? selectedStation.lng ?? 0).toFixed(5)}` : 'Unknown'}</div>
