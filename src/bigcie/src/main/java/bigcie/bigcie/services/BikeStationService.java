@@ -132,13 +132,20 @@ public class BikeStationService implements IBikeStationService {
     }
 
     @Override
-    public UUID undockBike(UUID stationId) {
+    public UUID undockBike(UUID stationId, UUID userId) {
         // check if station is out of service
         BikeStation station = getStationById(stationId);
         if (station.getStatus() == BikeStationStatus.OUT_OF_SERVICE) {
             throw new IllegalStateException("Station is out of service");
         }
-
+        List<Reservation> list = reservationRepository.findByUserId(userId);
+        for (Reservation reservation : list) {
+            if (reservation.getBikeStationId() == stationId) {
+                Bike bike = bikeRepository.findBikeById(reservation.getBikeId());
+                notificationService.notifyReservationChange(reservation.getId(), "CANCELLED");
+                reservationRepository.delete(reservation);
+            }
+        }
         // To undock a bike, the bike needs to be of status "AVAILABLE"
         // check if all bike are reserved
         if (station.getBikes().stream().allMatch(b -> b.getStatus() == BikeStatus.RESERVED)) {
@@ -147,6 +154,8 @@ public class BikeStationService implements IBikeStationService {
         if (!hasAvailableBikes(stationId)) {
             throw new IllegalStateException("No available bikes to undock");
         }
+
+        // check if reserved bike exists and remove reservation
         // Find the first available bike
         Bike bike = station.getBikes().stream()
                 .filter(b -> b.getStatus() == BikeStatus.AVAILABLE)
@@ -163,11 +172,6 @@ public class BikeStationService implements IBikeStationService {
         notificationService.notifyBikeStatusChange(bike.getId(), BikeStatus.ON_TRIP);
         bike.setStatus(BikeStatus.ON_TRIP);
 
-        // check if reserved bike exists and remove reservation
-        reservationRepository.findAllByBikeId(bike.getId()).forEach(reservation -> {
-            notificationService.notifyReservationChange(reservation.getId(), "CANCELLED");
-            reservationRepository.delete(reservation);
-        });
 
         // check if empty
         if (station.getNumberOfBikesDocked() == 0) {

@@ -164,10 +164,9 @@ public class BikeStationController {
     public ResponseEntity<BikeStation> undockBike(
             @PathVariable UUID stationId,
             HttpServletRequest request) {
-        if (!authorizationService.hasRole(request, UserType.OPERATOR)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
+        String token = cookieService.getTokenFromCookie(request, "authToken");
+        UUID userId = tokenService.extractUserId(token);
+        bikeStationService.undockBike(stationId, userId);
         return ResponseEntity.ok(null);
     }
 

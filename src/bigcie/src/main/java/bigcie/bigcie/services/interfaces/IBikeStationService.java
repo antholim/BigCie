@@ -25,7 +25,7 @@ public interface IBikeStationService {
 
     void dockBike(UUID stationId, UUID bikeId);
 
-    UUID undockBike(UUID stationId);
+    UUID undockBike(UUID stationId, UUID userId);
 
     boolean hasAvailableDocks(UUID stationId);
 
