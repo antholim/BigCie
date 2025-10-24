@@ -3,10 +3,12 @@ package bigcie.bigcie.controllers;
 import bigcie.bigcie.dtos.BikeRequest.BikeStationRequest;
 import bigcie.bigcie.dtos.DockingRequest.DockBikeRequest;
 import bigcie.bigcie.entities.BikeStation;
+import bigcie.bigcie.entities.BmsEvent;
 import bigcie.bigcie.entities.enums.BikeStationStatus;
 import bigcie.bigcie.entities.enums.UserType;
 import bigcie.bigcie.services.interfaces.IAuthorizationService;
 import bigcie.bigcie.services.interfaces.IBikeStationService;
+import bigcie.bigcie.services.interfaces.IEventService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,10 +28,14 @@ import java.util.UUID;
 public class BikeStationController {
     private final IBikeStationService bikeStationService;
     private final IAuthorizationService authorizationService;
+    private final IEventService eventService;
 
-    public BikeStationController(IBikeStationService bikeStationService, IAuthorizationService authorizationService) {
+    public BikeStationController(IBikeStationService bikeStationService, 
+                                IAuthorizationService authorizationService,
+                                IEventService eventService) {
         this.bikeStationService = bikeStationService;
         this.authorizationService = authorizationService;
+        this.eventService = eventService;
     }
 
     @Operation(summary = "Create a new bike station")
@@ -88,6 +94,16 @@ public class BikeStationController {
             @RequestParam BikeStationStatus status) {
         BikeStation updatedStation = bikeStationService.updateStationStatus(id, status);
         return ResponseEntity.ok(updatedStation);
+    }
+
+    @Operation(summary = "Get events for a specific bike station")
+    @GetMapping("/{id}/events")
+    public ResponseEntity<List<BmsEvent>> getStationEvents(@PathVariable UUID id, HttpServletRequest request) {
+        if (!authorizationService.hasRole(request, UserType.OPERATOR)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        List<BmsEvent> events = eventService.getEventsByEntity(id);
+        return ResponseEntity.ok(events);
     }
 
     @Operation(summary = "Dock a bike at a station")
