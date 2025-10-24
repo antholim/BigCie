@@ -1,0 +1,99 @@
+.log-dashboard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #1a1a1a;
+  color: #e0e0e0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.log-controls {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: #2a2a2a;
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.log-controls button {
+  padding: 6px 12px;
+  border: 1px solid #4a4a4a;
+  border-radius: 4px;
+  background: #333;
+  color: #e0e0e0;
+  cursor: pointer;
+}
+
+.log-controls button:hover {
+  background: #444;
+}
+
+.log-controls button.active {
+  background: #505050;
+}
+
+.log-controls input {
+  flex: 1;
+  padding: 6px 12px;
+  border: 1px solid #4a4a4a;
+  border-radius: 4px;
+  background: #333;
+  color: #e0e0e0;
+}
+
+.log-stream {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.log-entry {
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.log-entry:hover {
+  background: #2a2a2a;
+}
+
+.log-entry .timestamp {
+  color: #888;
+  margin-right: 8px;
+}
+
+.log-entry .type {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-right: 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.log-entry .type.info { background: #2a4a80; }
+.log-entry .type.error { background: #802a2a; }
+.log-entry .type.warn { background: #806a2a; }
+.log-entry .type.debug { background: #2a802a; }
+
+.connection-status {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  background: #333;
+}
+
+.connection-status.connected {
+  background: #2a802a;
+}
+
+.connection-status.disconnected {
+  background: #802a2a;
+}
