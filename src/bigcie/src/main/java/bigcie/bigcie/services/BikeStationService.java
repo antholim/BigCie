@@ -13,9 +13,11 @@ import bigcie.bigcie.entities.enums.BikeStatus;
 @Service
 public class BikeStationService implements IBikeStationService {
     private final BikeStationRepository bikeStationRepository;
+    private final EventService eventService;
 
-    public BikeStationService(BikeStationRepository bikeStationRepository) {
+    public BikeStationService(BikeStationRepository bikeStationRepository, EventService eventService) {
         this.bikeStationRepository = bikeStationRepository;
+        this.eventService = eventService;
     }
 
     @Override
@@ -29,7 +31,18 @@ public class BikeStationService implements IBikeStationService {
         bikeStationEntity.setAddress(station.getAddress());
         bikeStationEntity.setCapacity(station.getCapacity());
         bikeStationEntity.setReservationHoldTimeMinutes(station.getReservationHoldTimeMinutes());
-        return bikeStationRepository.save(bikeStationEntity);
+        
+        BikeStation savedStation = bikeStationRepository.save(bikeStationEntity);
+        
+        // Record creation event
+        eventService.recordStateTransition(
+            "BikeStation",
+            savedStation.getId(),
+            null,
+            station.getStatus().toString()
+        );
+        
+        return savedStation;
     }
 
     @Override
@@ -51,6 +64,17 @@ public class BikeStationService implements IBikeStationService {
     @Override
     public BikeStation updateStation(UUID id, BikeStation station) {
         BikeStation existingStation = getStationById(id);
+        
+        // Record status change if different
+        if (!existingStation.getStatus().equals(station.getStatus())) {
+            eventService.recordStateTransition(
+                "BikeStation",
+                id,
+                existingStation.getStatus().toString(),
+                station.getStatus().toString()
+            );
+        }
+        
         existingStation.setName(station.getName());
         existingStation.setStatus(station.getStatus());
         existingStation.setLatitude(station.getLatitude());
@@ -65,28 +89,67 @@ public class BikeStationService implements IBikeStationService {
 
     @Override
     public void deleteStation(UUID id) {
+        BikeStation station = getStationById(id);
+        
+        // Record deletion event
+        eventService.recordStateTransition(
+            "BikeStation",
+            id,
+            station.getStatus().toString(),
+            "DELETED"
+        );
+        
         bikeStationRepository.deleteById(id);
     }
 
     @Override
     public BikeStation updateStationStatus(UUID id, BikeStationStatus status) {
-
         BikeStation station = getStationById(id);
+        String oldStatus = station.getStatus().toString();
+        
         station.setStatus(status);
-        return bikeStationRepository.save(station);
+        BikeStation updatedStation = bikeStationRepository.save(station);
+        
+        // R-BMS-04: Record state transition
+        eventService.recordStateTransition(
+            "BikeStation",
+            id,
+            oldStatus,
+            status.toString()
+        );
+        
+        return updatedStation;
     }
 
     @Override
     public void dockBike(UUID stationId, UUID bikeId) {
-
         // To dock a bike, the bike needs to be of status "ON_TRIP"
         // Check if station is not full
         // Check if dock is not out of service
-
+        
+        BikeStation station = getStationById(stationId);
+        
+        // Record docking event
+        eventService.recordStateTransition(
+            "BikeStation",
+            stationId,
+            "BIKE_COUNT:" + station.getNumberOfBikesDocked(),
+            "BIKE_COUNT:" + (station.getNumberOfBikesDocked() + 1)
+        );
     }
 
     @Override
     public UUID undockBike(UUID stationId) {
+        BikeStation station = getStationById(stationId);
+        
+        // Record undocking event
+        eventService.recordStateTransition(
+            "BikeStation",
+            stationId,
+            "BIKE_COUNT:" + station.getNumberOfBikesDocked(),
+            "BIKE_COUNT:" + (station.getNumberOfBikesDocked() - 1)
+        );
+        
         return null;
     }
 
@@ -96,11 +159,9 @@ public class BikeStationService implements IBikeStationService {
         return station.getNumberOfBikesDocked() < station.getCapacity();
     }
 
-    // Different from isempty cuz bikes can be docked but reserved
     @Override
     public boolean hasAvailableBikes(UUID stationId) {
         BikeStation station = getStationById(stationId);
-        // Check for bikes that are not reserved
         for (var bike : station.getBikes()) {
             if (!bike.getStatus().equals(BikeStatus.RESERVED)) {
                 return true;
@@ -114,44 +175,4 @@ public class BikeStationService implements IBikeStationService {
         BikeStation station = getStationById(stationId);
         return station.getNumberOfBikesDocked() == 0;
     }
-
-    // @Override
-    // public BikeStation dockBike(UUID stationId, UUID bikeId) {
-    // BikeStation station = getStationById(stationId);
-    //
-    // // R-BMS-05: Block if out of service
-    // if (station.getStatus() == BikeStationStatus.OUT_OF_SERVICE) {
-    // throw new IllegalStateException("Station is out of service");
-    // }
-    //
-    // // R-BMS-02: Prevent docking to a full station
-    // if (station.getBikes().size() >= station.getCapacity()) {
-    // emitDockEvent(station, "FULL");
-    // throw new IllegalStateException("Station is full");
-    // }
-    //
-    // // R-BMS-06: Only allow return if bike is reserved (example logic)
-    // Bike bike = bikeRepository.findById(bikeId)
-    // .orElseThrow(() -> new RuntimeException("Bike not found"));
-    // if (!bike.isReserved()) {
-    // throw new IllegalStateException("Bike is not reserved for return");
-    // }
-    //
-    // // Dock the bike
-    // station.getBikes().add(bike);
-    // station.setNumberOfBikesDocked(station.getBikes().size());
-    //
-    // // R-BMS-04: Record state transition with event ID
-    // String eventId = UUID.randomUUID().toString();
-    // recordStateTransition(station, bike, "DOCKED", eventId);
-    //
-    // // R-BMS-06/07: Emit events
-    // emitBikeStatusEvent(bike, "RETURNED", eventId);
-    // if (station.getBikes().size() == station.getCapacity()) {
-    // emitDockEvent(station, "FULL");
-    // }
-    //
-    // return bikeStationRepository.save(station);
-    // }
-
 }
