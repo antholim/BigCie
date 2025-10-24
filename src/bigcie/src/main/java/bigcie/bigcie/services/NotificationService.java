@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -26,7 +25,7 @@ public class NotificationService implements INotificationService {
         messagingTemplate.convertAndSend(OPERATOR_DESTINATION, event);
     }
 
-    @Scheduled(fixedRate = 1000)
+    @Scheduled(fixedRate = 5000)
     public void sendHeartbeat() {
         log.info("Sending heartbeat to operators");
         messagingTemplate.convertAndSend(OPERATOR_DESTINATION, new TripEventDto(
