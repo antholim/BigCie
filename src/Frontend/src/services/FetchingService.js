@@ -29,6 +29,10 @@ class FetchingService {
 		return this.axiosInstance.delete(url, config);
 	}
 
+	patch(url, data, config) {
+		return this.axiosInstance.patch(url, data, config);
+	}
+
 	// Add more methods as needed
 }
 
