@@ -1,6 +1,7 @@
 import React from "react";
 import "./home.css";
 import { useNavigate } from "react-router-dom";
+import MapPreview from "./MapPreview";
 
 export default function DowntownBikeLanding() {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ export default function DowntownBikeLanding() {
           </nav>
           <div className="db-actions">
             <button className="db-btn ghost" onClick={() => navigate("/login")}>Log in</button>
-            <a className="db-btn primary" href="#download">Get the app</a>
+            <button className="db-btn primary" onClick={() => navigate("/coming-soon")}>Get the app</button>
           </div>
         </div>
       </header>
@@ -137,11 +138,13 @@ export default function DowntownBikeLanding() {
               <li><span className="dot" />Accessible stations</li>
             </ul>
             <div className="db-row">
-              <a href="#download" className="db-btn primary">Get the app</a>
-              <a href="#" className="db-btn">View full map</a>
+              <button className="db-btn primary" onClick={() => navigate("/coming-soon")}>Get the app</button>
+              <button className="db-btn" onClick={() => navigate("/map")}>View full map</button>
             </div>
           </div>
-          <div className="db-map-placeholder">Map placeholder</div>
+          <div className="db-map-placeholder">
+            <MapPreview />
+          </div>
         </div>
       </section>
 
