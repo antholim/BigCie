@@ -6,8 +6,7 @@ import bigcie.bigcie.entities.BikeStation;
 import bigcie.bigcie.entities.Reservation;
 import bigcie.bigcie.entities.enums.BikeStationStatus;
 import bigcie.bigcie.entities.enums.UserType;
-import bigcie.bigcie.services.interfaces.IAuthorizationService;
-import bigcie.bigcie.services.interfaces.IBikeStationService;
+import bigcie.bigcie.services.interfaces.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import bigcie.bigcie.exceptions.responses.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import bigcie.bigcie.dtos.ReservationRequest.ReservationRequest;
-import bigcie.bigcie.services.interfaces.IReservationService;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,12 +28,17 @@ public class BikeStationController {
     private final IBikeStationService bikeStationService;
     private final IAuthorizationService authorizationService;
     private final IReservationService reservationService;
+    private final ITokenService tokenService;
+    private final ICookieService cookieService;
 
     public BikeStationController(IBikeStationService bikeStationService, IAuthorizationService authorizationService,
-            IReservationService reservationService) {
+            IReservationService reservationService, ITokenService tokenService, ICookieService cookieService
+                                 ) {
         this.bikeStationService = bikeStationService;
         this.authorizationService = authorizationService;
         this.reservationService = reservationService;
+        this.tokenService = tokenService;
+        this.cookieService = cookieService;
     }
 
     @Operation(summary = "Create a new bike station")
@@ -72,12 +75,12 @@ public class BikeStationController {
     }
 
     @Operation(summary = "Make a reservation at a bike station")
-    @PostMapping("/{stationId}/reservations")
+    @PostMapping("/{stationId}/reserve")
     public ResponseEntity<Reservation> makeReservation(
             @PathVariable UUID stationId,
-            @RequestBody ReservationRequest reservationRequest,
-            @RequestParam UUID userId) {
-
+            HttpServletRequest request) {
+        String token = cookieService.getTokenFromCookie(request, "authToken");
+        UUID userId = tokenService.extractUserId(token);
         Reservation reservation = reservationService.createReservation(userId, stationId);
         return ResponseEntity.status(HttpStatus.CREATED).body(reservation);
     }
