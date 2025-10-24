@@ -51,6 +51,8 @@ img{max-width:100%;display:block}
 @media (min-width:768px){.db-hero h1{font-size:56px}}
 .db-hero .lede{font-size:18px;color:#2c2f35;max-width:640px}
 .accent{color:var(--brand)}
+.db-auth-panel{margin:16px 0;padding:16px;border:1px solid var(--border);border-radius:16px;background:#fff;box-shadow:0 6px 18px rgba(15,23,42,0.08);display:grid;gap:12px}
+.db-note{background:#ecfdf5;color:#0c5c47;padding:8px 12px;border-radius:12px;font-size:14px;font-weight:600}
 .db-bullets{list-style:none;margin:16px 0 0;padding:0;display:flex;gap:16px;flex-wrap:wrap;color:#34373d}
 .dot{display:inline-block;height:6px;width:6px;border-radius:50%;background:var(--brand);margin-right:8px;}
 

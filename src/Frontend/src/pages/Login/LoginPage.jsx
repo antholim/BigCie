@@ -62,7 +62,17 @@ export default function LoginPage() {
         <button className="db-btn primary full" type="submit" style={{ marginTop: 24 }} disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>
-      </form>
-    </div>
-  );
+        <p style={{ marginTop: 16, fontSize: 14, color: "#475569" }}>
+          Don't have an account?{" "}
+          <button
+            type="button"
+            onClick={() => navigate("/register")}
+            style={{ border: "none", background: "none", color: "#2563eb", cursor: "pointer", fontWeight: 600 }}
+          >
+            Create one
+          </button>
+        </p>
+     </form>
+   </div>
+ );
 }

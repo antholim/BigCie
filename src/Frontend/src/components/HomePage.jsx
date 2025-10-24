@@ -1,10 +1,97 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./home.css";
 import { useNavigate } from "react-router-dom";
 import MapPreview from "./MapPreview";
+import FetchingService from "../services/FetchingService";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function DowntownBikeLanding() {
   const navigate = useNavigate();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const [startingRide, setStartingRide] = useState(false);
+  const [returningRide, setReturningRide] = useState(false);
+  const [activeRideIds, setActiveRideIds] = useState(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const stored = sessionStorage.getItem("activeRideIds");
+      return stored ? JSON.parse(stored) : [];
+    } catch (err) {
+      return [];
+    }
+  });
+  const [lastMessage, setLastMessage] = useState(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("activeRideIds", JSON.stringify(activeRideIds));
+    }
+  }, [activeRideIds]);
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      setActiveRideIds([]);
+      setLastMessage(null);
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("activeRideIds");
+      }
+    }
+  }, [authLoading, isAuthenticated]);
+
+  const requireAuth = () => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return false;
+    }
+    return true;
+  };
+
+  const handleStartRide = async () => {
+    if (!requireAuth()) return;
+    if (startingRide) return;
+    setStartingRide(true);
+    try {
+      const plan = "Pay-As-You-Go";
+      const response = await FetchingService.post("/api/v1/rides/start", { plan });
+      const rideData = response?.data ?? {};
+      const rideId = rideData.rideId
+        ?? (typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `ride-${Date.now()}`);
+      setActiveRideIds((prev) => [...prev, rideId]);
+      setLastMessage(rideData.message ?? "Ride can begin");
+      navigate("/ride-confirmation", {
+        state: {
+          plan,
+          rideId,
+          message: rideData.message,
+          startedAt: rideData.startedAt,
+        },
+      });
+    } catch (err) {
+      console.error("Failed to start ride", err);
+      alert("Unable to start ride right now. Please try again in a moment.");
+    } finally {
+      setStartingRide(false);
+    }
+  };
+
+  const handleReturnRide = async () => {
+    if (!requireAuth()) return;
+    if (returningRide || activeRideIds.length === 0) return;
+    setReturningRide(true);
+    try {
+      const rideId = activeRideIds[activeRideIds.length - 1];
+      await FetchingService.post("/api/v1/rides/return", { rideId });
+      setActiveRideIds((prev) => prev.slice(0, -1));
+      setLastMessage("Bike successfully returned");
+    } catch (err) {
+      console.error("Failed to return bike", err);
+      alert("Unable to return bike right now. Please try again in a moment.");
+    } finally {
+      setReturningRide(false);
+    }
+  };
+
   return (
     <div className="db-page">
       {/* Top bar */}
@@ -29,21 +116,60 @@ export default function DowntownBikeLanding() {
             <a href="#faq">FAQ</a>
           </nav>
           <div className="db-actions">
-            <button className="db-btn ghost" onClick={() => navigate("/login")}>Log in</button>
-            <button className="db-btn primary" onClick={() => navigate("/coming-soon")}>Get the app</button>
+            <button className="db-btn primary" onClick={() => navigate("/login")}>Log in</button>
+            <button className="db-btn" onClick={() => navigate("/coming-soon")}>Get the app</button>
           </div>
         </div>
       </header>
 
       {/* Hero */}
       <section className="db-hero">
-        <div className="db-container db-grid-2">
+        <div className="db-container">
           <div>
             <h1>Ride the downtown core, <span className="accent">your way</span>.</h1>
             <p className="lede">
               Unlock a bike in seconds, beat the traffic, and park steps from your destination.
               Pay per ride or save with flexible passes.
             </p>
+            <div className="db-auth-panel">
+              {authLoading ? (
+                <p className="db-muted">Checking your account status…</p>
+              ) : isAuthenticated ? (
+                <>
+                  <p className="db-muted">
+                    Welcome back{user?.username ? `, ${user.username}` : ""}! You currently have
+                    <strong> {activeRideIds.length} </strong>
+                    {activeRideIds.length === 1 ? "bike" : "bikes"} out.
+                  </p>
+                  {lastMessage && <p className="db-note">{lastMessage}</p>}
+                  <div className="db-row" style={{ gap: 12, flexWrap: "wrap" }}>
+                    <button
+                      className="db-btn primary"
+                      onClick={handleStartRide}
+                      disabled={startingRide}
+                      style={{ opacity: startingRide ? 0.7 : 1 }}
+                    >
+                      {startingRide ? "Booking…" : "Book trip"}
+                    </button>
+                    <button
+                      className="db-btn"
+                      onClick={handleReturnRide}
+                      disabled={returningRide || activeRideIds.length === 0}
+                      style={{
+                        opacity: returningRide || activeRideIds.length === 0 ? 0.6 : 1,
+                        cursor: returningRide || activeRideIds.length === 0 ? "not-allowed" : "pointer",
+                      }}
+                    >
+                      {returningRide ? "Processing…" : "Return bike"}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <p className="db-muted">
+                  Log in to start a ride or manage your trips.
+                </p>
+              )}
+            </div>
             <div className="db-row">
               <a href="#pricing" className="db-btn primary">See pricing</a>
               <a href="#how" className="db-btn">How it works</a>
@@ -53,45 +179,6 @@ export default function DowntownBikeLanding() {
               <li><span className="dot" />100+ stations</li>
               <li><span className="dot" />Tap to unlock</li>
             </ul>
-          </div>
-
-          <div>
-            <div className="db-card glow">
-              <div className="db-card-head">
-                <h3>Quicktrip Estimator</h3>
-                <p>Estimate a short ride and pick a plan.</p>
-              </div>
-              <div className="db-card-body">
-                <label className="db-field">
-                  <span>Start</span>
-                  <input placeholder="e.g., Central Station" />
-                </label>
-                <label className="db-field">
-                  <span>Destination</span>
-                  <input placeholder="e.g., Old Port" />
-                </label>
-                <div className="db-grid-2 gap">
-                  <label className="db-field">
-                    <span>Minutes</span>
-                    <input type="number" placeholder="12" />
-                  </label>
-                  <label className="db-field">
-                    <span>Distance (km)</span>
-                    <input type="number" placeholder="3.2" />
-                  </label>
-                </div>
-                <button className="db-btn primary full">Estimate</button>
-
-                <div className="db-suggest">
-                  <div className="db-suggest-top">
-                    <span>Suggested</span>
-                    <span className="tag">best value</span>
-                  </div>
-                  <p className="db-suggest-title">Day Pass • $7.99</p>
-                  <p className="db-muted">Unlimited 30-min rides, 24 hours.</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -116,9 +203,29 @@ export default function DowntownBikeLanding() {
             <span className="db-muted">Taxes may apply • E-bike fees may differ</span>
           </div>
           <div className="db-cards-3">
-            <PriceCard name="Pay-As-You-Go" price="$1.25 / 5 min" bullets={["Best for quick hops","No commitment","Available 24/7"]} cta="Start a ride" />
-            <PriceCard name="Day Pass" price="$7.99 / day" bullets={["Unlimited 30-min rides","Perfect for tourists","Includes classic bikes"]} cta="Buy day pass" featured />
-            <PriceCard name="Monthly" price="$19 / month" bullets={["Commute & save","60-min classic rides","Member rewards"]} cta="Become a member" />
+            <PriceCard
+              name="Pay-As-You-Go"
+              price="$1.25 / 5 min"
+              bullets={["Best for quick hops","No commitment","Available 24/7"]}
+              cta={startingRide ? "Starting..." : "Start a ride"}
+              onAction={handleStartRide}
+              disabled={startingRide}
+            />
+            <PriceCard
+              name="Day Pass"
+              price="$7.99 / day"
+              bullets={["Unlimited 30-min rides","Perfect for tourists","Includes classic bikes"]}
+              cta="Buy day pass"
+              featured
+              onAction={() => navigate("/coming-soon")}
+            />
+            <PriceCard
+              name="Monthly"
+              price="$19 / month"
+              bullets={["Commute & save","60-min classic rides","Member rewards"]}
+              cta="Become a member"
+              onAction={() => navigate("/coming-soon")}
+            />
           </div>
           <p className="db-muted small">* Example prices for demo purposes. Replace with your real fares and terms.</p>
         </div>
@@ -243,7 +350,7 @@ function StepCard({ step, title, desc }) {
   );
 }
 
-function PriceCard({ name, price, bullets, cta, featured }) {
+function PriceCard({ name, price, bullets, cta, featured, onAction = () => {}, disabled = false }) {
   return (
     <div className={`db-card ${featured ? "featured" : ""}`}>
       {featured && <div className="db-badge">Popular</div>}
@@ -252,7 +359,14 @@ function PriceCard({ name, price, bullets, cta, featured }) {
       <ul className="db-list">
         {bullets.map((b, i) => <li key={i}><span className="dot" />{b}</li>)}
       </ul>
-      <button className="db-btn primary full">{cta}</button>
+      <button
+        className="db-btn primary full"
+        onClick={onAction}
+        disabled={disabled}
+        style={{ opacity: disabled ? 0.7 : 1, cursor: disabled ? "not-allowed" : "pointer" }}
+      >
+        {cta}
+      </button>
     </div>
   );
 }
