@@ -26,4 +26,14 @@ public class UserService implements IUserService {
         }
         return null;
     }
+
+    @Override
+    public User updateUser(User user) {
+        try {
+            return userRepository.save(user);
+        } catch (Exception e) {
+            log.error("Error saving user: {}", e.getMessage());
+        }
+        return null;
+    }
 }

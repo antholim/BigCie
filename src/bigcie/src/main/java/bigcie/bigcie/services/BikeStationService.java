@@ -1,19 +1,18 @@
 package bigcie.bigcie.services;
 
 import bigcie.bigcie.dtos.BikeRequest.BikeStationRequest;
-import bigcie.bigcie.entities.BikeStation;
+import bigcie.bigcie.entities.*;
 import bigcie.bigcie.entities.enums.BikeStationStatus;
 import bigcie.bigcie.repositories.BikeRepository;
 import bigcie.bigcie.repositories.BikeStationRepository;
 import bigcie.bigcie.services.interfaces.IBikeStationService;
 import bigcie.bigcie.services.interfaces.INotificationService;
 
+import bigcie.bigcie.services.interfaces.IUserService;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 import bigcie.bigcie.entities.enums.BikeStatus;
-import bigcie.bigcie.entities.Bike;
-import bigcie.bigcie.entities.Reservation;
 import bigcie.bigcie.repositories.ReservationRepository;
 import java.time.LocalDateTime;
 
@@ -24,9 +23,11 @@ public class BikeStationService implements IBikeStationService {
     private final BikeStationRepository bikeStationRepository;
     private final ReservationRepository reservationRepository;
     private final INotificationService notificationService;
+    private final IUserService userService;
 
     public BikeStationService(BikeStationRepository bikeStationRepository, ReservationRepository reservationRepository,
-            BikeRepository bikeRepository, INotificationService notificationService) {
+            BikeRepository bikeRepository, INotificationService notificationService, IUserService userService) {
+        this.userService = userService;
         this.bikeStationRepository = bikeStationRepository;
         this.reservationRepository = reservationRepository;
         this.bikeRepository = bikeRepository;
@@ -173,15 +174,19 @@ public class BikeStationService implements IBikeStationService {
         bike.setStatus(BikeStatus.ON_TRIP);
 
 
+        User user = userService.getUserByUUID(userId);
+        if (user instanceof Rider rider) {
+            rider.getCurrentBikes().add(bike.getId());
+            userService.updateUser(rider);
+        }
+
         // check if empty
         if (station.getNumberOfBikesDocked() == 0) {
             notificationService.notifyBikeStationStatusChange(station.getId(), BikeStationStatus.EMPTY);
             station.setStatus(BikeStationStatus.EMPTY);
             bikeStationRepository.save(station);
         }
-
         return bike.getId();
-
     }
 
     @Override

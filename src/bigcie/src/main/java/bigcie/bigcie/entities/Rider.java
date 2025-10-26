@@ -22,6 +22,7 @@ public class Rider extends User {
 
     private List<PaymentInfo> paymentInfos = new ArrayList<>();
     private String address;
+    private List<UUID> currentBikes = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
