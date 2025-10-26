@@ -23,4 +23,5 @@ public interface IBikeService {
     Bike updateBikeStatus(UUID id, BikeStatus status);
 
     List<Bike> bulkCreateBikes(List<BikeRequest> bikes);
+    List<UUID> getBikeIdFromRiderId(UUID riderId);
 }

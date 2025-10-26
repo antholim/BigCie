@@ -7,6 +7,7 @@ import bigcie.bigcie.entities.enums.UserType;
 import bigcie.bigcie.services.interfaces.IAuthorizationService;
 import bigcie.bigcie.services.interfaces.IBikeService;
 import bigcie.bigcie.services.interfaces.ICookieService;
+import bigcie.bigcie.services.interfaces.ITokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,12 +25,14 @@ public class BikeController {
     private final IBikeService bikeService;
     private final ICookieService cookieService;
     private final IAuthorizationService authorizationService;
+    private final ITokenService tokenService;
 
     public BikeController(IBikeService bikeService, ICookieService cookieService,
-            IAuthorizationService authorizationService) {
+                          IAuthorizationService authorizationService, ITokenService tokenService) {
         this.authorizationService = authorizationService;
         this.cookieService = cookieService;
         this.bikeService = bikeService;
+        this.tokenService = tokenService;
     }
 
     @Operation(summary = "Create a new bike")
@@ -96,5 +99,15 @@ public class BikeController {
     public ResponseEntity<Bike> updateBikeStatus(@PathVariable UUID id, @RequestParam BikeStatus status) {
         Bike updatedBike = bikeService.updateBikeStatus(id, status);
         return ResponseEntity.ok(updatedBike);
+    }
+
+
+    @Operation(summary = "Check my bikes")
+    @GetMapping("/me")
+    public ResponseEntity<List<UUID>> getMyBike(HttpServletRequest request) {
+        String token = cookieService.getTokenFromCookie(request, "authToken");
+        UUID userId = tokenService.extractUserId(token);
+        List<UUID> bikes = bikeService.getBikeIdFromRiderId(userId);
+        return ResponseEntity.ok(bikes);
     }
 }

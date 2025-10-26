@@ -4,10 +4,13 @@ import bigcie.bigcie.dtos.BikeRequest.BikeRequest;
 import bigcie.bigcie.dtos.events.TripEventDto;
 import bigcie.bigcie.entities.Bike;
 import bigcie.bigcie.entities.BikeStation;
+import bigcie.bigcie.entities.Rider;
+import bigcie.bigcie.entities.User;
 import bigcie.bigcie.entities.enums.BikeStatus;
 import bigcie.bigcie.repositories.BikeRepository;
 import bigcie.bigcie.services.interfaces.IBikeService;
 import bigcie.bigcie.services.interfaces.INotificationService;
+import bigcie.bigcie.services.interfaces.IUserService;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -20,14 +23,16 @@ public class BikeService implements IBikeService {
     private final BikeRepository bikeRepository;
     private final BikeStationService bikeStationService;
     private final INotificationService notificationService;
+    private final IUserService userService;
 
     public BikeService(
             BikeRepository bikeRepository,
             BikeStationService bikeStationService,
-            INotificationService notificationService) {
+            INotificationService notificationService, IUserService userService) {
         this.bikeStationService = bikeStationService;
         this.bikeRepository = bikeRepository;
         this.notificationService = notificationService;
+        this.userService = userService;
     }
 
     @Override
@@ -100,6 +105,16 @@ public class BikeService implements IBikeService {
         return bikes.stream()
                 .map(this::createBike)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UUID> getBikeIdFromRiderId(UUID riderId) {
+        User user = userService.getUserByUUID(riderId);
+        if (user instanceof Rider rider) {
+            rider = (Rider) user;
+            return rider.getCurrentBikes();
+        }
+        return List.of();
     }
 
     private void emitTripEventIfNeeded(Bike bike, BikeStatus previousStatus) {
