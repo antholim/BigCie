@@ -4,12 +4,17 @@ import FetchingService from "../../services/FetchingService";
 import { useAuth } from "../../contexts/AuthContext";
 import MapPreview from "../../components/MapPreview";
 import "../../components/home.css";
+import BikeBox from "./components/BikeBox";
+import { truncateId, formatDateTime } from "../../utils/utils";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { user, isAuthenticated, loading: authLoading, logout } = useAuth();
   const [reservations, setReservations] = useState([]);
   const [reservationsLoading, setReservationsLoading] = useState(false);
+  const [bikes, setBikes] = useState([]);
+  const [bikesLoading, setBikesLoading] = useState(false);
+  const [bikesError, setBikesError] = useState("");
   const [reservationsError, setReservationsError] = useState("");
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -45,9 +50,28 @@ export default function ProfilePage() {
     }
   }, [isAuthenticated, user]);
 
-  useEffect(() => {
-    loadReservations();
-  }, [loadReservations]);
+
+  const loadBikes = useCallback(async () => {
+    if (!isAuthenticated || !user) return;
+    const identifier = user.id ?? user.userId;
+    if (!identifier) return;
+    setBikesLoading(true);
+    setBikesError("");
+    console.log("Loading bikes for user:", identifier);
+    try {
+      const response = await FetchingService.get("/api/v1/bikes/me");
+      const data = Array.isArray(response?.data) ? response.data : [];
+      setBikes(data);
+      console.log("Bikes data:", data);
+    } catch (err) {
+      setBikesError(
+        err.response?.data?.message || err.message || "Unable to load bikes right now."
+      );
+      console.log(err.response?.data?.message)
+    } finally {
+      setBikesLoading(false);
+    }
+  }, [isAuthenticated, user]);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -82,19 +106,10 @@ export default function ProfilePage() {
     }
   };
 
-  const formatDateTime = (value) => {
-    if (!value) return "N/A";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleString();
-  };
-
-  const truncateId = (value) => {
-    if (!value) return "N/A";
-    const str = String(value);
-    return `${str.slice(0, 8)}...`;
-  };
-
+  useEffect(() => {
+    loadReservations();
+    loadBikes();
+  }, [loadReservations, loadBikes]);
   const hasReservations = reservations.length > 0;
 
   if (authLoading) {
@@ -189,7 +204,7 @@ export default function ProfilePage() {
                   {reservations.map((reservation) => {
                     const reservationId = reservation.id ?? reservation._id;
                     const isUnreserving = unreservingIds.has(reservationId);
-                    
+
                     return (
                       <div
                         key={reservationId}
@@ -262,8 +277,11 @@ export default function ProfilePage() {
                 </div>
               )}
             </div>
-          </div>
 
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <BikeBox bikeIdList={bikes} />
+          </div>
           <div className="db-card" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div className="db-flex-between" style={{ alignItems: "center" }}>
               <div>
