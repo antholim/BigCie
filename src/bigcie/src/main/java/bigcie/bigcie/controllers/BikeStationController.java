@@ -145,9 +145,8 @@ public class BikeStationController {
             @PathVariable UUID stationId,
             @RequestBody DockBikeRequest dockBikeRequest,
             HttpServletRequest request) {
-        if (!authorizationService.hasRole(request, UserType.OPERATOR)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+        String token = cookieService.getTokenFromCookie(request, "authToken");
+        UUID userId = tokenService.extractUserId(token);
 
         // Implement checks for docking here
         if (!bikeStationService.hasAvailableDocks(stationId)) {
@@ -155,7 +154,7 @@ public class BikeStationController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
         }
 
-        bikeStationService.dockBike(stationId, dockBikeRequest.getBikeId());
+        bikeStationService.dockBike(stationId, dockBikeRequest.getBikeId(), userId);
         return ResponseEntity.ok(null);
     }
 

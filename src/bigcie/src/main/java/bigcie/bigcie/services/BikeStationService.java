@@ -94,7 +94,7 @@ public class BikeStationService implements IBikeStationService {
     }
 
     @Override
-    public void dockBike(UUID stationId, UUID bikeId) {
+    public void dockBike(UUID stationId, UUID bikeId, UUID userId) {
 
         // To dock a bike, the bike needs to be of status "ON_TRIP"
         // Check if station is not full
@@ -126,6 +126,12 @@ public class BikeStationService implements IBikeStationService {
         if (station.getNumberOfBikesDocked() == station.getCapacity()) {
             notificationService.notifyBikeStationStatusChange(station.getId(), BikeStationStatus.FULL);
             station.setStatus(BikeStationStatus.FULL);
+        }
+
+        User user = userService.getUserByUUID(userId);
+        if (user instanceof Rider rider) {
+            rider.getCurrentBikes().remove(bike.getId());
+            userService.updateUser(rider);
         }
 
         bikeStationRepository.save(station);

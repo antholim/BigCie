@@ -23,7 +23,7 @@ public interface IBikeStationService {
 
     BikeStation updateStationStatus(UUID id, BikeStationStatus status);
 
-    void dockBike(UUID stationId, UUID bikeId);
+    void dockBike(UUID stationId, UUID bikeId, UUID userId);
 
     UUID undockBike(UUID stationId, UUID userId);
 
