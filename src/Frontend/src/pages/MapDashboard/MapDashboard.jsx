@@ -6,11 +6,12 @@ import styles from "./styles/MapDashboard.styles";
 import FetchingService from "../../services/FetchingService";
 import NotificationService from "../../services/NotificationService";
 import { useAuth } from "../../contexts/AuthContext";
+import BikeBox from "../Profile/components/BikeBox";
 
 
 export default function MapDashboard() {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, isAuthenticated, loading: authLoading, logout } = useAuth();
     const mapRef = useRef(null);
     const leafletRef = useRef(null);
     const markerRef = useRef(null);
@@ -26,6 +27,7 @@ export default function MapDashboard() {
     const [stationMenuOpen, setStationMenuOpen] = useState(false);
     const [tripEvents, setTripEvents] = useState([]);
     const [updatingStatus, setUpdatingStatus] = useState(false);
+    const [bikes, setBikes] = useState([]);
 
     // Check if user is an operator
     const isOperator = user?.userType === 'OPERATOR' || user?.type === 'OPERATOR';
@@ -239,6 +241,36 @@ export default function MapDashboard() {
         }
     };
 
+        const performStationActionDock = async (action = "dock") => {
+        if (!selectedStation) return;
+        try {
+            // Assumes backend supports POST /api/v1/stations/:id/{action}
+            const path = `/api/v1/stations/${selectedStation.id}/${action}`;
+            console.log(bikes[0])
+            const resp = await FetchingService.post(path, {
+            bikeId: bikes[0] // ensure this is a UUID string
+            });
+            // Simple feedback; you can wire this into context/state/UI
+            alert(`${action} successful`);
+            // optionally refresh stations
+            try {
+                const r = await FetchingService.get('/api/v1/stations');
+                const refreshedData = r.data || [];
+                // Filter out OUT_OF_SERVICE stations for regular users
+                const filteredData = isOperator 
+                    ? refreshedData 
+                    : refreshedData.filter(station => station.status !== 'OUT_OF_SERVICE');
+                setStations(filteredData);
+            } catch (e) {
+                // ignore refresh error
+            }
+            closeStationMenu();
+        } catch (err) {
+            console.error(`${action} failed`, err);
+            alert(`${action} failed: ${err?.message ?? err}`);
+        }
+    };
+
     const updateStationStatus = async (newStatus) => {
         if (!selectedStation || !isOperator) return;
         setUpdatingStatus(true);
@@ -309,6 +341,30 @@ export default function MapDashboard() {
             alert("Search failed");
         }
     };
+
+    const loadBikes = useCallback(async () => {
+    if (!isAuthenticated || !user) return;
+    const identifier = user.id ?? user.userId;
+    if (!identifier) return;
+    // setBikesLoading(true);
+    // setBikesError("");
+    console.log("Loading bikes for user:", identifier);
+    try {
+      const response = await FetchingService.get("/api/v1/bikes/me");
+      const data = Array.isArray(response?.data) ? response.data : [];
+      setBikes(data);
+      console.log("Bikes data:", data);
+    } catch (err) {
+    //   setBikesError(
+    //     err.response?.data?.message || err.message || "Unable to load bikes right now."
+    //   );
+      console.log(err.response?.data?.message)
+    }
+  }, [isAuthenticated, user]);
+
+  useEffect(()=> {
+    loadBikes();
+  }, [loadBikes]);
 
     return (
         <div style={styles.root}>
@@ -455,7 +511,7 @@ export default function MapDashboard() {
                         <div style={{ marginTop: 16, display: 'flex', gap: 12, alignItems: 'center' }}>
                             <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationAction('undock')}>Rent</button>
                             <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationAction('reserve')}>Reserve</button>
-                            <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationAction('dock')}>Dock</button>
+                            <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationActionDock('dock')}>Dock</button>
                         </div>
 
                         {/* Operator-only station status controls */}
@@ -495,6 +551,9 @@ export default function MapDashboard() {
                     </div>
                 </div>
             )}
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <BikeBox bikeIdList={bikes} />
+          </div>
         </div>
     );
 }
