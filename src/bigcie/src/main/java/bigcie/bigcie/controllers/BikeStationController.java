@@ -147,7 +147,7 @@ public class BikeStationController {
             HttpServletRequest request) {
         String token = cookieService.getTokenFromCookie(request, "authToken");
         UUID userId = tokenService.extractUserId(token);
-
+        System.out.println(userId.toString());
         // Implement checks for docking here
         if (!bikeStationService.hasAvailableDocks(stationId)) {
             ErrorResponse err = new ErrorResponse("No available docks at this station");
