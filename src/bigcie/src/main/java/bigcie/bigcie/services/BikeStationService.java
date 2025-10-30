@@ -127,9 +127,12 @@ public class BikeStationService implements IBikeStationService {
         bike.setStatus(BikeStatus.AVAILABLE);
         bikeRepository.save(bike);
 
-        if (station.getNumberOfBikesDocked() == station.getCapacity()) {
+        if (station.getStatus() == BikeStationStatus.OCCUPIED && station.getNumberOfBikesDocked() == station.getCapacity()) {
             notificationService.notifyBikeStationStatusChange(station.getId(), BikeStationStatus.FULL);
             station.setStatus(BikeStationStatus.FULL);
+        } else if (station.getStatus() == BikeStationStatus.EMPTY) {
+            notificationService.notifyBikeStationStatusChange(station.getId(), BikeStationStatus.OCCUPIED);
+            station.setStatus(BikeStationStatus.OCCUPIED);
         }
 
         User user = userService.getUserByUUID(userId);
