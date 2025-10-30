@@ -169,7 +169,7 @@ public class BikeStationService implements IBikeStationService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("No available bikes found"));
         notificationService.notifyBikeStatusChange(bike.getId(), BikeStatus.AVAILABLE);
-        bike.setStatus(BikeStatus.AVAILABLE);
+//        bike.setStatus(BikeStatus.AVAILABLE);
 
         // make reservation null if any
         station.getBikes().remove(bike);
@@ -192,6 +192,7 @@ public class BikeStationService implements IBikeStationService {
             station.setStatus(BikeStationStatus.EMPTY);
             bikeStationRepository.save(station);
         }
+        bikeRepository.save(bike);
         return bike.getId();
     }
 
