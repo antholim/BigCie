@@ -9,13 +9,18 @@ import bigcie.bigcie.services.interfaces.IBikeStationService;
 import bigcie.bigcie.services.interfaces.INotificationService;
 
 import bigcie.bigcie.services.interfaces.IUserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import bigcie.bigcie.entities.enums.BikeStatus;
 import bigcie.bigcie.repositories.ReservationRepository;
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
+@Slf4j
 @Service
 public class BikeStationService implements IBikeStationService {
 
@@ -26,7 +31,7 @@ public class BikeStationService implements IBikeStationService {
     private final IUserService userService;
 
     public BikeStationService(BikeStationRepository bikeStationRepository, ReservationRepository reservationRepository,
-            BikeRepository bikeRepository, INotificationService notificationService, IUserService userService) {
+                              BikeRepository bikeRepository, INotificationService notificationService, IUserService userService) {
         this.userService = userService;
         this.bikeStationRepository = bikeStationRepository;
         this.reservationRepository = reservationRepository;
@@ -45,6 +50,7 @@ public class BikeStationService implements IBikeStationService {
         bikeStationEntity.setAddress(station.getAddress());
         bikeStationEntity.setCapacity(station.getCapacity());
         bikeStationEntity.setReservationHoldTimeMinutes(station.getReservationHoldTimeMinutes());
+        bikeStationEntity.setNumberOfBikesDocked(0);
         return bikeStationRepository.save(bikeStationEntity);
     }
 
@@ -74,7 +80,8 @@ public class BikeStationService implements IBikeStationService {
         existingStation.setAddress(station.getAddress());
         existingStation.setCapacity(station.getCapacity());
         existingStation.setNumberOfBikesDocked(station.getNumberOfBikesDocked());
-        existingStation.setBikes(station.getBikes());
+        // use bikesIds (UUID list) instead of embedded Bike objects
+        existingStation.setBikesIds(station.getBikesIds());
         existingStation.setReservationHoldTimeMinutes(station.getReservationHoldTimeMinutes());
         return bikeStationRepository.save(existingStation);
     }
@@ -96,9 +103,6 @@ public class BikeStationService implements IBikeStationService {
     @Override
     public void dockBike(UUID stationId, UUID bikeId, UUID userId) {
 
-        // To dock a bike, the bike needs to be of status "ON_TRIP"
-        // Check if station is not full
-        // Check if dock is not out of service
         BikeStation station = getStationById(stationId);
 
         if (station.getStatus() == BikeStationStatus.OUT_OF_SERVICE) {
@@ -109,20 +113,20 @@ public class BikeStationService implements IBikeStationService {
             throw new IllegalStateException("No available docks");
         }
 
-        // Dock the bike
+        log.info("Docking bike {} to station {}", bikeId, stationId);
+        System.out.println("Docking bike " + bikeId.toString() + " to station " + stationId.toString());
         Bike bike = bikeRepository.findById(bikeId)
                 .orElseThrow(() -> new RuntimeException("Bike not found"));
         if (bike.getStatus() != BikeStatus.ON_TRIP) {
             throw new IllegalStateException("Bike is not on trip");
         }
-
-        station.getBikes().add(bike);
+        // store only the bike id on the station
+        station.getBikesIds().add(bike.getId());
         station.setNumberOfBikesDocked(station.getNumberOfBikesDocked() + 1);
         notificationService.notifyBikeStatusChange(bike.getId(), BikeStatus.AVAILABLE);
         bike.setStatus(BikeStatus.AVAILABLE);
         bikeRepository.save(bike);
 
-        // check if the bike is full
         if (station.getNumberOfBikesDocked() == station.getCapacity()) {
             notificationService.notifyBikeStationStatusChange(station.getId(), BikeStationStatus.FULL);
             station.setStatus(BikeStationStatus.FULL);
@@ -140,14 +144,13 @@ public class BikeStationService implements IBikeStationService {
 
     @Override
     public UUID undockBike(UUID stationId, UUID userId) {
-        // check if station is out of service
         BikeStation station = getStationById(stationId);
         if (station.getStatus() == BikeStationStatus.OUT_OF_SERVICE) {
             throw new IllegalStateException("Station is out of service");
         }
         List<Reservation> list = reservationRepository.findByUserId(userId);
         for (Reservation reservation : list) {
-            if (reservation.getBikeStationId() == stationId) {
+            if (reservation.getBikeStationId() != null && reservation.getBikeStationId().equals(stationId)) {
                 Bike bike = bikeRepository.findBikeById(reservation.getBikeId());
                 notificationService.notifyReservationChange(reservation.getId(), "CANCELLED");
                 reservationRepository.delete(reservation);
@@ -155,30 +158,29 @@ public class BikeStationService implements IBikeStationService {
         }
         // To undock a bike, the bike needs to be of status "AVAILABLE"
         // check if all bike are reserved
-        if (station.getBikes().stream().allMatch(b -> b.getStatus() == BikeStatus.RESERVED)) {
+        List<Bike> stationBikes = getStationBikes(stationId);
+        if (stationBikes.isEmpty()) {
+            throw new IllegalStateException("No bikes at station");
+        }
+        if (stationBikes.stream().allMatch(b -> b.getStatus() == BikeStatus.RESERVED)) {
             throw new IllegalStateException("All bikes are reserved");
         }
         if (!hasAvailableBikes(stationId)) {
             throw new IllegalStateException("No available bikes to undock");
         }
 
-        // check if reserved bike exists and remove reservation
-        // Find the first available bike
-        Bike bike = station.getBikes().stream()
+        Bike bike = stationBikes.stream()
                 .filter(b -> b.getStatus() == BikeStatus.AVAILABLE)
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("No available bikes found"));
-        notificationService.notifyBikeStatusChange(bike.getId(), BikeStatus.AVAILABLE);
-//        bike.setStatus(BikeStatus.AVAILABLE);
 
-        // make reservation null if any
-        station.getBikes().remove(bike);
+        // remove bike id from station
+        station.getBikesIds().remove(bike.getId());
         station.setNumberOfBikesDocked(station.getNumberOfBikesDocked() - 1);
         bikeStationRepository.save(station);
 
         notificationService.notifyBikeStatusChange(bike.getId(), BikeStatus.ON_TRIP);
         bike.setStatus(BikeStatus.ON_TRIP);
-
 
         User user = userService.getUserByUUID(userId);
         if (user instanceof Rider rider) {
@@ -186,7 +188,6 @@ public class BikeStationService implements IBikeStationService {
             userService.updateUser(rider);
         }
 
-        // check if empty
         if (station.getNumberOfBikesDocked() == 0) {
             notificationService.notifyBikeStationStatusChange(station.getId(), BikeStationStatus.EMPTY);
             station.setStatus(BikeStationStatus.EMPTY);
@@ -205,9 +206,8 @@ public class BikeStationService implements IBikeStationService {
     // Different from isempty cuz bikes can be docked but reserved
     @Override
     public boolean hasAvailableBikes(UUID stationId) {
-        BikeStation station = getStationById(stationId);
-        // Check for bikes that are not reserved
-        for (var bike : station.getBikes()) {
+        List<Bike> stationBikes = getStationBikes(stationId);
+        for (var bike : stationBikes) {
             if (!bike.getStatus().equals(BikeStatus.RESERVED)) {
                 return true;
             }
@@ -228,7 +228,7 @@ public class BikeStationService implements IBikeStationService {
             throw new IllegalStateException("No available bikes to hold");
         }
         // Find the first available bike
-        Bike bike = station.getBikes().stream()
+        Bike bike = getStationBikes(stationId).stream()
                 .filter(b -> b.getStatus() == BikeStatus.AVAILABLE)
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("No available bikes found"));
@@ -245,44 +245,14 @@ public class BikeStationService implements IBikeStationService {
         bikeRepository.save(bike);
 
     }
-
-    // @Override
-    // public BikeStation dockBike(UUID stationId, UUID bikeId) {
-    // BikeStation station = getStationById(stationId);
-    //
-    // // R-BMS-05: Block if out of service
-    // if (station.getStatus() == BikeStationStatus.OUT_OF_SERVICE) {
-    // throw new IllegalStateException("Station is out of service");
-    // }
-    //
-    // // R-BMS-02: Prevent docking to a full station
-    // if (station.getBikes().size() >= station.getCapacity()) {
-    // emitDockEvent(station, "FULL");
-    // throw new IllegalStateException("Station is full");
-    // }
-    //
-    // // R-BMS-06: Only allow return if bike is reserved (example logic)
-    // Bike bike = bikeRepository.findById(bikeId)
-    // .orElseThrow(() -> new RuntimeException("Bike not found"));
-    // if (!bike.isReserved()) {
-    // throw new IllegalStateException("Bike is not reserved for return");
-    // }
-    //
-    // // Dock the bike
-    // station.getBikes().add(bike);
-    // station.setNumberOfBikesDocked(station.getBikes().size());
-    //
-    // // R-BMS-04: Record state transition with event ID
-    // String eventId = UUID.randomUUID().toString();
-    // recordStateTransition(station, bike, "DOCKED", eventId);
-    //
-    // // R-BMS-06/07: Emit events
-    // emitBikeStatusEvent(bike, "RETURNED", eventId);
-    // if (station.getBikes().size() == station.getCapacity()) {
-    // emitDockEvent(station, "FULL");
-    // }
-    //
-    // return bikeStationRepository.save(station);
-    // }
+    @Override
+    public List<Bike> getStationBikes(UUID stationId) {
+        BikeStation station = bikeStationRepository.findById(stationId)
+                .orElseThrow(() -> new NoSuchElementException("station not found"));
+        List<UUID> bikeIds = station.getBikesIds();
+        List<Bike> bikes = StreamSupport.stream(bikeRepository.findAllById(bikeIds).spliterator(), false)
+                .collect(Collectors.toList());
+        return bikes;
+    }
 
 }

@@ -1,6 +1,7 @@
 package bigcie.bigcie.services.interfaces;
 
 import bigcie.bigcie.dtos.BikeRequest.BikeStationRequest;
+import bigcie.bigcie.entities.Bike;
 import bigcie.bigcie.entities.BikeStation;
 import bigcie.bigcie.entities.enums.BikeStationStatus;
 import bigcie.bigcie.entities.Reservation;
@@ -34,4 +35,6 @@ public interface IBikeStationService {
     boolean isEmpty(UUID stationId);
 
     void holdBike(UUID stationId);
+
+    List<Bike> getStationBikes(UUID stationId);
 }

@@ -25,6 +25,6 @@ public class BikeStation {
     private String address;
     private int capacity;
     private int numberOfBikesDocked;
-    private List<Bike> bikes = new ArrayList<>();
+    private List<UUID> bikesIds = new ArrayList<>();
     private int reservationHoldTimeMinutes; // in minutes
 }

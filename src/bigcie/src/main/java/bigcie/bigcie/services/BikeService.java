@@ -14,6 +14,7 @@ import bigcie.bigcie.services.interfaces.IUserService;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -35,25 +36,44 @@ public class BikeService implements IBikeService {
         this.userService = userService;
     }
 
+    // java
     @Override
     public Bike createBike(BikeRequest bike) {
         BikeStation station = bikeStationService.getStationById(bike.getBikeStationId());
+        UUID bikeId = UUID.randomUUID();
+
         Bike bikeEntity = new Bike();
-        bikeEntity.setId(UUID.randomUUID());
+        bikeEntity.setId(bikeId);
         bikeEntity.setBikeType(bike.getBikeType());
         bikeEntity.setStatus(bike.getStatus());
         bikeEntity.setReservationExpiry(bike.getReservationExpiry());
 
         Bike savedBike = bikeRepository.save(bikeEntity);
-        List<Bike> bikes = station.getBikes();
-        bikes.add(savedBike);
-        int numberOfBikesDocked = bikes.stream().filter(b -> b.getStatus() == BikeStatus.AVAILABLE ||
-                b.getStatus() == BikeStatus.MAINTENANCE ||
-                b.getStatus() == BikeStatus.RESERVED).toList().size();
+
+        // build a deduplicated list of ids including the newly created bike
+        List<UUID> bikesIds = station.getBikesIds();
+        if (!bikesIds.contains(bikeId)) {
+            bikesIds.add(bikeId);
+        }
+
+        // load all bikes for those ids from repository so the count reflects repository state (handles non-zero existing counts)
+        List<Bike> bikesIterable = bikeRepository.findAllById(bikesIds);
+        int numberOfBikesDocked = 0;
+        for (Bike b : bikesIterable) {
+            if (b.getStatus() == BikeStatus.AVAILABLE ||
+                    b.getStatus() == BikeStatus.MAINTENANCE ||
+                    b.getStatus() == BikeStatus.RESERVED) {
+                numberOfBikesDocked++;
+            }
+        }
+
+        station.setBikesIds(bikesIds);
         station.setNumberOfBikesDocked(numberOfBikesDocked);
         bikeStationService.updateStation(station.getId(), station);
+
         return savedBike;
     }
+
 
     @Override
     public Bike getBikeById(UUID id) {

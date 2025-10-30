@@ -44,7 +44,7 @@ public class ReservationService implements IReservationService {
         }
 
         // Find an available bike at the station
-        Bike availableBike = station.getBikes().stream()
+        Bike availableBike = bikeStationService.getStationBikes(bikeStationId).stream()
                 .filter(bike -> bike.getStatus() == BikeStatus.AVAILABLE)
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("No available bikes at station: " + bikeStationId));
