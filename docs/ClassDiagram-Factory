@@ -1,0 +1,10 @@
+@startuml Class Diagram - Factory
+title Class Diagram - Factory
+skinparam style strictuml
+skinparam DefaultFontName Arial
+skinparam DefaultFontSize 16
+skinparam DefaultFontStyle bold
+skinparam ArrowThickness 2.2
+
+
+@enduml
