@@ -1,5 +1,6 @@
 package bigcie.bigcie.entities;
 
+import bigcie.bigcie.entities.enums.ReservationStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,5 +17,6 @@ public class Reservation {
     private UUID bikeId;
     private LocalDateTime startTime;
     private LocalDateTime expiry;
+    private ReservationStatus status = ReservationStatus.ACTIVE;
 
 }

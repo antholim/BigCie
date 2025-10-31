@@ -3,6 +3,7 @@ package bigcie.bigcie.services;
 import bigcie.bigcie.dtos.BikeRequest.BikeStationRequest;
 import bigcie.bigcie.entities.*;
 import bigcie.bigcie.entities.enums.BikeStationStatus;
+import bigcie.bigcie.entities.enums.ReservationStatus;
 import bigcie.bigcie.repositories.BikeRepository;
 import bigcie.bigcie.repositories.BikeStationRepository;
 import bigcie.bigcie.services.interfaces.IBikeStationService;
@@ -238,7 +239,7 @@ public class BikeStationService implements IBikeStationService {
 
         // Create a reservation
         Reservation reservation = new Reservation(UUID.randomUUID(), UUID.randomUUID(), stationId, bike.getId(),
-                LocalDateTime.now(), LocalDateTime.now().plusMinutes(station.getReservationHoldTimeMinutes()));
+                LocalDateTime.now(), LocalDateTime.now().plusMinutes(station.getReservationHoldTimeMinutes()), ReservationStatus.ACTIVE);
         reservationRepository.save(reservation);
 
         // Update bike status to RESERVED
