@@ -157,7 +157,8 @@ public class BikeStationService implements IBikeStationService {
             if (reservation.getBikeStationId() != null && reservation.getBikeStationId().equals(stationId)) {
                 Bike bike = bikeRepository.findBikeById(reservation.getBikeId());
                 notificationService.notifyReservationChange(reservation.getId(), "CANCELLED");
-                reservationRepository.delete(reservation);
+                reservation.setStatus(ReservationStatus.COMPLETED);
+                reservationRepository.save(reservation);
             }
         }
         // To undock a bike, the bike needs to be of status "AVAILABLE"

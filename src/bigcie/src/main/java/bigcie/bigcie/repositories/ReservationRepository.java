@@ -1,6 +1,7 @@
 package bigcie.bigcie.repositories;
 
 import bigcie.bigcie.entities.Reservation;
+import bigcie.bigcie.entities.enums.ReservationStatus;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -40,6 +41,5 @@ public interface ReservationRepository extends MongoRepository<Reservation, UUID
      */
     List<Reservation> findByBikeStationId(UUID bikeStationId);
 
-    @Query
-    List<Reservation> findByExpiryBefore(LocalDateTime time);
+    List<Reservation> findByExpiryBefore(LocalDateTime time, ReservationStatus status);
 }
