@@ -1,7 +1,8 @@
 package bigcie.bigcie.services.interfaces;
 
-import bigcie.bigcie.dtos.PaymentInfoRequest.PaymentInfoRequest;
-import bigcie.bigcie.entities.PaymentInfo;
+import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoRequest.PaymentInfoRequest;
+import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoResponse.PaymentInfoDto;
+
 
 import java.util.List;
 import java.util.UUID;
@@ -10,5 +11,5 @@ public interface IPaymentService {
     void addPaymentMethod(UUID userId, PaymentInfoRequest paymentInfoRequest);
 
     void removePaymentMethod(UUID userId, UUID paymentMethodId);
-    List<PaymentInfo> getPaymentInfo(UUID userId);
+    List<PaymentInfoDto> getPaymentInfo(UUID userId);
 }
