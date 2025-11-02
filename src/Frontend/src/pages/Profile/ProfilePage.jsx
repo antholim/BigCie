@@ -20,6 +20,18 @@ export default function ProfilePage() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [unreservingIds, setUnreservingIds] = useState(new Set());
 
+  // Payment form state
+  const [paymentInfos, setPaymentInfos] = useState({
+    creditCardNumber: "",
+    cardExpiry: "",
+    cardHolderName: "",
+    cardType: "",
+    cvv: "",
+  });
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState("");
+  const [paymentSuccess, setPaymentSuccess] = useState("");
+
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       navigate("/login", { replace: true });
@@ -103,6 +115,49 @@ export default function ProfilePage() {
         newSet.delete(reservationId);
         return newSet;
       });
+    }
+  };
+
+  // Payment handlers
+  const updatePayment = (field, value) =>
+    setPaymentInfos(prev => ({ ...prev, [field]: value }));
+
+  const handleAddPayment = async (e) => {
+    e?.preventDefault?.();
+    setPaymentError("");
+    setPaymentSuccess("");
+    // Basic validation
+    if (!paymentInfos.creditCardNumber || !paymentInfos.cardExpiry || !paymentInfos.cardHolderName || !paymentInfos.cardType || !paymentInfos.cvv) {
+      setPaymentError("Please complete all payment fields.");
+      return;
+    }
+    setPaymentLoading(true);
+    try {
+      // NOTE: CVV should not be stored in plaintext. Backend should tokenize or encrypt sensitive details.
+      const payload = {
+        creditCardNumber: paymentInfos.creditCardNumber,
+        cardExpiry: paymentInfos.cardExpiry,
+        cardHolderName: paymentInfos.cardHolderName,
+        cardType: paymentInfos.cardType,
+        cvv: paymentInfos.cvv,
+      };
+      await FetchingService.post("/api/v1/payments/add-payment", payload);
+      setPaymentSuccess("Payment method added successfully.");
+      // Clear sensitive fields (especially cvv)
+      setPaymentInfos({
+        creditCardNumber: "",
+        cardExpiry: "",
+        cardHolderName: "",
+        cardType: "",
+        cvv: "",
+      });
+    } catch (err) {
+      console.error("Failed to add payment method:", err);
+      setPaymentError(
+        err.response?.data?.message || err.message || "Failed to add payment method. Please try again."
+      );
+    } finally {
+      setPaymentLoading(false);
     }
   };
 
@@ -273,7 +328,7 @@ export default function ProfilePage() {
                         </dl>
                       </div>
                     );
-                  })}
+                  })}°
                 </div>
               )}
             </div>
@@ -281,6 +336,112 @@ export default function ProfilePage() {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <BikeBox bikeIdList={bikes} />
+
+            {/* AddPayment card */}
+            <div className="db-card" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div className="db-flex-between" style={{ alignItems: "center" }}>
+                <div>
+                  <h2 style={{ marginBottom: "4px" }}>Add payment method</h2>
+                  <p className="db-muted" style={{ margin: 0 }}>
+                    Add a credit card to quickly pay for rentals. Sensitive data should be tokenized by backend.
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handleAddPayment} style={{ display: "grid", gap: "8px" }}>
+                <label style={{ fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>
+                  Card holder name
+                  <input
+                    type="text"
+                    value={paymentInfos.cardHolderName}
+                    onChange={(e) => updatePayment("cardHolderName", e.target.value)}
+                    placeholder="Full name"
+                    style={{ width: "100%", padding: "8px", marginTop: "6px", borderRadius: 6, border: "1px solid #e2e8f0" }}
+                  />
+                </label>
+
+                <label style={{ fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>
+                  Card number
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={paymentInfos.creditCardNumber}
+                    onChange={(e) => updatePayment("creditCardNumber", e.target.value)}
+                    placeholder="4242 4242 4242 4242"
+                    style={{ width: "100%", padding: "8px", marginTop: "6px", borderRadius: 6, border: "1px solid #e2e8f0" }}
+                  />
+                </label>
+
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <label style={{ flex: 1, fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>
+                    Expiry (MM/YY)
+                    <input
+                      type="text"
+                      value={paymentInfos.cardExpiry}
+                      onChange={(e) => updatePayment("cardExpiry", e.target.value)}
+                      placeholder="MM/YY"
+                      style={{ width: "100%", padding: "8px", marginTop: "6px", borderRadius: 6, border: "1px solid #e2e8f0" }}
+                    />
+                  </label>
+
+                  <label style={{ flex: 1, fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>
+                    CVV
+                    <input
+                      type="password"
+                      value={paymentInfos.cvv}
+                      onChange={(e) => updatePayment("cvv", e.target.value)}
+                      placeholder="123"
+                      style={{ width: "100%", padding: "8px", marginTop: "6px", borderRadius: 6, border: "1px solid #e2e8f0" }}
+                    />
+                  </label>
+                </div>
+
+                <label style={{ fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>
+                  Card type
+                  <select
+                    value={paymentInfos.cardType}
+                    onChange={(e) => updatePayment("cardType", e.target.value)}
+                    style={{ width: "100%", padding: "8px", marginTop: "6px", borderRadius: 6, border: "1px solid #e2e8f0" }}
+                  >
+                    <option value="">Select card type</option>
+                    <option value="VISA">VISA</option>
+                    <option value="MASTERCARD">Mastercard</option>
+                    <option value="AMEX">Amex</option>
+                    <option value="DISCOVER">Discover</option>
+                  </select>
+                </label>
+
+                {paymentError && <p style={{ color: "#dc2626", margin: 0 }}>{paymentError}</p>}
+                {paymentSuccess && <p style={{ color: "#16a34a", margin: 0 }}>{paymentSuccess}</p>}
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                  <button
+                    type="button"
+                    className="db-btn"
+                    onClick={() =>
+                      setPaymentInfos({
+                        creditCardNumber: "",
+                        cardExpiry: "",
+                        cardHolderName: "",
+                        cardType: "",
+                        cvv: "",
+                      })
+                    }
+                    disabled={paymentLoading}
+                  >
+                    Clear
+                  </button>
+                  <button
+                    type="submit"
+                    className="db-btn primary"
+                    disabled={paymentLoading}
+                    style={{ minWidth: 120 }}
+                  >
+                    {paymentLoading ? "Adding..." : "Add payment"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
           <div className="db-card" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div className="db-flex-between" style={{ alignItems: "center" }}>

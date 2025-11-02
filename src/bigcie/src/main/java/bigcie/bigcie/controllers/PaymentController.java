@@ -13,15 +13,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/payment")
+@RequestMapping("/api/v1/payments")
 @Tag(name = "Payments", description = "Operations related to payment methods")
 public class PaymentController {
     private final IPaymentService paymentService;
@@ -32,6 +30,14 @@ public class PaymentController {
         this.paymentService = paymentService;
         this.tokenService = tokenService;
         this.cookieService = cookieService;
+    }
+    @Operation(summary = "Add Payment Method", description = "Add a new payment method for the authenticated user")
+    @GetMapping("/me")
+    public ResponseEntity<List<PaymentInfo>> getPaymentInfo(HttpServletRequest request) {
+        String token = cookieService.getTokenFromCookie(request, "authToken");
+        UUID userId = tokenService.extractUserId(token);
+        List<PaymentInfo> paymentInfo = paymentService.getPaymentInfo(userId);
+        return ResponseEntity.ok(paymentInfo);
     }
 
     @Operation(summary = "Add Payment Method", description = "Add a new payment method for the authenticated user")

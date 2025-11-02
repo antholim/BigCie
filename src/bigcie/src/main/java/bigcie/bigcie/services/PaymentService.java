@@ -9,6 +9,7 @@ import bigcie.bigcie.services.interfaces.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -21,9 +22,14 @@ public class PaymentService implements IPaymentService {
     }
 
     @Override
-    public boolean addPaymentMethod(UUID userId, PaymentInfoRequest paymentInfoRequest) {
+    public void addPaymentMethod(UUID userId, PaymentInfoRequest paymentInfoRequest) {
         User user = userService.getUserByUUID(userId);
         Rider rider;
+        if (user instanceof Rider) {
+            rider = (Rider) user;
+        } else {
+            throw new IllegalArgumentException("User is not a rider");
+        }
         PaymentInfo paymentInfo = new PaymentInfo();
         paymentInfo.setId(UUID.randomUUID());
         paymentInfo.setUserId(user.getId());
@@ -33,15 +39,24 @@ public class PaymentService implements IPaymentService {
         paymentInfo.setLast4(paymentInfoRequest.getCreditCardNumber().substring(11, 15));
         paymentInfo.setCardType(paymentInfoRequest.getCardType());
         paymentInfo.setCvv(paymentInfoRequest.getCvv());
-        if (user instanceof Rider) {
-            rider = (Rider) user;
-            rider.getPaymentInfos().add(paymentInfo);
-        }
-        return false;
+        rider.getPaymentInfos().add(paymentInfo);
+        userService.updateUser(user);
     }
 
     @Override
-    public boolean removePaymentMethod(UUID userId, UUID paymentMethodId) {
-        return false;
+    public void removePaymentMethod(UUID userId, UUID paymentMethodId) {
+        return;
+    }
+
+    @Override
+    public List<PaymentInfo> getPaymentInfo(UUID userId) {
+        User user = userService.getUserByUUID(userId);
+        Rider rider;
+        if (user instanceof Rider) {
+            rider = (Rider) user;
+        } else {
+            throw new IllegalArgumentException("User is not a rider");
+        }
+        return rider.getPaymentInfos();
     }
 }
