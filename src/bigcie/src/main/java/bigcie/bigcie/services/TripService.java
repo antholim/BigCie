@@ -1,5 +1,7 @@
 package bigcie.bigcie.services;
 
+import bigcie.bigcie.assemblers.facades.TripAssembler;
+import bigcie.bigcie.dtos.TripInfo.TripDto;
 import bigcie.bigcie.entities.Trip;
 import bigcie.bigcie.entities.enums.BikeType;
 import bigcie.bigcie.entities.enums.PricingPlan;
@@ -10,16 +12,19 @@ import bigcie.bigcie.services.interfaces.ITripService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 public class TripService implements ITripService {
     private final TripRepository tripRepository;
     private final IPriceService priceService;
+    private final TripAssembler tripAssembler;
 
-    public TripService(TripRepository tripRepository, IPriceService priceService) {
+    public TripService(TripRepository tripRepository, IPriceService priceService, TripAssembler tripAssembler) {
         this.tripRepository = tripRepository;
         this.priceService = priceService;
+        this.tripAssembler = tripAssembler;
     }
 
     @Override
@@ -66,6 +71,12 @@ public class TripService implements ITripService {
         } else {
             throw new IllegalArgumentException("Trip not found or already completed");
         }
+    }
+
+    @Override
+    public List<TripDto> getTripByUserId(UUID userId) {
+        List<Trip> tripList = tripRepository.findByUserId(userId);
+        return tripAssembler.enrichTripDtoList(tripList);
     }
 
 

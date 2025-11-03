@@ -37,4 +37,5 @@ public interface IBikeStationService {
     void holdBike(UUID stationId);
 
     List<Bike> getStationBikes(UUID stationId);
+    String getStationNameById(UUID id);
 }

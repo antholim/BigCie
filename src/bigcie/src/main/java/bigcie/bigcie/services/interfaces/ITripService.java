@@ -1,9 +1,11 @@
 package bigcie.bigcie.services.interfaces;
 
+import bigcie.bigcie.dtos.TripInfo.TripDto;
 import bigcie.bigcie.entities.Trip;
 import bigcie.bigcie.entities.enums.BikeType;
 import bigcie.bigcie.entities.enums.PricingPlan;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface ITripService {
@@ -20,4 +22,5 @@ public interface ITripService {
             UUID tripId,
             UUID bikeStationEndId
     );
+    List<TripDto> getTripByUserId(UUID userId);
 }

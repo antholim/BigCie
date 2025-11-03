@@ -2,7 +2,6 @@ package bigcie.bigcie.controllers;
 
 import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoRequest.PaymentInfoRequest;
 import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoResponse.PaymentInfoDto;
-import bigcie.bigcie.entities.PaymentInfo;
 import bigcie.bigcie.services.PaymentService;
 import bigcie.bigcie.services.TokenService;
 import bigcie.bigcie.services.interfaces.ICookieService;

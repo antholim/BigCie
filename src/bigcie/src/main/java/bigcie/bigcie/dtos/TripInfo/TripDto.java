@@ -1,4 +1,4 @@
-package bigcie.bigcie.entities;
+package bigcie.bigcie.dtos.TripInfo;
 
 import bigcie.bigcie.entities.enums.BikeType;
 import bigcie.bigcie.entities.enums.PricingPlan;
@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -16,14 +15,12 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Trip {
-
-    @MongoId
+public class TripDto {
     private UUID id;
     private UUID userId;
     private UUID bikeId;
-    private UUID bikeStationStartId;
-    private UUID bikeStationEndId;
+    private String bikeStationStart;
+    private String bikeStationEnd;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private TripStatus status;
@@ -33,72 +30,73 @@ public class Trip {
     private PricingPlan pricingPlan;
 
     public static class Builder {
-        private final Trip trip = new Trip();
+        private final TripDto tripDto = new TripDto();
 
         public Builder id(UUID id) {
-            trip.id = id;
+            tripDto.id = id;
             return this;
         }
 
         public Builder userId(UUID userId) {
-            trip.userId = userId;
+            tripDto.userId = userId;
             return this;
         }
 
         public Builder bikeId(UUID bikeId) {
-            trip.bikeId = bikeId;
+            tripDto.bikeId = bikeId;
             return this;
         }
 
-        public Builder bikeStationStartId(UUID id) {
-            trip.bikeStationStartId = id;
+        public Builder bikeStationStart(String name) {
+            tripDto.bikeStationStart = name;
             return this;
         }
 
-        public Builder bikeStationEndId(UUID id) {
-            trip.bikeStationEndId = id;
+        public Builder bikeStationEnd(String name) {
+            tripDto.bikeStationEnd = name;
             return this;
         }
 
         public Builder startDate(LocalDateTime startDate) {
-            trip.startDate = startDate;
+            tripDto.startDate = startDate;
             return this;
         }
 
         public Builder endDate(LocalDateTime endDate) {
-            trip.endDate = endDate;
+            tripDto.endDate = endDate;
             return this;
         }
 
         public Builder status(TripStatus status) {
-            trip.status = status;
+            tripDto.status = status;
             return this;
         }
 
         public Builder distanceInKm(double distanceInKm) {
-            trip.distanceInKm = distanceInKm;
+            tripDto.distanceInKm = distanceInKm;
             return this;
         }
 
         public Builder cost(double cost) {
-            trip.cost = cost;
-            return this;
-        }
-        public  Builder bikeType(BikeType bikeType) {
-            trip.bikeType = bikeType;
-            return this;
-        }
-        public Builder pricingPlan(PricingPlan pricingPlan) {
-            trip.pricingPlan = pricingPlan;
+            tripDto.cost = cost;
             return this;
         }
 
-        public Trip build() {
-            // Optionally: auto-generate ID if null
-            if (trip.id == null) {
-                trip.id = UUID.randomUUID();
+        public Builder bikeType(BikeType bikeType) {
+            tripDto.bikeType = bikeType;
+            return this;
+        }
+
+        public Builder pricingPlan(PricingPlan pricingPlan) {
+            tripDto.pricingPlan = pricingPlan;
+            return this;
+        }
+
+        public TripDto build() {
+            if (tripDto.id == null) {
+                tripDto.id = UUID.randomUUID();
             }
-            return trip;
+            return tripDto;
         }
     }
 }

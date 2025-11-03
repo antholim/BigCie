@@ -284,4 +284,14 @@ public class BikeStationService implements IBikeStationService {
         return bikes;
     }
 
+    @Override
+    public String getStationNameById(UUID id) {
+        BikeStation station = bikeStationRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("station not found"));
+        if (station != null) {
+            return station.getName();
+        }
+        return "";
+    }
+
 }
