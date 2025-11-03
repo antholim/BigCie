@@ -4,6 +4,7 @@ import FetchingService from "../../services/FetchingService";
 import { useAuth } from "../../contexts/AuthContext";
 import "../../components/home.css";
 import { formatDateTime } from "../../utils/utils";
+import SideBar from "../../components/SideBar";
 
 export default function TripsPage() {
   const navigate = useNavigate();
@@ -70,7 +71,8 @@ export default function TripsPage() {
           </div>
         </div>
       </header>
-
+      <div style={{ display: "flex", gap: 24, alignItems: "flex-start", paddingTop: 24 }}>
+              <SideBar username={user?.username} email={user?.email} />
       <main className="db-container" style={{ paddingTop: 48, paddingBottom: 64 }}>
         <section style={{ marginBottom: 24 }}>
           <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Your trips</h1>
@@ -78,7 +80,7 @@ export default function TripsPage() {
             A history of your rides — tap a trip for details.
           </p>
         </section>
-
+      
         <div style={{ display: "grid", gap: 16 }}>
           {loading && <p className="db-muted">Loading trips...</p>}
           {!loading && error && <p style={{ color: "#dc2626" }}>{error}</p>}
@@ -125,6 +127,7 @@ export default function TripsPage() {
           })}
         </div>
       </main>
+      </div>
     </div>
   );
 }

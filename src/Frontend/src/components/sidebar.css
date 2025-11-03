@@ -1,0 +1,61 @@
+.db-sidebar {
+  width: 220px;
+  min-height: calc(100vh - 88px);
+  padding: 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(16,24,40,0.04);
+  border: 1px solid #e6eef8;
+  position: sticky;
+  top: 88px;
+  align-self: flex-start;
+  overflow-y: auto; /* allow scrolling if content is tall */
+  max-height: calc(100vh - 104px);
+}
+
+.db-sidebar-user {
+  margin-bottom: 12px;
+}
+
+.db-sidebar-username {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.db-sidebar-email {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.db-sidebar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.db-sidebar-btn {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+/* Make sure the sidebar doesn't cover header or stretch on small screens */
+@media (max-width: 900px) {
+  .db-sidebar {
+    position: relative;
+    top: 0;
+    width: 100%;
+    border-radius: 8px;
+    max-height: none;
+    margin-bottom: 12px;
+  }
+
+  /* stack layout: ensure main content takes full width under the sidebar */
+  .db-page > div[style] {
+    flex-direction: column;
+  }
+}

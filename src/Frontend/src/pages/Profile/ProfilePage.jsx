@@ -7,6 +7,7 @@ import MapPreview from "../../components/MapPreview";
 import "../../components/home.css";
 import BikeBox from "./components/BikeBox";
 import { truncateId, formatDateTime } from "../../utils/utils";
+import SideBar from "../../components/SideBar";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -207,7 +208,8 @@ export default function ProfilePage() {
       {/* Page layout with left sidebar + main content */}
       <div style={{ display: "flex", gap: 24, alignItems: "flex-start", paddingTop: 24 }}>
         {/* Sidebar */}
-        <nav
+        <SideBar username={user?.username} email={user?.email} />
+        {/* <nav
           aria-label="Profile navigation"
           style={{
             width: 220,
@@ -248,7 +250,7 @@ export default function ProfilePage() {
               </button>
             </li>
           </ul>
-        </nav>
+        </nav> */}
 
         {/* Main content area */}
         <main className="db-container" style={{ paddingTop: "48px", paddingBottom: "64px", flex: 1 }}>
