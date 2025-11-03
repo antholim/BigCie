@@ -1,6 +1,8 @@
 package bigcie.bigcie.services;
 
 import bigcie.bigcie.entities.Trip;
+import bigcie.bigcie.entities.enums.BikeType;
+import bigcie.bigcie.entities.enums.PricingPlan;
 import bigcie.bigcie.entities.enums.TripStatus;
 import bigcie.bigcie.repositories.TripRepository;
 import bigcie.bigcie.services.interfaces.IPriceService;
@@ -29,7 +31,10 @@ public class TripService implements ITripService {
     public Trip createTrip(
             UUID userId,
             UUID bikeId,
-            UUID bikeStationStartId
+            UUID bikeStationStartId,
+            PricingPlan pricingPlan,
+            BikeType bikeType
+
     ) {
         Trip trip = new Trip.Builder()
                 .id(UUID.randomUUID())
@@ -38,6 +43,8 @@ public class TripService implements ITripService {
                 .bikeStationStartId(bikeStationStartId)
                 .startDate(LocalDateTime.now())
                 .status(TripStatus.ONGOING)
+                .pricingPlan(pricingPlan)
+                .bikeType(bikeType)
                 .build();
 
         tripRepository.save(trip);
@@ -52,9 +59,9 @@ public class TripService implements ITripService {
         LocalDateTime endTime = LocalDateTime.now();
         if (trip != null && trip.getStatus() == TripStatus.ONGOING) {
             trip.setBikeStationEndId(bikeStationEndId);
-            trip.setEndDate(endTime);
+            trip.setEndDate(endTime.plusMinutes(5));
             trip.setStatus(TripStatus.COMPLETED);
-            trip.setCost(priceService.calculatePrice(trip.getStartDate(), endTime));
+            trip.setCost(priceService.calculatePrice(trip.getStartDate(), endTime, trip.getBikeType(), trip.getPricingPlan()));
             tripRepository.save(trip);
         } else {
             throw new IllegalArgumentException("Trip not found or already completed");

@@ -1,5 +1,7 @@
 package bigcie.bigcie.entities;
 
+import bigcie.bigcie.entities.enums.BikeType;
+import bigcie.bigcie.entities.enums.PricingPlan;
 import bigcie.bigcie.entities.enums.TripStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,6 +30,8 @@ public class Trip {
     private TripStatus status;
     private double distanceInKm;
     private double cost;
+    private BikeType bikeType;
+    private PricingPlan pricingPlan;
 
     public static class Builder {
         private final Trip trip = new Trip();
@@ -79,6 +83,14 @@ public class Trip {
 
         public Builder cost(double cost) {
             trip.cost = cost;
+            return this;
+        }
+        public  Builder bikeType(BikeType bikeType) {
+            trip.bikeType = bikeType;
+            return this;
+        }
+        public Builder pricingPlan(PricingPlan pricingPlan) {
+            trip.pricingPlan = pricingPlan;
             return this;
         }
 

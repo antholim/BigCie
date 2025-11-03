@@ -1,5 +1,6 @@
 package bigcie.bigcie.entities;
 
+import bigcie.bigcie.entities.enums.PricingPlan;
 import bigcie.bigcie.entities.enums.UserType;
 import bigcie.bigcie.entities.factory.UserBuilder;
 import lombok.Getter;
@@ -24,6 +25,7 @@ public class Rider extends User {
     private String address;
     private List<UUID> currentBikes = new ArrayList<>();
     private UUID activeTripId;
+    private PricingPlan pricingPlan = PricingPlan.SINGLE_RIDE;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
