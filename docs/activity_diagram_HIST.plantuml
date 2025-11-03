@@ -1,0 +1,80 @@
+@startuml activity
+title HIST - Ride History Retrieval Activity Diagram
+skinparam style strictuml
+skinparam DefaultFontName Arial
+skinparam DefaultFontSize 16
+skinparam DefaultFontStyle bold
+skinparam ArrowThickness 2
+skinparam activity {
+  BackgroundColor #f9f9f9
+  DiamondBackgroundColor #e6e6e6
+  BorderColor #333
+  FontColor black
+}
+
+|User|
+start
+:Open Ride History tab;
+
+|HIST Module|
+:Validate login state;
+if (Login type?) then (Rider)
+  :Restrict query scope to rider’s own rides;
+  note right
+  R-RH-02: Riders only see their own rides.
+  end note
+else (Operator)
+  :Operator context → all rides visible;
+endif
+
+:Display search bar, filter row;
+note right
+R-RH-03: Module should provide filter row (Date range, Bike type).
+end note
+
+:User enters Trip ID in search bar or applies filters;
+note right
+R- RH-01: Accept Trip ID in search bar
+end note
+
+:Validate inputs (Trip ID format, date range bounds);
+note right
+R-RH-09: Validate Trip ID and Date format
+end note
+if (Validation OK?) then (yes)
+  :Query datastore for matching rides;
+  note right
+  R-RH-08: Include newly ended rides.
+  end note
+else (no)
+  :Show concise error message;
+  stop
+endif
+
+if (Results found?) then (yes)
+  :Display table columns:
+  Trip ID | Rider | Start→End | Bike type | Cost;  
+:Allow user to sort rides, default by most recent end time;
+  note right
+  R-RH-04: Display and sort results.
+  end note
+else (no)
+  :Show "No results found" with hint to clear filters;
+  note right
+  R-RH-05: Friendly message for no matches:
+"Clear filters or check trip ID".
+  end note
+endif
+
+:User selects a ride from results;
+
+:Open Ride Details View;
+note right
+R-RH-06: Show Trip ID, Rider, Start/End stations,
+Duration, Bike type, event timeline and Cost breakdown.
+R-RH-07: Includes computed bill/charge exactly
+as priced by the system (read-only).
+end note
+
+stop
+@enduml
