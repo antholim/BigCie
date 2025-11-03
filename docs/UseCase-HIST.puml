@@ -1,0 +1,55 @@
+@startuml usecase
+title HIST — Ride History Retrieval (Use Case Diagram)
+
+'========================
+' Actors
+'========================
+actor Rider
+actor Operator
+actor "BMS (Core)" as BMS
+actor "PRC (Pricing & Billing)" as PRC
+
+'========================
+' System Boundary
+'========================
+rectangle "HIST — Ride History Retrieval" as HIST {
+  usecase UC01 as "R-RH-01\nSearch by Trip ID"
+  usecase UC02 as "R-RH-02\nBrowse Ride History"
+  usecase UC03 as "R-RH-03\nFilter by Date Range & Bike Type"
+  usecase UC04 as "R-RH-04\nDisplay Results Table"
+  usecase UC05 as "R-RH-05\nNo Results Message"
+  usecase UC06 as "R-RH-06\nView Ride Details"
+  usecase UC07 as "R-RH-07\nShow Computed Bill (read-only)"
+  usecase UC08 as "R-RH-08\nAuto-Update After Trip Ends"
+  usecase UC09 as "R-RH-09\nValidate Trip ID & Dates"
+}
+
+'========================
+' Associations (human -> HIST)
+'========================
+Rider    --> UC01
+Rider    --> UC02 : "Own rides only"
+Rider    --> UC06
+
+Operator --> UC02 : "All riders' history"
+Operator --> UC06
+
+'========================
+' System interactions
+'========================
+BMS  --> UC08 : "Trip ended event"
+PRC  <-- UC07 : "Cost breakdown (read-only)"
+
+'========================
+' Includes / Extends
+'========================
+UC02 ..> UC03 : <<include>>   ' Browsing often uses filters
+UC02 ..> UC04 : <<include>>   ' Results table view
+UC01 ..> UC09 : <<include>>   ' Validate Trip ID format
+UC03 ..> UC09 : <<include>>   ' Validate date range inputs
+UC06 ..> UC07 : <<include>>   ' Details show priced bill
+UC05 ..|> UC01 : <<extend>>   ' No results after search
+UC05 ..|> UC02 : <<extend>>   ' No results after browsing/filters
+
+
+@enduml
