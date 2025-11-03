@@ -204,10 +204,9 @@ public class BikeStationService implements IBikeStationService {
         notificationService.notifyBikeStatusChange(bike.getId(), BikeStatus.ON_TRIP);
 
         User user = userService.getUserByUUID(userId);
-        if (!(user instanceof Rider)) {
+        if (!(user instanceof Rider rider)) {
             throw new IllegalArgumentException("User is not a rider");
         }
-        Rider rider = (Rider) user;
 
         rider.getCurrentBikes().add(bike.getId());
         userService.updateUser(rider);

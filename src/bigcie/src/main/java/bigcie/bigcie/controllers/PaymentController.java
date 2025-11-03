@@ -48,4 +48,14 @@ public class PaymentController {
         return ResponseEntity.ok("Payment method added successfully");
     }
 
+    @Operation(summary = "Add Payment Method", description = "Make a payment method default for the authenticated user")
+    @PatchMapping("/{id}/default")
+    public ResponseEntity<?> addPaymentInfo(@PathVariable UUID id,
+                                            HttpServletRequest request) {
+        String token = cookieService.getTokenFromCookie(request, "authToken");
+        UUID userId = tokenService.extractUserId(token);
+        paymentService.updateDefaultPaymentMethod(userId, id);
+        return ResponseEntity.ok("Default payment method updated successfully");
+    }
+
 }

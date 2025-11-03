@@ -12,4 +12,5 @@ public interface IPaymentService {
 
     void removePaymentMethod(UUID userId, UUID paymentMethodId);
     List<PaymentInfoDto> getPaymentInfo(UUID userId);
+    void updateDefaultPaymentMethod(UUID userId, UUID paymentMethodId);
 }

@@ -19,5 +19,6 @@ public class PaymentInfo {
     private String last4; // Last 4 digits of card
     private CreditCardType cardType; // e.g., "VISA"
     private String cvv; // Card Verification Value
+    private boolean isDefault = false; // Indicates if this is the default payment method
 
 }
