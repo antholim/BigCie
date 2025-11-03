@@ -1,0 +1,76 @@
+@startuml activity
+title PRC - Pricing and Billing Activity Diagram
+skinparam style strictuml
+skinparam DefaultFontName Arial
+skinparam DefaultFontSize 16
+skinparam DefaultFontStyle bold
+skinparam ArrowThickness 2
+skinparam activity {
+  BackgroundColor #f9f9f9
+  DiamondBackgroundColor #e6e6e6
+  BorderColor #444
+  FontColor black
+}
+
+|User|
+start
+:Access Pricing module;
+
+|PRC System|
+
+partition "Pricing"{
+if (Is user logged in?) then (no)
+  :Display all pricing plans (base fee, per-minute, e-bike surcharge);
+  note right
+  R-PRC-01: Pricing options are visible
+  to all users without login.
+  end note
+  stop
+else (yes)
+  :Retrieve user and trip data;
+endif
+
+:Display all pricing plans (base fee, per-minute, e-bike surcharge);
+}
+
+if (If user has a ride booked?) then (no)
+  :Wait for User to book a trip;
+else (yes)
+endif
+
+partition "Billing" {
+  :Receive trip facts (start/end time, bike ID, origin, arrival);
+  :Apply plan rules to compute cost deterministically;
+  note right
+  R-PRC-02: Cost calculated from
+  plan rules and trip facts.
+  end note
+
+  :Generate trip summary (duration, cost, details);
+  note right
+  R-PRC-03: Provide summary after return.
+  end note
+
+  :Append record to trip and charge log associated with rider;
+  note right
+  R-PRC-04: Maintain a ledger of
+  all trips and computed charges.
+  end note
+
+  :Update billing history with trip metadata;
+  note right
+  R-PRC-05: Include start time, bike ID,
+  origin, arrival, total charge.
+  end note
+
+  :Display summary and history to rider;
+}
+
+|Payment Service|
+:Process payment through external service;
+:Confirm transaction to PRC;
+
+|PRC System|
+:Store transaction receipt;
+stop
+@enduml
