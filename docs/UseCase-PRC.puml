@@ -1,0 +1,49 @@
+@startuml usecase
+title PRC — Pricing & Billing (Use Case Diagram)
+
+'========================
+' Actors
+'========================
+actor Rider
+actor Operator
+actor Guest
+actor "BMS (Core)" as BMS
+actor "External Payment Service" as PayAPI
+
+'========================
+' System Boundary
+'========================
+rectangle "PRC — Pricing & Billing" as PRC {
+  usecase UC01 as "R-PRC-01\nDisplay Pricing Options"
+  usecase UC02 as "R-PRC-02\nCompute Trip Cost"
+  usecase UC03 as "R-PRC-03\nGenerate Trip Summary"
+  usecase UC04 as "R-PRC-04\nMaintain Billing Ledger"
+  usecase UC05 as "R-PRC-05\nView Billing History"
+  usecase UC06 as "Charge Rider\n(via payment API)"
+}
+
+'========================
+' Associations
+'========================
+Guest  --> UC01
+Rider  --> UC01
+Operator --> UC01
+
+BMS    --> UC02 : "Trip ended\n(Checkout ➜ Return)"
+BMS    --> UC03 : "Trip ended\n(Checkout ➜ Return)"
+
+Rider  --> UC03
+Rider  --> UC05 : "Own history"
+Operator --> UC05 : "All riders' history"
+
+'========================
+' Includes / Extends
+'========================
+UC03 ..> UC02 : <<include>>  ' Trip summary requires computed cost
+UC02 ..> UC04 : <<include>>  ' Every computed cost is recorded
+UC05 ..> UC04 : <<include>>  ' History is read from the ledger
+UC02 ..> UC06 : <<include>>  ' Charge after cost computed
+UC06 <-- PayAPI              
+
+
+@enduml
