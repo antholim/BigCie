@@ -9,6 +9,7 @@ import bigcie.bigcie.repositories.BikeStationRepository;
 import bigcie.bigcie.services.interfaces.IBikeStationService;
 import bigcie.bigcie.services.interfaces.INotificationService;
 
+import bigcie.bigcie.services.interfaces.ITripService;
 import bigcie.bigcie.services.interfaces.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,14 +31,16 @@ public class BikeStationService implements IBikeStationService {
     private final ReservationRepository reservationRepository;
     private final INotificationService notificationService;
     private final IUserService userService;
+    private final ITripService tripService;
 
     public BikeStationService(BikeStationRepository bikeStationRepository, ReservationRepository reservationRepository,
-                              BikeRepository bikeRepository, INotificationService notificationService, IUserService userService) {
+                              BikeRepository bikeRepository, INotificationService notificationService, IUserService userService, ITripService tripService) {
         this.userService = userService;
         this.bikeStationRepository = bikeStationRepository;
         this.reservationRepository = reservationRepository;
         this.bikeRepository = bikeRepository;
         this.notificationService = notificationService;
+        this.tripService = tripService;
     }
 
     @Override
@@ -137,9 +140,15 @@ public class BikeStationService implements IBikeStationService {
         }
 
         User user = userService.getUserByUUID(userId);
-        if (user instanceof Rider rider) {
+        Rider rider;
+        if (user instanceof Rider) {
+            rider = (Rider) user;
             rider.getCurrentBikes().remove(bike.getId());
             userService.updateUser(rider);
+            tripService.endTrip(
+                    rider.getActiveTripId(),
+                    stationId
+            );
         }
 
         bikeStationRepository.save(station);
@@ -199,6 +208,15 @@ public class BikeStationService implements IBikeStationService {
             bikeStationRepository.save(station);
         }
         bikeRepository.save(bike);
+        Trip trip = tripService.createTrip(
+                userId,
+                bike.getId(),
+                stationId
+        );
+        if (user instanceof Rider rider) {
+            rider.setActiveTripId(trip.getId());
+            userService.updateUser(rider);
+        }
         return bike.getId();
     }
 

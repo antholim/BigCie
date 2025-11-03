@@ -6,12 +6,13 @@ import java.util.UUID;
 
 public interface ITripService {
     Trip getTripById(UUID id);
-    void createTrip(
+    Trip createTrip(
             UUID userId,
             UUID bikeId,
-            UUID bikeStationStartId,
-            UUID bikeStationEndId,
-            double distanceInKm,
-            double cost
+            UUID bikeStationStartId
+    );
+    void endTrip(
+            UUID tripId,
+            UUID bikeStationEndId
     );
 }
