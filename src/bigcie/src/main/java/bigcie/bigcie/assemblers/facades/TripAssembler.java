@@ -30,15 +30,12 @@ public class TripAssembler {
         for (int i = 0; i < n; i++) {
             TripDto dto = tripDtos.get(i);
 
-            if (dto.getBikeStationStart() != null) {
-                UUID startId = trips.get(i).getBikeStationStartId();
-                dto.setBikeStationStart(getStationNameWithCache(startId));
-            }
+            UUID startId = trips.get(i).getBikeStationStartId();
+            log.info(startId.toString());
+            dto.setBikeStationStart(getStationNameWithCache(startId));
 
-            if (dto.getBikeStationEnd() != null) {
-                UUID endId = trips.get(i).getBikeStationEndId();
-                dto.setBikeStationEnd(getStationNameWithCache(endId));
-            }
+            UUID endId = trips.get(i).getBikeStationEndId();
+            dto.setBikeStationEnd(getStationNameWithCache(endId));
         }
         return tripDtos;
     }

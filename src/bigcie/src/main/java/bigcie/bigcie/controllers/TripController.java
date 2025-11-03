@@ -1,10 +1,8 @@
 package bigcie.bigcie.controllers;
 
-import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoResponse.PaymentInfoDto;
 import bigcie.bigcie.dtos.TripInfo.TripDto;
 import bigcie.bigcie.services.TokenService;
 import bigcie.bigcie.services.interfaces.ICookieService;
-import bigcie.bigcie.services.interfaces.IPaymentService;
 import bigcie.bigcie.services.interfaces.ITripService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
