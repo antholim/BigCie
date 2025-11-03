@@ -24,7 +24,7 @@ public class Rider extends User {
     private List<PaymentInfo> paymentInfos = new ArrayList<>();
     private String address;
     private List<UUID> currentBikes = new ArrayList<>();
-    private UUID activeTripId;
+    private List<UUID> activeTripId = new ArrayList<>();
     private PricingPlan pricingPlan = PricingPlan.SINGLE_RIDE;
 
     @Override

@@ -146,11 +146,12 @@ public class BikeStationService implements IBikeStationService {
         if (user instanceof Rider) {
             rider = (Rider) user;
             rider.getCurrentBikes().remove(bike.getId());
-            userService.updateUser(rider);
             tripService.endTrip(
-                    rider.getActiveTripId(),
+                    rider.getActiveTripId().getFirst(),
                     stationId
             );
+            rider.setActiveTripId(null);
+            userService.updateUser(rider);
         }
 
         bikeStationRepository.save(station);
@@ -218,7 +219,7 @@ public class BikeStationService implements IBikeStationService {
                 rider.getPricingPlan(),
                 bike.getBikeType()
         );
-        rider.setActiveTripId(trip.getId());
+        rider.getActiveTripId().add(trip.getId());
         userService.updateUser(rider);
 
         return bike.getId();
