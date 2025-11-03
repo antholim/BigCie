@@ -12,6 +12,7 @@ public class PaymentInfoMapper {
         dto.setCardExpiry(paymentInfo.getCardExpiry());
         dto.setCardHolderName(paymentInfo.getCardHolderName());
         dto.setCardType(paymentInfo.getCardType());
+        dto.setPaymentInfoId(paymentInfo.getId());
         return dto;
     }
 }
