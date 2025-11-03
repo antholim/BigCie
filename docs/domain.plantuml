@@ -1,4 +1,4 @@
-@startuml Domain Model
+@startuml domain
 skinparam style strictuml
 skinparam DefaultFontName Arial
 skinparam DefaultFontSize 16
@@ -18,6 +18,7 @@ package "Database" <<Database>> {
     - users: Map<UUID, User>
     }
 }
+
 
 class "Rider" as Rider {
 
@@ -63,11 +64,25 @@ package "Database" <<Database>> {
     }
 }
 
+package "Database" <<Database>> {
+    class "PaymentDB" as PaymentDB {
+- paymentInfo: Map<UUID, Payment>
+    }
+}
+
+class "PaymentInfo" as PaymentInfo {
+- UUID: paymentId  
+- UUID: userId
+ - String creditCardNumber
+}
+
 UserDB "1" *-- "0..*" User : stores >
 
 BikeDB "1" *-- "0..*" Bike : stores >
 
 StationDB "1" *-- "0..*" Station : stores >
+
+PaymentDB "1" *-- "0..*" PaymentInfo : stores >
 
 Terminal <|-- UserInterface : extends 
 
@@ -87,11 +102,15 @@ Rider "*" -- "1" UserInterface : interacts >
 
 Operator "*" -- "1" AdminInterface : interacts >
 
+Rider "*" -- "1" PaymentInfo : registers >
+
 Terminal -- "1" UserDB : accesses >
 
 Terminal -- "1" BikeDB : accesses >
 
 Terminal -- "1" StationDB : accesses >
+
+Terminal -- "1" PaymentDB : accesses >
 
 class "Rental" as Rental {
   - rentalId: UUID
@@ -128,9 +147,4 @@ package "Authentication" {
   User "1" -- "1" AuthService : uses >
   Terminal "1" -- "1" AuthService : uses >
 }
-
-
-
-
-
 @enduml
