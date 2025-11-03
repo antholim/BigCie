@@ -78,7 +78,4 @@ public class TripService implements ITripService {
         List<Trip> tripList = tripRepository.findByUserId(userId);
         return tripAssembler.enrichTripDtoList(tripList);
     }
-
-
-
 }
