@@ -1,3 +1,4 @@
+// ...existing code...
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FetchingService from "../../services/FetchingService";
@@ -203,281 +204,329 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      <main className="db-container" style={{ paddingTop: "48px", paddingBottom: "64px" }}>
-        <section style={{ marginBottom: "32px" }}>
-          <h1 style={{ fontSize: "28px", fontWeight: 700, marginBottom: "8px" }}>
-            Welcome back, {user?.username || "rider"}!
-          </h1>
-          <p className="db-muted" style={{ maxWidth: "640px" }}>
-            Manage your reservations and explore the service map. Your login now brings you straight
-            to this personalized view with quick access to everything you need.
-          </p>
-        </section>
-
-        <div
+      {/* Page layout with left sidebar + main content */}
+      <div style={{ display: "flex", gap: 24, alignItems: "flex-start", paddingTop: 24 }}>
+        {/* Sidebar */}
+        <nav
+          aria-label="Profile navigation"
           style={{
-            display: "grid",
-            gap: "24px",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            alignItems: "stretch",
+            width: 220,
+            minHeight: "calc(100vh - 88px)",
+            padding: "16px",
+            borderRadius: 12,
+            background: "#ffffff",
+            boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
+            border: "1px solid #e6eef8",
+            position: "sticky",
+            top: 88,
+            alignSelf: "flex-start",
           }}
         >
-          <div className="db-card" style={{ display: "flex", flexDirection: "column" }}>
-            <div className="db-flex-between" style={{ marginBottom: "16px", gap: "12px" }}>
-              <div>
-                <h2 style={{ marginBottom: "4px" }}>Bike reservations</h2>
-                <p className="db-muted" style={{ margin: 0 }}>
-                  View upcoming bookings tied to your account.
-                </p>
-              </div>
-              <button
-                className="db-btn"
-                type="button"
-                onClick={loadReservations}
-                disabled={reservationsLoading}
-              >
-                {reservationsLoading ? "Refreshing..." : "Refresh"}
-              </button>
-            </div>
-
-            <div style={{ flex: 1, overflowY: "auto" }}>
-              {reservationsLoading && (
-                <p className="db-muted" style={{ margin: 0 }}>
-                  Loading your reservations...
-                </p>
-              )}
-              {!reservationsLoading && reservationsError && (
-                <p style={{ color: "#dc2626", margin: 0 }}>{reservationsError}</p>
-              )}
-              {!reservationsLoading && !reservationsError && !hasReservations && (
-                <p className="db-muted" style={{ margin: 0 }}>
-                  You do not have any reservations at the moment.
-                </p>
-              )}
-              {!reservationsLoading && !reservationsError && hasReservations && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                  {reservations.map((reservation) => {
-                    const reservationId = reservation.id ?? reservation._id;
-                    const isUnreserving = unreservingIds.has(reservationId);
-
-                    return (
-                      <div
-                        key={reservationId}
-                        style={{
-                          border: "1px solid #e2e8f0",
-                          borderRadius: "12px",
-                          padding: "16px",
-                          background: "#fff",
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            marginBottom: "8px",
-                            gap: "12px",
-                          }}
-                        >
-                          <strong>Reservation</strong>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <span style={{ fontSize: "12px", color: "#475569" }}>
-                              {formatDateTime(reservation.startTime)}
-                            </span>
-                            <button
-                              className="db-btn"
-                              type="button"
-                              onClick={() => handleUnreserve(reservationId)}
-                              disabled={isUnreserving}
-                              style={{
-                                fontSize: "12px",
-                                padding: "4px 8px",
-                                backgroundColor: "#dc2626",
-                                color: "#fff",
-                                border: "none",
-                                borderRadius: "6px",
-                                cursor: isUnreserving ? "not-allowed" : "pointer",
-                                opacity: isUnreserving ? 0.6 : 1,
-                              }}
-                            >
-                              {isUnreserving ? "Unreserving..." : "Unreserve"}
-                            </button>
-                          </div>
-                        </div>
-                        <dl
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: "auto 1fr",
-                            rowGap: "6px",
-                            columnGap: "12px",
-                            margin: 0,
-                          }}
-                        >
-                          <dt style={{ fontWeight: 600, color: "#1e293b" }}>Station</dt>
-                          <dd style={{ margin: 0, color: "#475569" }}>
-                            {truncateId(reservation.bikeStationId)}
-                          </dd>
-                          <dt style={{ fontWeight: 600, color: "#1e293b" }}>Bike</dt>
-                          <dd style={{ margin: 0, color: "#475569" }}>
-                            {truncateId(reservation.bikeId)}
-                          </dd>
-                          <dt style={{ fontWeight: 600, color: "#1e293b" }}>Expires</dt>
-                          <dd style={{ margin: 0, color: "#475569" }}>
-                            {formatDateTime(reservation.expiry)}
-                          </dd>
-                        </dl>
-                      </div>
-                    );
-                  })}°
-                </div>
-              )}
-            </div>
-
+          <div style={{ marginBottom: 12 }}>
+            <strong style={{ display: "block", fontSize: 16 }}>{user?.username || "rider"}</strong>
+            <span className="db-muted" style={{ fontSize: 13 }}>{user?.email || ""}</span>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <BikeBox bikeIdList={bikes} />
+          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 8 }}>
+            <li>
+              <button
+                type="button"
+                className="db-btn"
+                style={{ width: "100%", justifyContent: "flex-start" }}
+                onClick={() => navigate("/profile")}
+              >
+                Profile
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                className="db-btn"
+                style={{ width: "100%", justifyContent: "flex-start" }}
+                onClick={() => navigate("/trips")}
+              >
+                Trips
+              </button>
+            </li>
+          </ul>
+        </nav>
 
-            {/* AddPayment card */}
-            <div className="db-card" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              <div className="db-flex-between" style={{ alignItems: "center" }}>
+        {/* Main content area */}
+        <main className="db-container" style={{ paddingTop: "48px", paddingBottom: "64px", flex: 1 }}>
+          <section style={{ marginBottom: "32px" }}>
+            <h1 style={{ fontSize: "28px", fontWeight: 700, marginBottom: "8px" }}>
+              Welcome back, {user?.username || "rider"}!
+            </h1>
+            <p className="db-muted" style={{ maxWidth: "640px" }}>
+              Manage your reservations and explore the service map. Your login now brings you straight
+              to this personalized view with quick access to everything you need.
+            </p>
+          </section>
+
+          <div
+            style={{
+              display: "grid",
+              gap: "24px",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+              alignItems: "stretch",
+            }}
+          >
+            <div className="db-card" style={{ display: "flex", flexDirection: "column" }}>
+              <div className="db-flex-between" style={{ marginBottom: "16px", gap: "12px" }}>
                 <div>
-                  <h2 style={{ marginBottom: "4px" }}>Add payment method</h2>
+                  <h2 style={{ marginBottom: "4px" }}>Bike reservations</h2>
                   <p className="db-muted" style={{ margin: 0 }}>
-                    Add a credit card to quickly pay for rentals. Sensitive data should be tokenized by backend.
+                    View upcoming bookings tied to your account.
                   </p>
                 </div>
+                <button
+                  className="db-btn"
+                  type="button"
+                  onClick={loadReservations}
+                  disabled={reservationsLoading}
+                >
+                  {reservationsLoading ? "Refreshing..." : "Refresh"}
+                </button>
               </div>
 
-              <form onSubmit={handleAddPayment} style={{ display: "grid", gap: "8px" }}>
-                <label style={{ fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>
-                  Card holder name
-                  <input
-                    type="text"
-                    value={paymentInfos.cardHolderName}
-                    onChange={(e) => updatePayment("cardHolderName", e.target.value)}
-                    placeholder="Full name"
-                    style={{ width: "100%", padding: "8px", marginTop: "6px", borderRadius: 6, border: "1px solid #e2e8f0" }}
-                  />
-                </label>
+              <div style={{ flex: 1, overflowY: "auto" }}>
+                {reservationsLoading && (
+                  <p className="db-muted" style={{ margin: 0 }}>
+                    Loading your reservations...
+                  </p>
+                )}
+                {!reservationsLoading && reservationsError && (
+                  <p style={{ color: "#dc2626", margin: 0 }}>{reservationsError}</p>
+                )}
+                {!reservationsLoading && !reservationsError && !hasReservations && (
+                  <p className="db-muted" style={{ margin: 0 }}>
+                    You do not have any reservations at the moment.
+                  </p>
+                )}
+                {!reservationsLoading && !reservationsError && hasReservations && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                    {reservations.map((reservation) => {
+                      const reservationId = reservation.id ?? reservation._id;
+                      const isUnreserving = unreservingIds.has(reservationId);
 
-                <label style={{ fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>
-                  Card number
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={paymentInfos.creditCardNumber}
-                    onChange={(e) => updatePayment("creditCardNumber", e.target.value)}
-                    placeholder="4242 4242 4242 4242"
-                    style={{ width: "100%", padding: "8px", marginTop: "6px", borderRadius: 6, border: "1px solid #e2e8f0" }}
-                  />
-                </label>
+                      return (
+                        <div
+                          key={reservationId}
+                          style={{
+                            border: "1px solid #e2e8f0",
+                            borderRadius: "12px",
+                            padding: "16px",
+                            background: "#fff",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              marginBottom: "8px",
+                              gap: "12px",
+                            }}
+                          >
+                            <strong>Reservation</strong>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <span style={{ fontSize: "12px", color: "#475569" }}>
+                                {formatDateTime(reservation.startTime)}
+                              </span>
+                              <button
+                                className="db-btn"
+                                type="button"
+                                onClick={() => handleUnreserve(reservationId)}
+                                disabled={isUnreserving}
+                                style={{
+                                  fontSize: "12px",
+                                  padding: "4px 8px",
+                                  backgroundColor: "#dc2626",
+                                  color: "#fff",
+                                  border: "none",
+                                  borderRadius: "6px",
+                                  cursor: isUnreserving ? "not-allowed" : "pointer",
+                                  opacity: isUnreserving ? 0.6 : 1,
+                                }}
+                              >
+                                {isUnreserving ? "Unreserving..." : "Unreserve"}
+                              </button>
+                            </div>
+                          </div>
+                          <dl
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "auto 1fr",
+                              rowGap: "6px",
+                              columnGap: "12px",
+                              margin: 0,
+                            }}
+                          >
+                            <dt style={{ fontWeight: 600, color: "#1e293b" }}>Station</dt>
+                            <dd style={{ margin: 0, color: "#475569" }}>
+                              {truncateId(reservation.bikeStationId)}
+                            </dd>
+                            <dt style={{ fontWeight: 600, color: "#1e293b" }}>Bike</dt>
+                            <dd style={{ margin: 0, color: "#475569" }}>
+                              {truncateId(reservation.bikeId)}
+                            </dd>
+                            <dt style={{ fontWeight: 600, color: "#1e293b" }}>Expires</dt>
+                            <dd style={{ margin: 0, color: "#475569" }}>
+                              {formatDateTime(reservation.expiry)}
+                            </dd>
+                          </dl>
+                        </div>
+                      );
+                    })}°
+                  </div>
+                )}
+              </div>
 
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <label style={{ flex: 1, fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>
-                    Expiry (MM/YY)
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <BikeBox bikeIdList={bikes} />
+
+              {/* AddPayment card */}
+              <div className="db-card" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <div className="db-flex-between" style={{ alignItems: "center" }}>
+                  <div>
+                    <h2 style={{ marginBottom: "4px" }}>Add payment method</h2>
+                    <p className="db-muted" style={{ margin: 0 }}>
+                      Add a credit card to quickly pay for rentals. Sensitive data should be tokenized by backend.
+                    </p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleAddPayment} style={{ display: "grid", gap: "8px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>
+                    Card holder name
                     <input
                       type="text"
-                      value={paymentInfos.cardExpiry}
-                      onChange={(e) => updatePayment("cardExpiry", e.target.value)}
-                      placeholder="MM/YY"
+                      value={paymentInfos.cardHolderName}
+                      onChange={(e) => updatePayment("cardHolderName", e.target.value)}
+                      placeholder="Full name"
                       style={{ width: "100%", padding: "8px", marginTop: "6px", borderRadius: 6, border: "1px solid #e2e8f0" }}
                     />
                   </label>
 
-                  <label style={{ flex: 1, fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>
-                    CVV
+                  <label style={{ fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>
+                    Card number
                     <input
-                      type="password"
-                      value={paymentInfos.cvv}
-                      onChange={(e) => updatePayment("cvv", e.target.value)}
-                      placeholder="123"
+                      type="text"
+                      inputMode="numeric"
+                      value={paymentInfos.creditCardNumber}
+                      onChange={(e) => updatePayment("creditCardNumber", e.target.value)}
+                      placeholder="4242 4242 4242 4242"
                       style={{ width: "100%", padding: "8px", marginTop: "6px", borderRadius: 6, border: "1px solid #e2e8f0" }}
                     />
                   </label>
-                </div>
 
-                <label style={{ fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>
-                  Card type
-                  <select
-                    value={paymentInfos.cardType}
-                    onChange={(e) => updatePayment("cardType", e.target.value)}
-                    style={{ width: "100%", padding: "8px", marginTop: "6px", borderRadius: 6, border: "1px solid #e2e8f0" }}
-                  >
-                    <option value="">Select card type</option>
-                    <option value="VISA">VISA</option>
-                    <option value="MASTERCARD">Mastercard</option>
-                    <option value="AMEX">Amex</option>
-                    <option value="DISCOVER">Discover</option>
-                  </select>
-                </label>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <label style={{ flex: 1, fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>
+                      Expiry (MM/YY)
+                      <input
+                        type="text"
+                        value={paymentInfos.cardExpiry}
+                        onChange={(e) => updatePayment("cardExpiry", e.target.value)}
+                        placeholder="MM/YY"
+                        style={{ width: "100%", padding: "8px", marginTop: "6px", borderRadius: 6, border: "1px solid #e2e8f0" }}
+                      />
+                    </label>
 
-                {paymentError && <p style={{ color: "#dc2626", margin: 0 }}>{paymentError}</p>}
-                {paymentSuccess && <p style={{ color: "#16a34a", margin: 0 }}>{paymentSuccess}</p>}
+                    <label style={{ flex: 1, fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>
+                      CVV
+                      <input
+                        type="password"
+                        value={paymentInfos.cvv}
+                        onChange={(e) => updatePayment("cvv", e.target.value)}
+                        placeholder="123"
+                        style={{ width: "100%", padding: "8px", marginTop: "6px", borderRadius: 6, border: "1px solid #e2e8f0" }}
+                      />
+                    </label>
+                  </div>
 
-                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-                  <button
-                    type="button"
-                    className="db-btn"
-                    onClick={() =>
-                      setPaymentInfos({
-                        creditCardNumber: "",
-                        cardExpiry: "",
-                        cardHolderName: "",
-                        cardType: "",
-                        cvv: "",
-                      })
-                    }
-                    disabled={paymentLoading}
-                  >
-                    Clear
-                  </button>
-                  <button
-                    type="submit"
-                    className="db-btn primary"
-                    disabled={paymentLoading}
-                    style={{ minWidth: 120 }}
-                  >
-                    {paymentLoading ? "Adding..." : "Add payment"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-          <div className="db-card" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div className="db-flex-between" style={{ alignItems: "center" }}>
-              <div>
-                <h2 style={{ marginBottom: "4px" }}>Service map</h2>
-                <p className="db-muted" style={{ margin: 0 }}>
-                  Explore available stations and plan your ride.
-                </p>
+                  <label style={{ fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>
+                    Card type
+                    <select
+                      value={paymentInfos.cardType}
+                      onChange={(e) => updatePayment("cardType", e.target.value)}
+                      style={{ width: "100%", padding: "8px", marginTop: "6px", borderRadius: 6, border: "1px solid #e2e8f0" }}
+                    >
+                      <option value="">Select card type</option>
+                      <option value="VISA">VISA</option>
+                      <option value="MASTERCARD">Mastercard</option>
+                      <option value="AMEX">Amex</option>
+                      <option value="DISCOVER">Discover</option>
+                    </select>
+                  </label>
+
+                  {paymentError && <p style={{ color: "#dc2626", margin: 0 }}>{paymentError}</p>}
+                  {paymentSuccess && <p style={{ color: "#16a34a", margin: 0 }}>{paymentSuccess}</p>}
+
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                    <button
+                      type="button"
+                      className="db-btn"
+                      onClick={() =>
+                        setPaymentInfos({
+                          creditCardNumber: "",
+                          cardExpiry: "",
+                          cardHolderName: "",
+                          cardType: "",
+                          cvv: "",
+                        })
+                      }
+                      disabled={paymentLoading}
+                    >
+                      Clear
+                    </button>
+                    <button
+                      type="submit"
+                      className="db-btn primary"
+                      disabled={paymentLoading}
+                      style={{ minWidth: 120 }}
+                    >
+                      {paymentLoading ? "Adding..." : "Add payment"}
+                    </button>
+                  </div>
+                </form>
               </div>
+            </div>
+            <div className="db-card" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div className="db-flex-between" style={{ alignItems: "center" }}>
+                <div>
+                  <h2 style={{ marginBottom: "4px" }}>Service map</h2>
+                  <p className="db-muted" style={{ margin: 0 }}>
+                    Explore available stations and plan your ride.
+                  </p>
+                </div>
+                <button
+                  className="db-btn"
+                  type="button"
+                  onClick={() => setIsMapExpanded((prev) => !prev)}
+                >
+                  {isMapExpanded ? "Collapse map" : "Expand map"}
+                </button>
+              </div>
+              <MapPreview
+                height={isMapExpanded ? 420 : 260}
+                style={{
+                  transition: "height 0.3s ease",
+                }}
+              />
+              <p className="db-muted" style={{ margin: 0 }}>
+                Need more detail? Use the expand toggle or head to the full map view.
+              </p>
               <button
-                className="db-btn"
+                className="db-btn primary"
                 type="button"
-                onClick={() => setIsMapExpanded((prev) => !prev)}
+                onClick={() => navigate("/map")}
               >
-                {isMapExpanded ? "Collapse map" : "Expand map"}
+                Open full map
               </button>
             </div>
-            <MapPreview
-              height={isMapExpanded ? 420 : 260}
-              style={{
-                transition: "height 0.3s ease",
-              }}
-            />
-            <p className="db-muted" style={{ margin: 0 }}>
-              Need more detail? Use the expand toggle or head to the full map view.
-            </p>
-            <button
-              className="db-btn primary"
-              type="button"
-              onClick={() => navigate("/map")}
-            >
-              Open full map
-            </button>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

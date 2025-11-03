@@ -7,6 +7,7 @@ import ComingSoon from "./pages/ComingSoon";
 import RideConfirmation from "./pages/RideConfirmation";
 import OperatorDashboard from './pages/OperatorDashboard/OperatorDashboard';
 import ProfilePage from "./pages/Profile/ProfilePage";
+import TripsPage from "./pages/Trips/TripsPage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
         <Route path="/coming-soon" element={<ComingSoon />} />
         <Route path="/ride-confirmation" element={<RideConfirmation />} />
         <Route path="/operator-dashboard" element={<OperatorDashboard />} />
+        <Route path="/trips" element={<TripsPage />} />
       </Routes>
     </Router>
   );
