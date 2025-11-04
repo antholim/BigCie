@@ -94,7 +94,8 @@ export default function LogDashboard({ wsUrl = 'ws://localhost:8080/ws' }) {
     if (!filter) return true;
     try {
       return JSON.stringify(msg.data).toLowerCase().includes(filter.toLowerCase());
-    } catch (e) {
+    } catch {
+      // ignore serialization errors and filter out malformed messages
       return false;
     }
   });

@@ -1,5 +1,5 @@
-import React, { useState } from "react"
-import { formatDateTime, truncateId } from "../../../utils/utils";
+import React from "react"
+import { truncateId } from "../../../utils/utils";
 
 function BikeBox({bikeIdList}) {
     console.log(bikeIdList);
@@ -37,12 +37,12 @@ function BikeBox({bikeIdList}) {
             >
                 {bikeIdList.map((bikeId) => {
                     return (
-                        <>
+                        <React.Fragment key={bikeId}>
                             <dt style={{ fontWeight: 600, color: "#1e293b" }}>Bike</dt>
                             <dd style={{ margin: 0, color: "#475569" }}>
                                 {truncateId(bikeId)}
                             </dd>
-                        </>
+                        </React.Fragment>
                     );
                 })}
             </dl>

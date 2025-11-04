@@ -1,6 +1,7 @@
 package bigcie.bigcie.controllers;
 
 import bigcie.bigcie.dtos.TripInfo.TripDto;
+import bigcie.bigcie.services.AuthorizationService;
 import bigcie.bigcie.services.TokenService;
 import bigcie.bigcie.services.interfaces.ICookieService;
 import bigcie.bigcie.services.interfaces.ITripService;
@@ -19,16 +20,19 @@ import java.util.UUID;
 @RequestMapping("/api/v1/trips")
 @Tag(name = "Payments", description = "Operations related to payment methods")
 public class TripController {
+
+    private final AuthorizationService authorizationService;
     private final TokenService tokenService;
     private final ICookieService cookieService;
     private final ITripService tripService;
 
-    public TripController(TokenService tokenService, ICookieService cookieService, ITripService tripService) {
+    public TripController(TokenService tokenService, ICookieService cookieService, ITripService tripService,
+            AuthorizationService authorizationService) {
         this.tokenService = tokenService;
         this.cookieService = cookieService;
         this.tripService = tripService;
+        this.authorizationService = authorizationService;
     }
-
 
     @Operation(summary = "Get Trip History", description = "Get the trip history for the authenticated user")
     @GetMapping("/me")
@@ -38,4 +42,17 @@ public class TripController {
         List<TripDto> tripDtoList = tripService.getTripByUserId(userId);
         return ResponseEntity.ok(tripDtoList);
     }
+
+    @Operation(summary = "Get All Trips", description = "Get all trips for admin purposes")
+    @GetMapping("/getAll")
+    // we need to use the isOperator method to check if the user is an admin
+    public ResponseEntity<List<TripDto>> getAllTrips(HttpServletRequest request) {
+        if (authorizationService.isOperator(request)) {
+            List<TripDto> tripDtoList = tripService.getAllTrips();
+            return ResponseEntity.ok(tripDtoList);
+        } else {
+            return ResponseEntity.status(403).build(); // Forbidden
+        }
+    }
+
 }

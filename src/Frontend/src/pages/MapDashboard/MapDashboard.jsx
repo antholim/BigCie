@@ -11,7 +11,7 @@ import BikeBox from "../Profile/components/BikeBox";
 
 export default function MapDashboard() {
     const navigate = useNavigate();
-    const { user, isAuthenticated, loading: authLoading, logout } = useAuth();
+    const { user, isAuthenticated, loading: _authLoading } = useAuth();
     const mapRef = useRef(null);
     const leafletRef = useRef(null);
     const markerRef = useRef(null);
@@ -94,9 +94,9 @@ export default function MapDashboard() {
                     return m;
                 });
                 console.log(resp)
-            } catch (err) {
-                console.error("Error fetching bike stations:", err);
-            }
+            } catch {
+                    console.error("Error fetching bike stations:");
+                }
         };
 
         loadStationsAndRender();
@@ -146,10 +146,10 @@ export default function MapDashboard() {
             });
         }
         // Leaflet sometimes needs a resize call when used in flex layouts
-        setTimeout(() => {
+            setTimeout(() => {
             try {
                 leafletRef.current.invalidateSize();
-            } catch (e) {
+            } catch {
                 // ignore
             }
         }, 200);
@@ -219,7 +219,7 @@ export default function MapDashboard() {
         try {
             // Assumes backend supports POST /api/v1/stations/:id/{action}
             const path = `/api/v1/stations/${selectedStation.id}/${action}`;
-            const resp = await FetchingService.post(path);
+            await FetchingService.post(path);
             // Simple feedback; you can wire this into context/state/UI
             alert(`${action} successful`);
             // optionally refresh stations
@@ -231,7 +231,7 @@ export default function MapDashboard() {
                     ? refreshedData 
                     : refreshedData.filter(station => station.status !== 'OUT_OF_SERVICE');
                 setStations(filteredData);
-            } catch (e) {
+            } catch {
                 // ignore refresh error
             }
             closeStationMenu();
@@ -247,7 +247,7 @@ export default function MapDashboard() {
             // Assumes backend supports POST /api/v1/stations/:id/{action}
             const path = `/api/v1/stations/${selectedStation.id}/${action}`;
             console.log(bikes[0])
-            const resp = await FetchingService.post(path, {
+            await FetchingService.post(path, {
             bikeId: bikes[0] // ensure this is a UUID string
             });
             // Simple feedback; you can wire this into context/state/UI
@@ -261,7 +261,7 @@ export default function MapDashboard() {
                     ? refreshedData 
                     : refreshedData.filter(station => station.status !== 'OUT_OF_SERVICE');
                 setStations(filteredData);
-            } catch (e) {
+            } catch {
                 // ignore refresh error
             }
             closeStationMenu();
@@ -294,7 +294,7 @@ export default function MapDashboard() {
                 if (newStatus === 'OUT_OF_SERVICE' && !isOperator) {
                     closeStationMenu();
                 }
-            } catch (e) {
+            } catch {
                 // ignore refresh error
             }
         } catch (err) {
@@ -305,13 +305,13 @@ export default function MapDashboard() {
         }
     };
 
-    const zoomIn = useCallback(() => {
+    const _zoomIn = useCallback(() => {
         const next = Math.min(21, zoom + 1);
         setZoom(next);
         if (leafletRef.current) leafletRef.current.setZoom(next);
     }, [zoom]);
 
-    const zoomOut = useCallback(() => {
+    const _zoomOut = useCallback(() => {
         const next = Math.max(1, zoom - 1);
         setZoom(next);
         if (leafletRef.current) leafletRef.current.setZoom(next);

@@ -13,7 +13,7 @@ export default function RideConfirmation() {
     if (!startedAt) return null;
     try {
       return new Date(startedAt).toLocaleString();
-    } catch (err) {
+    } catch {
       return startedAt;
     }
   }, [startedAt]);

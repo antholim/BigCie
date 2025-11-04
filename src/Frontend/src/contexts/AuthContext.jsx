@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect } from "react";
 import FetchingService from "../services/FetchingService";
 
@@ -24,7 +25,7 @@ const readStoredUser = () => {
   if (!raw) return null;
   try {
     return JSON.parse(raw);
-  } catch (err) {
+  } catch {
     window.sessionStorage.removeItem(STORAGE_KEY);
     return null;
   }
@@ -55,7 +56,7 @@ export function AuthProvider({ children }) {
       setUser(normalized);
       persistUser(normalized);
       return normalized;
-    } catch (err) {
+    } catch {
       const stored = readStoredUser();
       setUser(stored);
       if (!stored) {
@@ -78,7 +79,7 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try {
       await FetchingService.post("/api/v1/logout");
-    } catch (err) {
+    } catch {
       // Backend may not expose a logout endpoint yet; ignore network errors.
     } finally {
       setUser(null);

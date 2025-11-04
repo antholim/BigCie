@@ -139,4 +139,5 @@ public class TokenService implements ITokenService {
     private SecretKey getKey(TokenType tokenType) {
         return tokenType == TokenType.ACCESS_TOKEN ? signInKey : refreshKey;
     }
+
 }

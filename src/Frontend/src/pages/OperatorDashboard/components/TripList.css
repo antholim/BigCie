@@ -1,0 +1,47 @@
+.trip-list {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 12px;
+  /* fill the column container so the parent can control scrolling */
+  height: 100%;
+  overflow: auto;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.trip-list h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.05rem;
+}
+.trip-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.trip-row {
+  border: 1px solid #f1f5f9;
+  padding: 8px;
+  border-radius: 4px;
+  background: #fbfcfe;
+}
+.trip-row-main {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.trip-json {
+  background: #0f172a;
+  color: #e6eef8;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  max-height: 160px;
+  overflow: auto;
+}
+.trip-list .empty {
+  color: #6b7280;
+  padding: 8px;
+}
+.trip-list.error {
+  color: #b91c1c;
+}

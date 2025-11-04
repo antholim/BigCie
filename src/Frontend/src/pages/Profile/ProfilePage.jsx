@@ -12,11 +12,12 @@ import SideBar from "../../components/SideBar";
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { user, isAuthenticated, loading: authLoading, logout } = useAuth();
+  const isOperator = user?.userType === 'OPERATOR' || user?.type === 'OPERATOR';
   const [reservations, setReservations] = useState([]);
   const [reservationsLoading, setReservationsLoading] = useState(false);
   const [bikes, setBikes] = useState([]);
-  const [bikesLoading, setBikesLoading] = useState(false);
-  const [bikesError, setBikesError] = useState("");
+  const [_bikesLoading, setBikesLoading] = useState(false);
+  const [_bikesError, setBikesError] = useState("");
   const [reservationsError, setReservationsError] = useState("");
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -92,7 +93,7 @@ export default function ProfilePage() {
     try {
       await logout();
       navigate("/", { replace: true });
-    } catch (err) {
+    } catch {
       // Ignore logout network errors; user is forced to sign in again regardless.
     } finally {
       setIsLoggingOut(false);
@@ -190,6 +191,15 @@ export default function ProfilePage() {
             <span>DowntownBike</span>
           </div>
           <div className="db-actions" style={{ gap: "12px" }}>
+            {isOperator && (
+              <button
+                className="db-btn"
+                type="button"
+                onClick={() => navigate('/operator-dashboard')}
+              >
+                Operator Dashboard
+              </button>
+            )}
             <button className="db-btn" type="button" onClick={() => navigate("/")}>
               Back to landing
             </button>

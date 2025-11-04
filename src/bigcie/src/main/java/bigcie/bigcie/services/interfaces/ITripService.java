@@ -9,18 +9,23 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ITripService {
-    Trip getTripById(UUID id);
-    Trip createTrip(
-            UUID userId,
-            UUID bikeId,
-            UUID bikeStationStartId,
-            PricingPlan pricingPlan,
-            BikeType bikeType
+        Trip getTripById(UUID id);
 
-    );
-    void endTrip(
-            UUID tripId,
-            UUID bikeStationEndId
-    );
-    List<TripDto> getTripByUserId(UUID userId);
+        Trip createTrip(
+                        UUID userId,
+                        UUID bikeId,
+                        UUID bikeStationStartId,
+                        PricingPlan pricingPlan,
+                        BikeType bikeType
+
+        );
+
+        void endTrip(
+                        UUID tripId,
+                        UUID bikeStationEndId);
+
+        List<TripDto> getTripByUserId(UUID userId);
+
+        // get all trips - for admin purposes
+        List<TripDto> getAllTrips();
 }

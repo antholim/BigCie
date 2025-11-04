@@ -42,7 +42,7 @@ export default function useWebsocket(url, options = {}) {
       while (sendQueueRef.current.length) {
         try {
           wsRef.current.send(JSON.stringify(sendQueueRef.current.shift()));
-        } catch (e) {
+        } catch {
           break;
         }
       }
@@ -52,7 +52,7 @@ export default function useWebsocket(url, options = {}) {
       let parsed = null;
       try {
         parsed = JSON.parse(evt.data);
-      } catch (e) {
+      } catch {
         parsed = { message: evt.data };
       }
       const envelope = {
@@ -73,9 +73,11 @@ export default function useWebsocket(url, options = {}) {
       console.error('WebSocket error', err);
       try {
         wsRef.current.close();
-      } catch (e) {}
+      } catch {
+        // ignore close error
+      }
     };
-  }, [url, reconnect, pushMessage]);
+  }, [url, reconnect, pushMessage, scheduleReconnect]);
 
   const scheduleReconnect = useCallback(() => {
     if (!reconnect) return;
@@ -86,7 +88,7 @@ export default function useWebsocket(url, options = {}) {
       if (!mountedRef.current) return;
       connect();
     }, delay);
-  }, [connect, reconnectMaxDelay, reconnect]);
+  }, [connect, reconnect, reconnectMaxDelay]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -97,10 +99,12 @@ export default function useWebsocket(url, options = {}) {
       if (wsRef.current) {
         try {
           wsRef.current.close();
-        } catch (e) {}
+        } catch {
+          // ignore close error
+        }
       }
     };
-  }, [url]);
+  }, [url, connect]);
 
   const send = useCallback((payload) => {
     if (!payload) return;
@@ -110,7 +114,9 @@ export default function useWebsocket(url, options = {}) {
     } else {
       try {
         sendQueueRef.current.push(payload);
-      } catch (e) {}
+      } catch {
+        // ignore queue push error
+      }
     }
   }, []);
 
@@ -119,7 +125,9 @@ export default function useWebsocket(url, options = {}) {
     if (wsRef.current) {
       try {
         wsRef.current.close();
-      } catch (e) {}
+      } catch {
+        // ignore close error
+      }
     }
   }, []);
 

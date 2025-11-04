@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import FetchingService from "../../services/FetchingService";
 import { useAuth } from "../../contexts/AuthContext";
 import "../../components/home.css";
-import { formatDateTime } from "../../utils/utils";
 import SideBar from "../../components/SideBar";
 import Trip from "./components/Trip";
 

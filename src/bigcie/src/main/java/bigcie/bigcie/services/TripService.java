@@ -58,15 +58,15 @@ public class TripService implements ITripService {
 
     public void endTrip(
             UUID tripId,
-            UUID bikeStationEndId
-    ) {
+            UUID bikeStationEndId) {
         Trip trip = getTripById(tripId);
         LocalDateTime endTime = LocalDateTime.now();
         if (trip != null && trip.getStatus() == TripStatus.ONGOING) {
             trip.setBikeStationEndId(bikeStationEndId);
             trip.setEndDate(endTime.plusMinutes(5));
             trip.setStatus(TripStatus.COMPLETED);
-            trip.setCost(priceService.calculatePrice(trip.getStartDate(), endTime, trip.getBikeType(), trip.getPricingPlan()));
+            trip.setCost(priceService.calculatePrice(trip.getStartDate(), endTime, trip.getBikeType(),
+                    trip.getPricingPlan()));
             tripRepository.save(trip);
         } else {
             throw new IllegalArgumentException("Trip not found or already completed");
@@ -78,4 +78,11 @@ public class TripService implements ITripService {
         List<Trip> tripList = tripRepository.findByUserId(userId);
         return tripAssembler.enrichTripDtoList(tripList);
     }
+
+    // get all trips - for admin purposes
+    @Override
+    public List<TripDto> getAllTrips() {
+        return tripAssembler.enrichTripDtoList(tripRepository.findAll());
+    }
+
 }

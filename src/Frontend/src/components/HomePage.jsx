@@ -15,7 +15,7 @@ export default function DowntownBikeLanding() {
     try {
       const stored = sessionStorage.getItem("activeRideIds");
       return stored ? JSON.parse(stored) : [];
-    } catch (err) {
+    } catch {
       return [];
     }
   });
@@ -95,8 +95,8 @@ export default function DowntownBikeLanding() {
   const handleLogout = async () => {
     try {
       await logout();
-    } catch (err) {
-      console.warn("Failed to log out", err);
+    } catch {
+      // ignore logout error
     } finally {
       navigate("/");
     }
