@@ -11,6 +11,7 @@ export default function TripsPage() {
   const navigate = useNavigate();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const [trips, setTrips] = useState([]);
+  const [planFilter, setPlanFilter] = useState("ALL");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -81,6 +82,50 @@ export default function TripsPage() {
             A history of your rides — tap a trip for details.
           </p>
         </section>
+        {/* Pricing plan filter radios */}
+        <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ fontWeight: 600, color: "#0f172a" }}>Show</div>
+          <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <input
+              type="radio"
+              name="plan"
+              value="ALL"
+              checked={planFilter === "ALL"}
+              onChange={() => setPlanFilter("ALL")}
+            />
+            <span className="db-muted">All</span>
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <input
+              type="radio"
+              name="plan"
+              value="SINGLE_RIDE"
+              checked={planFilter === "SINGLE_RIDE"}
+              onChange={() => setPlanFilter("SINGLE_RIDE")}
+            />
+            <span className="db-muted">Single ride</span>
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <input
+              type="radio"
+              name="plan"
+              value="DAY_PASS"
+              checked={planFilter === "DAY_PASS"}
+              onChange={() => setPlanFilter("DAY_PASS")}
+            />
+            <span className="db-muted">Day pass</span>
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <input
+              type="radio"
+              name="plan"
+              value="MONTHLY_PASS"
+              checked={planFilter === "MONTHLY_PASS"}
+              onChange={() => setPlanFilter("MONTHLY_PASS")}
+            />
+            <span className="db-muted">Monthly pass</span>
+          </label>
+        </div>
       
         <div style={{ display: "grid", gap: 16 }}>
           {loading && <p className="db-muted">Loading trips...</p>}
@@ -92,6 +137,17 @@ export default function TripsPage() {
           {!loading && !error && trips.map((trip) => {
             return <Trip trip={trip} />;
           })}
+            {!loading && !error &&
+              trips
+                .filter((trip) => {
+                  if (planFilter === "ALL") return true;
+                  // Accept either pricingPlan or pricing_plan or plan
+                  const plan = trip.pricingPlan ?? trip.pricing_plan ?? trip.pricing;
+                  return String(plan) === planFilter;
+                })
+                .map((trip) => {
+                  return <Trip trip={trip} />;
+                })}
         </div>
       </main>
       </div>

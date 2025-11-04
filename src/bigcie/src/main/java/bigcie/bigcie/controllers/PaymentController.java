@@ -2,6 +2,7 @@ package bigcie.bigcie.controllers;
 
 import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoRequest.PaymentInfoRequest;
 import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoResponse.PaymentInfoDto;
+import bigcie.bigcie.dtos.PaymentInfo.PaymentPlanRequest.PaymentPlanRequest;
 import bigcie.bigcie.services.PaymentService;
 import bigcie.bigcie.services.TokenService;
 import bigcie.bigcie.services.interfaces.ICookieService;
@@ -56,5 +57,15 @@ public class PaymentController {
         paymentService.updateDefaultPaymentMethod(userId, id);
         return ResponseEntity.ok("Default payment method updated successfully");
     }
+    @Operation(summary = "Update Payment Plan", description = "Update the payment plan for the authenticated user")
+    @PatchMapping("/update-plan")
+    public ResponseEntity<?> updatePaymentPlan(@RequestBody PaymentPlanRequest paymentPlanRequest,
+                                               HttpServletRequest request) {
+        String token = cookieService.getTokenFromCookie(request, "authToken");
+        UUID userId = tokenService.extractUserId(token);
+        paymentService.updatePaymentPlan(userId, paymentPlanRequest);
+        return ResponseEntity.ok("Payment plan updated successfully");
+    }
+
 
 }

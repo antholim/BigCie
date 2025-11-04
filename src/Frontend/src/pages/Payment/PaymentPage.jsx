@@ -6,6 +6,7 @@ import "../../components/home.css";
 import { formatDateTime } from "../../utils/utils";
 import SideBar from "../../components/SideBar";
 import PaymentInfo from "./components/PaymentInfo";
+import PaymentPlan from "./components/PaymentPlan";
 
 export default function PaymentPage() {
   const navigate = useNavigate();
@@ -121,7 +122,9 @@ export default function PaymentPage() {
       </header>
       <div style={{ display: "flex", gap: 24, alignItems: "flex-start", paddingTop: 24 }}>
               <SideBar username={user?.username} email={user?.email} />
+      
       <main className="db-container" style={{ paddingTop: 48, paddingBottom: 64 }}>
+        <PaymentPlan/>;
                       <div className="db-card" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <div className="db-flex-between" style={{ alignItems: "center" }}>
                   <div>
