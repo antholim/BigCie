@@ -30,6 +30,19 @@ function PaymentPlan({ value: controlledValue, onChange }) {
             setLoading(false);
         }
     }, []);
+    const handleChangePaymentPlan = async (e) => {
+    e?.preventDefault?.();
+    try {
+        const response = await FetchingService.patch("/api/v1/payments/update-plan", {
+            pricingPlan: plan,
+        });
+        console.log("Change plan response:", response);
+        setCurrentPlan(plan);
+    } catch (err) {
+        setError(err.response?.data?.message || err.message || "Unable to change payment plan right now.");
+        }
+    }
+    
 
     useEffect(() => {
         loadCurrentPlan();
@@ -44,7 +57,8 @@ function PaymentPlan({ value: controlledValue, onChange }) {
                 </div>
             </div>
 
-            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+            <form onSubmit={handleChangePaymentPlan}>
+                            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
                 <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <input
                         type="radio"
@@ -78,6 +92,8 @@ function PaymentPlan({ value: controlledValue, onChange }) {
                     <span>Monthly pass</span>
                 </label>
             </div>
+            <button type="submit">Change plan</button>
+            </form>
 
             <div className="db-muted" style={{ fontSize: 13 }}>
                 Selected: <strong style={{ color: "#0f172a" }}>{plan}</strong>
