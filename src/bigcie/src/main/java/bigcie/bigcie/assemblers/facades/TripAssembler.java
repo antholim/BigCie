@@ -23,7 +23,9 @@ public class TripAssembler {
     private final IPaymentLookup paymentLookup;
     private final PaymentInfoMapper paymentInfoMapper;
     private final Map<UUID, String> stationNameCache = new HashMap<>();
-    public TripAssembler(TripMapper tripMapper, IBikeStationLookup bikeStationLookup, IPaymentLookup paymentLookup, PaymentInfoMapper paymentInfoMapper) {
+
+    public TripAssembler(TripMapper tripMapper, IBikeStationLookup bikeStationLookup, IPaymentLookup paymentLookup,
+            PaymentInfoMapper paymentInfoMapper) {
         this.tripMapper = tripMapper;
         this.bikeStationLookup = bikeStationLookup;
         this.paymentLookup = paymentLookup;
@@ -42,11 +44,30 @@ public class TripAssembler {
 
             UUID endId = trips.get(i).getBikeStationEndId();
             dto.setBikeStationEnd(getStationNameWithCache(endId));
-            dto.setPaymentInfo((paymentInfoMapper.toDto(paymentLookup.getPaymentInfo(trips.get(i).getPaymentInfoId(), userId))));
+            dto.setPaymentInfo(
+                    (paymentInfoMapper.toDto(paymentLookup.getPaymentInfo(trips.get(i).getPaymentInfoId(), userId))));
         }
         return tripDtos;
     }
 
+    // enrich to dtolist no logging
+    public List<TripDto> enrichTripDtoListNoLogging(List<Trip> trips) {
+        List<TripDto> tripDtos = tripMapper.toTripDtoList(trips);
+        int n = Math.min(tripDtos.size(), trips.size());
+        for (int i = 0; i < n; i++) {
+            TripDto dto = tripDtos.get(i);
+            UUID userId = trips.get(i).getUserId();
+
+            UUID startId = trips.get(i).getBikeStationStartId();
+            dto.setBikeStationStart(getStationNameWithCache(startId));
+
+            UUID endId = trips.get(i).getBikeStationEndId();
+            dto.setBikeStationEnd(getStationNameWithCache(endId));
+            dto.setPaymentInfo(
+                    (paymentInfoMapper.toDto(paymentLookup.getPaymentInfo(trips.get(i).getPaymentInfoId(), userId))));
+        }
+        return tripDtos;
+    }
 
     private String getStationNameWithCache(UUID stationId) {
         if (this.stationNameCache.containsKey(stationId)) {

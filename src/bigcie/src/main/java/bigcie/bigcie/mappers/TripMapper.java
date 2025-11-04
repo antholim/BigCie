@@ -17,8 +17,8 @@ public class TripMapper {
                 .id(trip.getId())
                 .userId(trip.getUserId())
                 .bikeId(trip.getBikeId())
-//                .bikeStationStart(trip.getBikeStationStartId())
-//                .bikeStationEnd(trip.getBikeStationEndId())
+                // .bikeStationStart(trip.getBikeStationStartId())
+                // .bikeStationEnd(trip.getBikeStationEndId())
                 .startDate(trip.getStartDate())
                 .endDate(trip.getEndDate())
                 .status(trip.getStatus())
@@ -29,4 +29,5 @@ public class TripMapper {
                 .build();
         return dto;
     }
+
 }

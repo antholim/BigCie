@@ -84,7 +84,8 @@ public class TripService implements ITripService {
     // get all trips - for admin purposes
     @Override
     public List<TripDto> getAllTrips() {
-        return tripAssembler.enrichTripDtoList(tripRepository.findAll());
+        List<Trip> tripList = tripRepository.findAll();
+        return tripAssembler.enrichTripDtoListNoLogging(tripList);
     }
 
 }
