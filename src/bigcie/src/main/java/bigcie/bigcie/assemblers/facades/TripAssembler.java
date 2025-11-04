@@ -44,8 +44,13 @@ public class TripAssembler {
 
             UUID endId = trips.get(i).getBikeStationEndId();
             dto.setBikeStationEnd(getStationNameWithCache(endId));
-            dto.setPaymentInfo(
-                    (paymentInfoMapper.toDto(paymentLookup.getPaymentInfo(trips.get(i).getPaymentInfoId(), userId))));
+            try {
+                dto.setPaymentInfo(
+                        (paymentInfoMapper
+                                .toDto(paymentLookup.getPaymentInfo(trips.get(i).getPaymentInfoId(), userId))));
+            } catch (Exception e) {
+                log.error("Error enriching payment info for tripId: {}", trips.get(i).getId(), e);
+            }
         }
         return tripDtos;
     }
@@ -63,8 +68,13 @@ public class TripAssembler {
 
             UUID endId = trips.get(i).getBikeStationEndId();
             dto.setBikeStationEnd(getStationNameWithCache(endId));
-            dto.setPaymentInfo(
-                    (paymentInfoMapper.toDto(paymentLookup.getPaymentInfo(trips.get(i).getPaymentInfoId(), userId))));
+            try {
+                dto.setPaymentInfo(
+                        (paymentInfoMapper
+                                .toDto(paymentLookup.getPaymentInfo(trips.get(i).getPaymentInfoId(), userId))));
+            } catch (Exception e) {
+                log.error("Error enriching payment info for tripId: {}", trips.get(i).getId(), e);
+            }
         }
         return tripDtos;
     }
