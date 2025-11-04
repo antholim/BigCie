@@ -16,7 +16,8 @@ public interface ITripService {
                         UUID bikeId,
                         UUID bikeStationStartId,
                         PricingPlan pricingPlan,
-                        BikeType bikeType
+                        BikeType bikeType,
+                        UUID paymentInfoId
 
         );
 

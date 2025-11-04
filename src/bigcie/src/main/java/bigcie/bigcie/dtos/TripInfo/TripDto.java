@@ -1,5 +1,6 @@
 package bigcie.bigcie.dtos.TripInfo;
 
+import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoResponse.PaymentInfoDto;
 import bigcie.bigcie.entities.enums.BikeType;
 import bigcie.bigcie.entities.enums.PricingPlan;
 import bigcie.bigcie.entities.enums.TripStatus;
@@ -28,6 +29,7 @@ public class TripDto {
     private double cost;
     private BikeType bikeType;
     private PricingPlan pricingPlan;
+    private PaymentInfoDto paymentInfo;
 
     public static class Builder {
         private final TripDto tripDto = new TripDto();
@@ -89,6 +91,11 @@ public class TripDto {
 
         public Builder pricingPlan(PricingPlan pricingPlan) {
             tripDto.pricingPlan = pricingPlan;
+            return this;
+        }
+
+        public Builder paymentInfo(PaymentInfoDto paymentInfo) {
+            tripDto.paymentInfo = paymentInfo;
             return this;
         }
 

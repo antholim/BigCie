@@ -35,6 +35,9 @@ function BikeBox({bikeIdList}) {
                     margin: 0,
                 }}
             >
+                {bikeIdList.length === 0 && (
+                    <dd style={{ margin: 0, color: "#475569" }}>No bikes found.</dd>
+                )}
                 {bikeIdList.map((bikeId) => {
                     return (
                         <React.Fragment key={bikeId}>

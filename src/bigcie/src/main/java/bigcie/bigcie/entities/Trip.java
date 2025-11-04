@@ -31,6 +31,7 @@ public class Trip {
     private double cost;
     private BikeType bikeType;
     private PricingPlan pricingPlan;
+    private UUID paymentInfoId;
 
     public static class Builder {
         private final Trip trip = new Trip();
@@ -90,6 +91,10 @@ public class Trip {
         }
         public Builder pricingPlan(PricingPlan pricingPlan) {
             trip.pricingPlan = pricingPlan;
+            return this;
+        }
+        public Builder paymentInfoId(UUID paymentInfoId) {
+            trip.paymentInfoId = paymentInfoId;
             return this;
         }
 

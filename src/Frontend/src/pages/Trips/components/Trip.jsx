@@ -42,8 +42,8 @@ function Trip({ trip }) {
                     alignItems: "center",
                 }}
             >
-                <span>Payment: {trip.cardType ?? "—"}</span>
-                <span>•••• {trip.lastFourCreditCardNumber ?? "1234"}</span>
+                <span>Payment: {trip.paymentInfo?.cardType ?? "—"}</span>
+                <span>•••• {trip.paymentInfo?.lastFourCreditCardNumber ?? "1234"}</span>
             </div>
 
 

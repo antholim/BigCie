@@ -38,7 +38,8 @@ public class TripService implements ITripService {
             UUID bikeId,
             UUID bikeStationStartId,
             PricingPlan pricingPlan,
-            BikeType bikeType
+            BikeType bikeType,
+            UUID paymentInfoId
 
     ) {
         Trip trip = new Trip.Builder()
@@ -50,6 +51,7 @@ public class TripService implements ITripService {
                 .status(TripStatus.ONGOING)
                 .pricingPlan(pricingPlan)
                 .bikeType(bikeType)
+                .paymentInfoId(paymentInfoId)
                 .build();
 
         tripRepository.save(trip);
@@ -63,7 +65,7 @@ public class TripService implements ITripService {
         LocalDateTime endTime = LocalDateTime.now();
         if (trip != null && trip.getStatus() == TripStatus.ONGOING) {
             trip.setBikeStationEndId(bikeStationEndId);
-            trip.setEndDate(endTime.plusMinutes(5));
+            trip.setEndDate(endTime);
             trip.setStatus(TripStatus.COMPLETED);
             trip.setCost(priceService.calculatePrice(trip.getStartDate(), endTime, trip.getBikeType(),
                     trip.getPricingPlan()));
@@ -76,7 +78,7 @@ public class TripService implements ITripService {
     @Override
     public List<TripDto> getTripByUserId(UUID userId) {
         List<Trip> tripList = tripRepository.findByUserId(userId);
-        return tripAssembler.enrichTripDtoList(tripList);
+        return tripAssembler.enrichTripDtoList(tripList, userId);
     }
 
     // get all trips - for admin purposes

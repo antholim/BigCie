@@ -2,8 +2,10 @@ package bigcie.bigcie.assemblers.facades;
 
 import bigcie.bigcie.dtos.TripInfo.TripDto;
 import bigcie.bigcie.entities.Trip;
+import bigcie.bigcie.mappers.PaymentInfoMapper;
 import bigcie.bigcie.mappers.TripMapper;
 import bigcie.bigcie.services.read.interfaces.IBikeStationLookup;
+import bigcie.bigcie.services.read.interfaces.IPaymentLookup;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -18,13 +20,17 @@ import java.util.UUID;
 public class TripAssembler {
     private final TripMapper tripMapper;
     private final IBikeStationLookup bikeStationLookup;
+    private final IPaymentLookup paymentLookup;
+    private final PaymentInfoMapper paymentInfoMapper;
     private final Map<UUID, String> stationNameCache = new HashMap<>();
-    public TripAssembler(TripMapper tripMapper, IBikeStationLookup bikeStationLookup) {
+    public TripAssembler(TripMapper tripMapper, IBikeStationLookup bikeStationLookup, IPaymentLookup paymentLookup, PaymentInfoMapper paymentInfoMapper) {
         this.tripMapper = tripMapper;
         this.bikeStationLookup = bikeStationLookup;
+        this.paymentLookup = paymentLookup;
+        this.paymentInfoMapper = paymentInfoMapper;
     }
 
-    public List<TripDto> enrichTripDtoList(List<Trip> trips) {
+    public List<TripDto> enrichTripDtoList(List<Trip> trips, UUID userId) {
         List<TripDto> tripDtos = tripMapper.toTripDtoList(trips);
         int n = Math.min(tripDtos.size(), trips.size());
         for (int i = 0; i < n; i++) {
@@ -36,6 +42,7 @@ public class TripAssembler {
 
             UUID endId = trips.get(i).getBikeStationEndId();
             dto.setBikeStationEnd(getStationNameWithCache(endId));
+            dto.setPaymentInfo((paymentInfoMapper.toDto(paymentLookup.getPaymentInfo(trips.get(i).getPaymentInfoId(), userId))));
         }
         return tripDtos;
     }

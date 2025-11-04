@@ -27,6 +27,12 @@ public class Rider extends User {
     private List<UUID> activeTripId = new ArrayList<>();
     private PricingPlan pricingPlan = PricingPlan.SINGLE_RIDE;
 
+    public PaymentInfo getDefaultPaymentInfo() {
+        return paymentInfos.stream()
+                .filter(PaymentInfo::isDefault)
+                .findFirst()
+                .orElse(null);
+    }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();

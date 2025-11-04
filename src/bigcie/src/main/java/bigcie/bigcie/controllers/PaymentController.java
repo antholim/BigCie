@@ -2,6 +2,8 @@ package bigcie.bigcie.controllers;
 
 import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoRequest.PaymentInfoRequest;
 import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoResponse.PaymentInfoDto;
+import bigcie.bigcie.dtos.PaymentInfo.PaymentPlanRequest.PaymentPlanDto;
+import bigcie.bigcie.entities.enums.PricingPlan;
 import bigcie.bigcie.services.PaymentService;
 import bigcie.bigcie.services.TokenService;
 import bigcie.bigcie.services.interfaces.ICookieService;
@@ -28,7 +30,7 @@ public class PaymentController {
         this.tokenService = tokenService;
         this.cookieService = cookieService;
     }
-    @Operation(summary = "Add Payment Method", description = "Add a new payment method for the authenticated user")
+    @Operation(summary = "Get Payment Method", description = "Get the payment methods for the authenticated user")
     @GetMapping("/me")
     public ResponseEntity<List<PaymentInfoDto>> getPaymentInfo(HttpServletRequest request) {
         String token = cookieService.getTokenFromCookie(request, "authToken");
@@ -47,7 +49,7 @@ public class PaymentController {
         return ResponseEntity.ok("Payment method added successfully");
     }
 
-    @Operation(summary = "Add Payment Method", description = "Make a payment method default for the authenticated user")
+    @Operation(summary = "Update Payment Method", description = "Set Default Payment Method for the authenticated user")
     @PatchMapping("/{id}/default")
     public ResponseEntity<?> addPaymentInfo(@PathVariable UUID id,
                                             HttpServletRequest request) {
@@ -56,5 +58,23 @@ public class PaymentController {
         paymentService.updateDefaultPaymentMethod(userId, id);
         return ResponseEntity.ok("Default payment method updated successfully");
     }
+    @Operation(summary = "Update Payment Plan", description = "Update the payment plan for the authenticated user")
+    @PatchMapping("/update-plan")
+    public ResponseEntity<?> updatePaymentPlan(@RequestBody PaymentPlanDto paymentPlanRequest,
+                                               HttpServletRequest request) {
+        String token = cookieService.getTokenFromCookie(request, "authToken");
+        UUID userId = tokenService.extractUserId(token);
+        paymentService.updatePaymentPlan(userId, paymentPlanRequest);
+        return ResponseEntity.ok("Payment plan updated successfully");
+    }
+    @Operation(summary = "Get Current Plan", description = "Get the current payment plan for the authenticated user")
+    @GetMapping("/current-plan")
+    public ResponseEntity<PaymentPlanDto> getCurrentPaymentPlan(HttpServletRequest request) {
+        String token = cookieService.getTokenFromCookie(request, "authToken");
+        UUID userId = tokenService.extractUserId(token);
+        PaymentPlanDto pricingPlan = paymentService.getPricingPlanByUserId(userId);
+        return ResponseEntity.ok(pricingPlan);
+    }
+
 
 }
