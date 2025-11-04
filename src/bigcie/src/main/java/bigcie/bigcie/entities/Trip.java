@@ -31,6 +31,7 @@ public class Trip {
     private double cost;
     private BikeType bikeType;
     private PricingPlan pricingPlan;
+    private UUID paymentInfoId;
 
     public static class Builder {
         private final Trip trip = new Trip();
