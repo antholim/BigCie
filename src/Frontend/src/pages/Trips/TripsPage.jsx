@@ -38,6 +38,13 @@ export default function TripsPage() {
         if (!tripUserId) return false;
         return String(tripUserId).toLowerCase() === String(identifier).toLowerCase();
       });
+      // sort by most recent trip date (startDate or fallback to createdAt) descending
+      const getTripTimestamp = (trip) => {
+        const d = trip.startDate ?? trip.start_date ?? trip.start ?? trip.createdAt ?? trip.created_at;
+        const time = d ? new Date(d).getTime() : 0;
+        return isNaN(time) ? 0 : time;
+      };
+      filtered.sort((a, b) => getTripTimestamp(b) - getTripTimestamp(a));
       setTrips(filtered);
     } catch (err) {
       setError(err.response?.data?.message || err.message || "Unable to load trips right now.");
