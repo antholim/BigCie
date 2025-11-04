@@ -12,6 +12,8 @@ export default function TripsPage() {
   const [trips, setTrips] = useState([]);
   const [planFilter, setPlanFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -84,7 +86,7 @@ export default function TripsPage() {
         </section>
         {/* Search + Pricing plan filter */}
         <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 12, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <input
               type="text"
               aria-label="Search by trip ID"
@@ -93,7 +95,27 @@ export default function TripsPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', minWidth: 220 }}
             />
-            <button className="db-btn" type="button" onClick={() => setSearchQuery("")}>Clear</button>
+          
+
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <label style={{ fontSize: 13, color: '#0f172a' }}>From</label>
+              <input
+                type="date"
+                aria-label="Start date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                style={{ padding: '6px 8px', borderRadius: 8, border: '1px solid #e2e8f0' }}
+              />
+              <label style={{ fontSize: 13, color: '#0f172a' }}>To</label>
+              <input
+                type="date"
+                aria-label="End date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                style={{ padding: '6px 8px', borderRadius: 8, border: '1px solid #e2e8f0' }}
+              />
+              <button className="db-btn" type="button" aria-label="Clear filters" onClick={() => { setSearchQuery(""); setStartDate(""); setEndDate(""); }}>Clear</button>
+            </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -148,15 +170,27 @@ export default function TripsPage() {
           {/* Apply combined filters: planFilter and searchQuery (trip ID) */}
           {!loading && !error && (() => {
             const q = String(searchQuery || "").trim().toLowerCase();
+            const start = startDate ? new Date(startDate + "T00:00:00") : null;
+            const end = endDate ? new Date(endDate + "T23:59:59.999") : null;
+
             const filteredTrips = trips.filter((trip) => {
               // plan filter
               if (planFilter !== "ALL") {
                 const plan = trip.pricingPlan ?? trip.pricing_plan ?? trip.pricing;
                 if (String(plan) !== planFilter) return false;
               }
-              // search by trip id (partial match)
+              // date range filter (based on trip start date)
+              if (start || end) {
+                const sd = trip.startDate ?? trip.start_date ?? trip.start ?? trip.createdAt ?? trip.created_at;
+                if (!sd) return false;
+                const tripDate = new Date(sd);
+                if (isNaN(tripDate)) return false;
+                if (start && tripDate < start) return false;
+                if (end && tripDate > end) return false;
+              }
+              // search by trip id (partial match, case-insensitive)
               if (q.length > 0) {
-                const idStr = String(trip.id ?? trip._id ?? "");
+                const idStr = String(trip.id ?? trip._id ?? "").toLowerCase();
                 return idStr.includes(q);
               }
               return true;
