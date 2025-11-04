@@ -37,7 +37,13 @@ public class PaymentService implements IPaymentService {
         } else {
             throw new IllegalArgumentException("User is not a rider");
         }
+
         PaymentInfo paymentInfo = new PaymentInfo();
+        // Check if a payment exists already
+        if (rider.getPaymentInfos().isEmpty()) {
+            paymentInfo.setDefault(true);
+        }
+
         paymentInfo.setId(UUID.randomUUID());
         paymentInfo.setUserId(user.getId());
         paymentInfo.setCreditCardNumber(paymentInfoRequest.getCreditCardNumber());
