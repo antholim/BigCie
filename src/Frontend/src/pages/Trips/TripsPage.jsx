@@ -11,6 +11,7 @@ export default function TripsPage() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const [trips, setTrips] = useState([]);
   const [planFilter, setPlanFilter] = useState("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -81,10 +82,23 @@ export default function TripsPage() {
             A history of your rides — tap a trip for details.
           </p>
         </section>
-        {/* Pricing plan filter radios */}
-        <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ fontWeight: 600, color: "#0f172a" }}>Show</div>
-          <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        {/* Search + Pricing plan filter */}
+        <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input
+              type="text"
+              aria-label="Search by trip ID"
+              placeholder="Search by trip ID"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', minWidth: 220 }}
+            />
+            <button className="db-btn" type="button" onClick={() => setSearchQuery("")}>Clear</button>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ fontWeight: 600, color: "#0f172a" }}>Show</div>
+            <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <input
               type="radio"
               name="plan"
@@ -124,29 +138,36 @@ export default function TripsPage() {
             />
             <span className="db-muted">Monthly pass</span>
           </label>
+          </div>
         </div>
       
         <div style={{ display: "grid", gap: 16 }}>
           {loading && <p className="db-muted">Loading trips...</p>}
           {!loading && error && <p style={{ color: "#dc2626" }}>{error}</p>}
-          {!loading && !error && trips.length === 0 && (
-            <p className="db-muted">No trips found.</p>
-          )}
 
-          {!loading && !error && trips.map((trip) => {
-            return <Trip trip={trip} />;
-          })}
-            {!loading && !error &&
-              trips
-                .filter((trip) => {
-                  if (planFilter === "ALL") return true;
-                  // Accept either pricingPlan or pricing_plan or plan
-                  const plan = trip.pricingPlan ?? trip.pricing_plan ?? trip.pricing;
-                  return String(plan) === planFilter;
-                })
-                .map((trip) => {
-                  return <Trip trip={trip} />;
-                })}
+          {/* Apply combined filters: planFilter and searchQuery (trip ID) */}
+          {!loading && !error && (() => {
+            const q = String(searchQuery || "").trim().toLowerCase();
+            const filteredTrips = trips.filter((trip) => {
+              // plan filter
+              if (planFilter !== "ALL") {
+                const plan = trip.pricingPlan ?? trip.pricing_plan ?? trip.pricing;
+                if (String(plan) !== planFilter) return false;
+              }
+              // search by trip id (partial match)
+              if (q.length > 0) {
+                const idStr = String(trip.id ?? trip._id ?? "");
+                return idStr.includes(q);
+              }
+              return true;
+            });
+
+            if (filteredTrips.length === 0) {
+              return <p className="db-muted">No trips found.</p>;
+            }
+
+            return filteredTrips.map((trip) => <Trip key={trip.id ?? trip._id} trip={trip} />);
+          })()}
         </div>
       </main>
       </div>
