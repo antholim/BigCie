@@ -2,7 +2,8 @@ package bigcie.bigcie.controllers;
 
 import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoRequest.PaymentInfoRequest;
 import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoResponse.PaymentInfoDto;
-import bigcie.bigcie.dtos.PaymentInfo.PaymentPlanRequest.PaymentPlanRequest;
+import bigcie.bigcie.dtos.PaymentInfo.PaymentPlanRequest.PaymentPlanDto;
+import bigcie.bigcie.entities.enums.PricingPlan;
 import bigcie.bigcie.services.PaymentService;
 import bigcie.bigcie.services.TokenService;
 import bigcie.bigcie.services.interfaces.ICookieService;
@@ -59,12 +60,20 @@ public class PaymentController {
     }
     @Operation(summary = "Update Payment Plan", description = "Update the payment plan for the authenticated user")
     @PatchMapping("/update-plan")
-    public ResponseEntity<?> updatePaymentPlan(@RequestBody PaymentPlanRequest paymentPlanRequest,
+    public ResponseEntity<?> updatePaymentPlan(@RequestBody PaymentPlanDto paymentPlanRequest,
                                                HttpServletRequest request) {
         String token = cookieService.getTokenFromCookie(request, "authToken");
         UUID userId = tokenService.extractUserId(token);
         paymentService.updatePaymentPlan(userId, paymentPlanRequest);
         return ResponseEntity.ok("Payment plan updated successfully");
+    }
+    @Operation(summary = "Get Current Plan", description = "Get the current payment plan for the authenticated user")
+    @GetMapping("/current-plan")
+    public ResponseEntity<PaymentPlanDto> getCurrentPaymentPlan(HttpServletRequest request) {
+        String token = cookieService.getTokenFromCookie(request, "authToken");
+        UUID userId = tokenService.extractUserId(token);
+        PaymentPlanDto pricingPlan = paymentService.getPricingPlanByUserId(userId);
+        return ResponseEntity.ok(pricingPlan);
     }
 
 

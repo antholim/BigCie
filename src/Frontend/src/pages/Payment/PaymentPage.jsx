@@ -124,7 +124,8 @@ export default function PaymentPage() {
               <SideBar username={user?.username} email={user?.email} />
       
       <main className="db-container" style={{ paddingTop: 48, paddingBottom: 64 }}>
-        <PaymentPlan/>;
+        <PaymentPlan/>
+    
                       <div className="db-card" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <div className="db-flex-between" style={{ alignItems: "center" }}>
                   <div>
@@ -244,7 +245,7 @@ export default function PaymentPage() {
           )}
 
           {!loading && !error && payments.map((payment) => {
-            return <PaymentInfo paymentInfo={payment} />;
+            return <PaymentInfo paymentInfo={payment} />
           })}
         </div>
       </main>

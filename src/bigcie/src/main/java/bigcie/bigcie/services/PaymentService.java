@@ -2,10 +2,11 @@ package bigcie.bigcie.services;
 
 import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoRequest.PaymentInfoRequest;
 import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoResponse.PaymentInfoDto;
-import bigcie.bigcie.dtos.PaymentInfo.PaymentPlanRequest.PaymentPlanRequest;
+import bigcie.bigcie.dtos.PaymentInfo.PaymentPlanRequest.PaymentPlanDto;
 import bigcie.bigcie.entities.PaymentInfo;
 import bigcie.bigcie.entities.Rider;
 import bigcie.bigcie.entities.User;
+import bigcie.bigcie.entities.enums.PricingPlan;
 import bigcie.bigcie.mappers.PaymentInfoMapper;
 import bigcie.bigcie.services.interfaces.IPaymentService;
 import bigcie.bigcie.services.interfaces.IUserService;
@@ -84,7 +85,7 @@ public class PaymentService implements IPaymentService {
     }
 
     @Override
-    public void updatePaymentPlan(UUID userId, PaymentPlanRequest paymentPlanRequest) {
+    public void updatePaymentPlan(UUID userId, PaymentPlanDto paymentPlanRequest) {
         User user = userService.getUserByUUID(userId);
         Rider rider;
         if (user instanceof Rider) {
@@ -94,5 +95,17 @@ public class PaymentService implements IPaymentService {
         }
         rider.setPricingPlan(paymentPlanRequest.getPricingPlan());
         userService.updateUser(user);
+    }
+
+    @Override
+    public PaymentPlanDto getPricingPlanByUserId(UUID userId) {
+        User user = userService.getUserByUUID(userId);
+        Rider rider;
+        if (user instanceof Rider) {
+            rider = (Rider) user;
+        } else {
+            throw new IllegalArgumentException("User is not a rider");
+        }
+        return new PaymentPlanDto(rider.getPricingPlan());
     }
 }

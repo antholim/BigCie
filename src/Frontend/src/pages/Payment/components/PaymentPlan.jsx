@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, use } from "react";
+import FetchingService from "../../../services/FetchingService";
 
-function PaymentPlan({ paymentInfo, value: controlledValue, onChange }) {
+
+function PaymentPlan({ value: controlledValue, onChange }) {
     // component supports controlled or uncontrolled usage
     const [plan, setPlan] = useState(controlledValue ?? "SINGLE_RIDE");
-
+    const [currentPlan, setCurrentPlan] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
     useEffect(() => {
         if (controlledValue !== undefined && controlledValue !== plan) {
             setPlan(controlledValue);
@@ -15,13 +19,28 @@ function PaymentPlan({ paymentInfo, value: controlledValue, onChange }) {
         if (controlledValue === undefined) setPlan(next);
         onChange?.(next);
     };
+    const loadCurrentPlan = useCallback(async () => {
+        try {
+            const response = await FetchingService.get("/api/v1/payments/current-plan");
+            console.log("Payments response:", response);
+            setCurrentPlan(response.data.pricingPlan);
+        } catch (err) {
+            setError(err.response?.data?.message || err.message || "Unable to load current plan right now.");
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        loadCurrentPlan();
+    }, [loadCurrentPlan]);
 
     return (
         <div className="db-card" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
                     <strong style={{ fontSize: 16 }}>Choose plan</strong>
-                    <div className="db-muted" style={{ fontSize: 13 }}>Current plan {plan}</div>
+                    <div className="db-muted" style={{ fontSize: 13 }}>Current plan {currentPlan}</div>
                 </div>
             </div>
 
