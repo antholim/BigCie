@@ -93,6 +93,10 @@ public class Trip {
             trip.pricingPlan = pricingPlan;
             return this;
         }
+        public Builder paymentInfoId(UUID paymentInfoId) {
+            trip.paymentInfoId = paymentInfoId;
+            return this;
+        }
 
         public Trip build() {
             // Optionally: auto-generate ID if null

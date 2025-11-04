@@ -8,6 +8,7 @@ import RideConfirmation from "./pages/RideConfirmation";
 import OperatorDashboard from './pages/OperatorDashboard/OperatorDashboard';
 import ProfilePage from "./pages/Profile/ProfilePage";
 import TripsPage from "./pages/Trips/TripsPage";
+import PaymentPage from "./pages/Payment/PaymentPage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
         <Route path="/ride-confirmation" element={<RideConfirmation />} />
         <Route path="/operator-dashboard" element={<OperatorDashboard />} />
         <Route path="/trips" element={<TripsPage />} />
+        <Route path="/payment" element={<PaymentPage />} />
       </Routes>
     </Router>
   );

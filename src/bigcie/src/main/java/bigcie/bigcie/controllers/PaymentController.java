@@ -28,7 +28,7 @@ public class PaymentController {
         this.tokenService = tokenService;
         this.cookieService = cookieService;
     }
-    @Operation(summary = "Add Payment Method", description = "Add a new payment method for the authenticated user")
+    @Operation(summary = "Get Payment Method", description = "Get the payment methods for the authenticated user")
     @GetMapping("/me")
     public ResponseEntity<List<PaymentInfoDto>> getPaymentInfo(HttpServletRequest request) {
         String token = cookieService.getTokenFromCookie(request, "authToken");
@@ -47,7 +47,7 @@ public class PaymentController {
         return ResponseEntity.ok("Payment method added successfully");
     }
 
-    @Operation(summary = "Add Payment Method", description = "Make a payment method default for the authenticated user")
+    @Operation(summary = "Update Payment Method", description = "Set Default Payment Method for the authenticated user")
     @PatchMapping("/{id}/default")
     public ResponseEntity<?> addPaymentInfo(@PathVariable UUID id,
                                             HttpServletRequest request) {

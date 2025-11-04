@@ -78,12 +78,7 @@ public class PaymentService implements IPaymentService {
             throw new IllegalArgumentException("User is not a rider");
         }
         for (PaymentInfo paymentInfo : rider.getPaymentInfos()) {
-            if (paymentInfo.getId().equals(paymentMethodId)) {
-                paymentInfo.setDefault(true);
-                break;
-            } else {
-                paymentInfo.setDefault(false);
-            }
+            paymentInfo.setDefault(paymentInfo.getId().equals(paymentMethodId));
         }
     }
 }

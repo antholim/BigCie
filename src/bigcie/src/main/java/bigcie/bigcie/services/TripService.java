@@ -38,7 +38,8 @@ public class TripService implements ITripService {
             UUID bikeId,
             UUID bikeStationStartId,
             PricingPlan pricingPlan,
-            BikeType bikeType
+            BikeType bikeType,
+            UUID paymentInfoId
 
     ) {
         Trip trip = new Trip.Builder()
@@ -50,6 +51,7 @@ public class TripService implements ITripService {
                 .status(TripStatus.ONGOING)
                 .pricingPlan(pricingPlan)
                 .bikeType(bikeType)
+                .paymentInfoId(paymentInfoId)
                 .build();
 
         tripRepository.save(trip);

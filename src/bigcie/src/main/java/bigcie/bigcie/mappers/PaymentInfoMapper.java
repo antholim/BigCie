@@ -13,6 +13,7 @@ public class PaymentInfoMapper {
         dto.setCardHolderName(paymentInfo.getCardHolderName());
         dto.setCardType(paymentInfo.getCardType());
         dto.setPaymentInfoId(paymentInfo.getId());
+        dto.setDefault(paymentInfo.isDefault());
         return dto;
     }
 }

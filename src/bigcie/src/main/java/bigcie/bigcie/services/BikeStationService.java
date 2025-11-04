@@ -208,7 +208,9 @@ public class BikeStationService implements IBikeStationService {
         if (!(user instanceof Rider rider)) {
             throw new IllegalArgumentException("User is not a rider");
         }
-
+        if (rider.getDefaultPaymentInfo() == null) {
+            throw new IllegalStateException("No default payment method found for rider");
+        }
         rider.getCurrentBikes().add(bike.getId());
         userService.updateUser(rider);
 
@@ -217,7 +219,8 @@ public class BikeStationService implements IBikeStationService {
                 bike.getId(),
                 stationId,
                 rider.getPricingPlan(),
-                bike.getBikeType()
+                bike.getBikeType(),
+                rider.getDefaultPaymentInfo().getId()
         );
         rider.getActiveTripId().add(trip.getId());
         userService.updateUser(rider);

@@ -13,5 +13,6 @@ public class PaymentInfoDto {
     private String lastFourCreditCardNumber;
     private String cardExpiry; // MM/YY
     private String cardHolderName;
-    private CreditCardType cardType; // e.g., "VISA"
+    private CreditCardType cardType;
+    private boolean isDefault;
 }
