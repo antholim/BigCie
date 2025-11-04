@@ -218,7 +218,7 @@ public class BikeStationService implements IBikeStationService {
                 userId,
                 bike.getId(),
                 stationId,
-                rider.getPricingPlan(),
+                rider.getPricingPlanInformation().getPricingPlan(),
                 bike.getBikeType(),
                 rider.getDefaultPaymentInfo().getId()
         );

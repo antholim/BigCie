@@ -13,6 +13,7 @@ import bigcie.bigcie.services.interfaces.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -99,7 +100,22 @@ public class PaymentService implements IPaymentService {
         } else {
             throw new IllegalArgumentException("User is not a rider");
         }
-        rider.setPricingPlan(paymentPlanRequest.getPricingPlan());
+        PricingPlan plan = paymentPlanRequest.getPricingPlan();
+        rider.getPricingPlanInformation().setPricingPlan(plan);
+        switch (plan) {
+            case PricingPlan.SINGLE_RIDE -> {
+                rider.getPricingPlanInformation().setStartDate(null);
+                rider.getPricingPlanInformation().setEndDate(null);
+            }
+            case PricingPlan.DAY_PASS -> {
+                rider.getPricingPlanInformation().setStartDate(LocalDateTime.now());
+                rider.getPricingPlanInformation().setEndDate(LocalDateTime.now().plusDays(1));
+            }
+            case PricingPlan.MONTHLY_PASS -> {
+                rider.getPricingPlanInformation().setStartDate(LocalDateTime.now());
+                rider.getPricingPlanInformation().setEndDate(LocalDateTime.now().plusMonths(1));
+            }
+        }
         userService.updateUser(user);
     }
 
@@ -112,6 +128,6 @@ public class PaymentService implements IPaymentService {
         } else {
             throw new IllegalArgumentException("User is not a rider");
         }
-        return new PaymentPlanDto(rider.getPricingPlan());
+        return new PaymentPlanDto(rider.getPricingPlanInformation().getPricingPlan());
     }
 }

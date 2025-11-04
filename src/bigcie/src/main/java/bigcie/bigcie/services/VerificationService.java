@@ -33,4 +33,8 @@ public class VerificationService {
         });
 
     }
+    @Scheduled(fixedRate = 15000)
+    public void checkExpiredPlans(){
+
+    }
 }
