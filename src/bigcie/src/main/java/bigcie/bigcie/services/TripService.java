@@ -66,7 +66,7 @@ public class TripService implements ITripService {
         LocalDateTime endTime = LocalDateTime.now();
         if (trip != null && trip.getStatus() == TripStatus.ONGOING) {
             trip.setBikeStationEndId(bikeStationEndId);
-            trip.setEndDate(endTime.plusMinutes(5));
+            trip.setEndDate(endTime);
             trip.setStatus(TripStatus.COMPLETED);
             trip.setCost(priceService.calculatePrice(trip.getStartDate(), endTime, trip.getBikeType(), trip.getPricingPlan()));
             tripRepository.save(trip);

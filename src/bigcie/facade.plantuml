@@ -1,0 +1,85 @@
+@startuml TripAssemblerDiagram
+' Class diagram for TripAssembler and related types
+' Generated from TripAssembler.java
+
+package "bigcie.bigcie.assemblers.facades" {
+	class TripAssembler {
+		- tripMapper: TripMapper
+		- bikeStationLookup: IBikeStationLookup
+		- paymentLookup: IPaymentLookup
+		- paymentInfoMapper: PaymentInfoMapper
+		- stationNameCache: Map<UUID, String>
+		+ TripAssembler(tripMapper, bikeStationLookup, paymentLookup, paymentInfoMapper)
+		+ enrichTripDtoList(trips: List<Trip>, userId: UUID): List<TripDto>
+		- getStationNameWithCache(stationId: UUID): String
+		+ clearCache(): void
+	}
+}
+
+package "bigcie.bigcie.mappers" {
+	interface TripMapper {
+		+ toTripDtoList(trips: List<Trip>): List<TripDto>
+	}
+	class PaymentInfoMapper {
+		+ toDto(paymentInfo: PaymentInfo): PaymentInfoDto
+	}
+}
+
+package "bigcie.bigcie.services.read.interfaces" {
+	interface IBikeStationLookup {
+		+ getStationNameById(id: UUID): String
+	}
+	interface IPaymentLookup {
+		+ getPaymentInfo(id: UUID, userId: UUID): PaymentInfo
+	}
+}
+
+package "bigcie.bigcie.services.read" {
+	class BikeStationLookup {
+		- bikeStationRepository: BikeStationRepository
+		+ BikeStationLookup(bikeStationRepository)
+		+ getStationNameById(bikeStationId: UUID): String
+	}
+
+	class PaymentLookup {
+		- userService: IUserService
+		+ PaymentLookup(userService)
+		+ getPaymentInfo(id: UUID, userId: UUID): PaymentInfo
+	}
+}
+
+package "bigcie.bigcie.dtos.TripInfo" {
+	class TripDto {
+		+ setBikeStationStart(name: String)
+		+ setBikeStationEnd(name: String)
+		+ setPaymentInfo(paymentInfo: PaymentInfoDto)
+	}
+	class PaymentInfoDto
+}
+
+package "bigcie.bigcie.entities" {
+	class Trip {
+		+ getBikeStationStartId(): UUID
+		+ getBikeStationEndId(): UUID
+		+ getPaymentInfoId(): UUID
+	}
+	class PaymentInfo
+}
+
+' Relationships / dependencies
+TripAssembler --> TripMapper : uses
+TripAssembler --> IBikeStationLookup : uses
+TripAssembler --> IPaymentLookup : uses
+TripAssembler --> PaymentInfoMapper : uses
+TripAssembler ..> Trip : processes
+TripAssembler ..> TripDto : produces
+IPaymentLookup ..> PaymentInfo
+PaymentInfoMapper ..> PaymentInfo
+PaymentInfoMapper ..> PaymentInfoDto
+TripDto --> PaymentInfoDto : contains
+PaymentLookup ..|> IPaymentLookup : implements
+BikeStationLookup ..|> IBikeStationLookup : implements
+
+
+@enduml
+

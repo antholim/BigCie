@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class PaymentInfoMapper {
     public PaymentInfoDto toDto(PaymentInfo paymentInfo) {
         PaymentInfoDto dto = new PaymentInfoDto();
-        dto.setLastFourCreditCardNumber(paymentInfo.getCreditCardNumber().trim().substring(11, 15));
+        dto.setLastFourCreditCardNumber(paymentInfo.getCreditCardNumber().trim().substring(12, 16));
         dto.setCardExpiry(paymentInfo.getCardExpiry());
         dto.setCardHolderName(paymentInfo.getCardHolderName());
         dto.setCardType(paymentInfo.getCardType());
