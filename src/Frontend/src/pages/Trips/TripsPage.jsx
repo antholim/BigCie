@@ -14,6 +14,7 @@ export default function TripsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [bikeTypeFilter, setBikeTypeFilter] = useState("ALL");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -58,6 +59,9 @@ export default function TripsPage() {
   }
 
   if (!isAuthenticated) return null;
+
+  // derive available bike types from loaded trips
+  const bikeTypes = Array.from(new Set(trips.map((t) => (t.bikeType ?? t.type ?? t.bike_type ?? "")).filter(Boolean)));
 
   return (
     <div className="db-page" style={{ minHeight: "100vh", background: "#f8fafc" }}>
@@ -114,7 +118,7 @@ export default function TripsPage() {
                 onChange={(e) => setEndDate(e.target.value)}
                 style={{ padding: '6px 8px', borderRadius: 8, border: '1px solid #e2e8f0' }}
               />
-              <button className="db-btn" type="button" aria-label="Clear filters" onClick={() => { setSearchQuery(""); setStartDate(""); setEndDate(""); }}>Clear</button>
+              <button className="db-btn" type="button" aria-label="Clear filters" onClick={() => { setSearchQuery(""); setStartDate(""); setEndDate(""); setBikeTypeFilter("ALL"); setPlanFilter("ALL"); }}>Clear</button>
             </div>
           </div>
 
@@ -160,6 +164,20 @@ export default function TripsPage() {
             />
             <span className="db-muted">Monthly pass</span>
           </label>
+            {/* Bike type selector */}
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ fontSize: 13, color: '#0f172a' }}>Type</div>
+              <select
+                value={bikeTypeFilter}
+                onChange={(e) => setBikeTypeFilter(e.target.value)}
+                style={{ padding: '6px 8px', borderRadius: 8, border: '1px solid #e2e8f0' }}
+              >
+                <option value="ALL">All</option>
+                {bikeTypes.map((bt) => (
+                  <option key={bt} value={bt}>{bt}</option>
+                ))}
+              </select>
+            </label>
           </div>
         </div>
       
@@ -179,6 +197,11 @@ export default function TripsPage() {
                 const plan = trip.pricingPlan ?? trip.pricing_plan ?? trip.pricing;
                 if (String(plan) !== planFilter) return false;
               }
+              // bike type filter
+              if (bikeTypeFilter !== "ALL") {
+                const ttype = trip.bikeType ?? trip.type ?? trip.bike_type ?? "";
+                if (String(ttype) !== bikeTypeFilter) return false;
+              }
               // date range filter (based on trip start date)
               if (start || end) {
                 const sd = trip.startDate ?? trip.start_date ?? trip.start ?? trip.createdAt ?? trip.created_at;
@@ -188,9 +211,9 @@ export default function TripsPage() {
                 if (start && tripDate < start) return false;
                 if (end && tripDate > end) return false;
               }
-              // search by trip id (partial match, case-insensitive)
+              // search by trip id (partial match)
               if (q.length > 0) {
-                const idStr = String(trip.id ?? trip._id ?? "").toLowerCase();
+                const idStr = String(trip.id ?? trip._id ?? "");
                 return idStr.includes(q);
               }
               return true;
