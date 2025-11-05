@@ -24,15 +24,27 @@ public class CookieService implements ICookieService {
 
     @Override
     public String getTokenFromCookie(HttpServletRequest request, String cookieName) {
-        System.out.println(cookieName);
+        System.out.println("Looking for cookie: " + cookieName);
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                System.out.println(cookie.getName() + ": " + cookie.getValue());
+                System.out.println("Found cookie: " + cookie.getName() + ": "
+                        + cookie.getValue().substring(0, Math.min(20, cookie.getValue().length())));
                 if (cookieName.equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }
         }
+
+        // Fallback: Check Authorization header for Bearer token
+        String authHeader = request.getHeader("Authorization");
+        System.out.println("Authorization header: " + authHeader);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7); // Extract token after "Bearer "
+            System.out.println("Extracted token from header: " + token.substring(0, Math.min(20, token.length())));
+            return token;
+        }
+
+        System.out.println("No token found!");
         return null;
     }
 

@@ -38,9 +38,9 @@ public class TripAssembler {
         for (int i = 0; i < n; i++) {
             TripDto dto = tripDtos.get(i);
 
-//            UUID startId = trips.get(i).getBikeStationStartId();
-//            log.info(startId.toString());
-//            dto.setBikeStationStart(getStationNameWithCache(startId));
+            UUID startId = trips.get(i).getBikeStationStartId();
+            log.info(startId.toString());
+            dto.setBikeStationStart(getStationNameWithCache(startId));
 
             UUID endId = trips.get(i).getBikeStationEndId();
             dto.setBikeStationEnd(getStationNameWithCache(endId));
@@ -80,6 +80,9 @@ public class TripAssembler {
     }
 
     private String getStationNameWithCache(UUID stationId) {
+        if (stationId == null) {
+            return "Unknown Station";
+        }
         if (this.stationNameCache.containsKey(stationId)) {
             return this.stationNameCache.get(stationId);
         } else {

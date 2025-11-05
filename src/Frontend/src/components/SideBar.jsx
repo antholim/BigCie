@@ -39,6 +39,15 @@ export default function SideBar({ username, email }) {
                         Payment
                     </button>
                 </li>
+                <li>
+                    <button
+                        type="button"
+                        className="db-btn db-sidebar-btn"
+                        onClick={() => navigate("/bill")}
+                    >
+                        Billing
+                    </button>
+                </li>
             </ul>
         </nav>
     );

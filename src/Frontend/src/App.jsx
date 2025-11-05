@@ -9,6 +9,7 @@ import OperatorDashboard from './pages/OperatorDashboard/OperatorDashboard';
 import ProfilePage from "./pages/Profile/ProfilePage";
 import TripsPage from "./pages/Trips/TripsPage";
 import PaymentPage from "./pages/Payment/PaymentPage";
+import BillPage from "./pages/Bill/Bill";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/operator-dashboard" element={<OperatorDashboard />} />
         <Route path="/trips" element={<TripsPage />} />
         <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/bill" element={<BillPage />} />
       </Routes>
     </Router>
   );
