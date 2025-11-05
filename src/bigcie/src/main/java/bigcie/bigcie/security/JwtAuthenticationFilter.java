@@ -98,7 +98,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            log.info("Failed to process refresh token: {}", e.getMessage());
+            log.debug("Failed to process refresh token: {}", e.getMessage());
         }
         return null;
     }

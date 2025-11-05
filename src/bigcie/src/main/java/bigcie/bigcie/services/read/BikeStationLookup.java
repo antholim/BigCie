@@ -18,6 +18,9 @@ public class BikeStationLookup implements IBikeStationLookup {
 
     @Override
     public String getStationNameById(UUID bikeStationId) {
+        if (bikeStationId == null) {
+            return "Unknown Station";
+        }
         BikeStation station = bikeStationRepository.findById(bikeStationId)
                 .orElseThrow(() -> new NoSuchElementException("station not found"));
         if (station != null) {

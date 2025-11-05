@@ -34,7 +34,9 @@ public class PaymentService implements IPaymentService {
     private final PricingConfig pricingConfig;
     private final PlanBillRepository planBillRepository;
 
-    public PaymentService(IUserService userService, PaymentInfoMapper paymentInfoMapper, TripRepository tripRepository, BillAssembler billAssembler, BillRepository billRepository, PricingConfig pricingConfig, PlanBillRepository planBillRepository) {
+    public PaymentService(IUserService userService, PaymentInfoMapper paymentInfoMapper, TripRepository tripRepository,
+            BillAssembler billAssembler, BillRepository billRepository, PricingConfig pricingConfig,
+            PlanBillRepository planBillRepository) {
         this.userService = userService;
         this.paymentInfoMapper = paymentInfoMapper;
         this.tripRepository = tripRepository;
@@ -51,7 +53,8 @@ public class PaymentService implements IPaymentService {
         if (user instanceof Rider) {
             rider = (Rider) user;
         } else {
-            throw new IllegalArgumentException("User is not a rider");
+            log.warn("Attempt to add payment method for non-rider user: {}", userId);
+            throw new IllegalArgumentException("Only riders can add payment methods");
         }
 
         PaymentInfo paymentInfo = new PaymentInfo();
@@ -84,7 +87,9 @@ public class PaymentService implements IPaymentService {
         if (user instanceof Rider) {
             rider = (Rider) user;
         } else {
-            throw new IllegalArgumentException("User is not a rider");
+            // Non-riders don't have payment info, return empty list
+            log.warn("Attempt to get payment info for non-rider user: {}", userId);
+            return new ArrayList<>();
         }
         return rider.getPaymentInfos()
                 .stream()
@@ -99,7 +104,8 @@ public class PaymentService implements IPaymentService {
         if (user instanceof Rider) {
             rider = (Rider) user;
         } else {
-            throw new IllegalArgumentException("User is not a rider");
+            log.warn("Attempt to update default payment method for non-rider user: {}", userId);
+            return; // Silently ignore for non-riders
         }
         for (PaymentInfo paymentInfo : rider.getPaymentInfos()) {
             paymentInfo.setDefault(paymentInfo.getId().equals(paymentMethodId));
@@ -113,7 +119,8 @@ public class PaymentService implements IPaymentService {
         if (user instanceof Rider) {
             rider = (Rider) user;
         } else {
-            throw new IllegalArgumentException("User is not a rider");
+            log.warn("Attempt to update payment plan for non-rider user: {}", userId);
+            return; // Silently ignore for non-riders
         }
         PricingPlan plan = paymentPlanRequest.getPricingPlan();
         rider.getPricingPlanInformation().setPricingPlan(plan);
@@ -148,10 +155,13 @@ public class PaymentService implements IPaymentService {
         if (user instanceof Rider) {
             rider = (Rider) user;
         } else {
-            throw new IllegalArgumentException("User is not a rider");
+            // Non-riders don't have pricing plans, return default single ride plan
+            log.warn("Attempt to get pricing plan for non-rider user: {}", userId);
+            return new PaymentPlanDto(PricingPlan.SINGLE_RIDE);
         }
         return new PaymentPlanDto(rider.getPricingPlanInformation().getPricingPlan());
     }
+
     @Override
     public List<BillDto> getBillingInfo(UUID userId) {
         List<Bill> bills = billRepository.findByUserId(userId);

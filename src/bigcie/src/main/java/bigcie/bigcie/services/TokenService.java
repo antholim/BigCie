@@ -128,10 +128,10 @@ public class TokenService implements ITokenService {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (ExpiredJwtException e) {
-            log.info("Token expired: {}", e.getMessage());
+            log.debug("Token expired: {}", e.getMessage());
             throw e;
         } catch (JwtException e) {
-            log.error("Could not parse token: {}", e.getMessage());
+            log.debug("Could not parse token: {}", e.getMessage());
             throw e;
         }
     }
