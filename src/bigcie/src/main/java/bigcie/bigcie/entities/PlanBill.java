@@ -7,11 +7,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.TypeAlias;
 
-@TypeAlias("plan_bills")
+@TypeAlias("plan_bill")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PlanBill extends  Bill {
+public class PlanBill extends Bill {
     private PricingPlan pricingPlan;
 }

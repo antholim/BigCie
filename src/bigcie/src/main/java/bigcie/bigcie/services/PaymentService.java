@@ -1,19 +1,24 @@
 package bigcie.bigcie.services;
 
+import bigcie.bigcie.assemblers.facades.BillAssembler;
+import bigcie.bigcie.constants.prices.PricingConfig;
+import bigcie.bigcie.dtos.Billing.BillDto;
 import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoRequest.PaymentInfoRequest;
 import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoResponse.PaymentInfoDto;
 import bigcie.bigcie.dtos.PaymentInfo.PaymentPlanRequest.PaymentPlanDto;
-import bigcie.bigcie.entities.PaymentInfo;
-import bigcie.bigcie.entities.Rider;
-import bigcie.bigcie.entities.User;
+import bigcie.bigcie.entities.*;
 import bigcie.bigcie.entities.enums.PricingPlan;
 import bigcie.bigcie.mappers.PaymentInfoMapper;
+import bigcie.bigcie.repositories.BillRepository;
+import bigcie.bigcie.repositories.PlanBillRepository;
+import bigcie.bigcie.repositories.TripRepository;
 import bigcie.bigcie.services.interfaces.IPaymentService;
 import bigcie.bigcie.services.interfaces.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -23,10 +28,20 @@ import java.util.stream.Collectors;
 public class PaymentService implements IPaymentService {
     private final IUserService userService;
     private final PaymentInfoMapper paymentInfoMapper;
+    private final TripRepository tripRepository;
+    private final BillAssembler billAssembler;
+    private final BillRepository billRepository;
+    private final PricingConfig pricingConfig;
+    private final PlanBillRepository planBillRepository;
 
-    public PaymentService(IUserService userService, PaymentInfoMapper paymentInfoMapper) {
+    public PaymentService(IUserService userService, PaymentInfoMapper paymentInfoMapper, TripRepository tripRepository, BillAssembler billAssembler, BillRepository billRepository, PricingConfig pricingConfig, PlanBillRepository planBillRepository) {
         this.userService = userService;
         this.paymentInfoMapper = paymentInfoMapper;
+        this.tripRepository = tripRepository;
+        this.billAssembler = billAssembler;
+        this.billRepository = billRepository;
+        this.pricingConfig = pricingConfig;
+        this.planBillRepository = planBillRepository;
     }
 
     @Override
@@ -116,6 +131,13 @@ public class PaymentService implements IPaymentService {
                 rider.getPricingPlanInformation().setEndDate(LocalDateTime.now().plusMonths(1));
             }
         }
+        PlanBill planBill = new PlanBill();
+        planBill.setId(UUID.randomUUID());
+        planBill.setUserId(user.getId());
+        planBill.setCost(pricingConfig.getPriceForPlan(plan));
+        planBill.setPricingPlan(plan);
+        planBill.setPaymentInfoId(rider.getDefaultPaymentInfo().getId());
+        billRepository.save(planBill);
         userService.updateUser(user);
     }
 
@@ -129,5 +151,13 @@ public class PaymentService implements IPaymentService {
             throw new IllegalArgumentException("User is not a rider");
         }
         return new PaymentPlanDto(rider.getPricingPlanInformation().getPricingPlan());
+    }
+    @Override
+    public List<BillDto> getBillingInfo(UUID userId) {
+        List<Bill> bills = billRepository.findByUserId(userId);
+
+        log.info(bills.size() + " total bills found");
+
+        return billAssembler.toBillDtoList(bills, userId);
     }
 }

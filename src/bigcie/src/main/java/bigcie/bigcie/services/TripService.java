@@ -78,6 +78,10 @@ public class TripService implements ITripService {
     @Override
     public List<TripDto> getTripByUserId(UUID userId) {
         List<Trip> tripList = tripRepository.findByUserId(userId);
+        for (Trip trip : tripList) {
+            System.out.println("Trip ID: " + trip.getId() + ", Start Date: " + trip.getStartDate() +
+                    ", End Date: " + trip.getEndDate() + ", Status: " + trip.getStatus());
+        }
         return tripAssembler.enrichTripDtoList(tripList, userId);
     }
 

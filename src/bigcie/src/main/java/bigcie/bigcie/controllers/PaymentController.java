@@ -1,5 +1,6 @@
 package bigcie.bigcie.controllers;
 
+import bigcie.bigcie.dtos.Billing.BillDto;
 import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoRequest.PaymentInfoRequest;
 import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoResponse.PaymentInfoDto;
 import bigcie.bigcie.dtos.PaymentInfo.PaymentPlanRequest.PaymentPlanDto;
@@ -74,6 +75,14 @@ public class PaymentController {
         UUID userId = tokenService.extractUserId(token);
         PaymentPlanDto pricingPlan = paymentService.getPricingPlanByUserId(userId);
         return ResponseEntity.ok(pricingPlan);
+    }
+    @Operation(summary = "Get Billing Info", description = "Get the billing information for the authenticated user")
+    @GetMapping("/billing-info")
+    public ResponseEntity<List<BillDto>> getBillingInfo(HttpServletRequest request) {
+        String token = cookieService.getTokenFromCookie(request, "authToken");
+        UUID userId = tokenService.extractUserId(token);
+        List<BillDto> billingInfo = paymentService.getBillingInfo(userId);
+        return ResponseEntity.ok(billingInfo);
     }
 
 

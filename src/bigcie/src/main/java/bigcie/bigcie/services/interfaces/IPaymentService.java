@@ -1,5 +1,6 @@
 package bigcie.bigcie.services.interfaces;
 
+import bigcie.bigcie.dtos.Billing.BillDto;
 import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoRequest.PaymentInfoRequest;
 import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoResponse.PaymentInfoDto;
 import bigcie.bigcie.dtos.PaymentInfo.PaymentPlanRequest.PaymentPlanDto;
@@ -16,4 +17,5 @@ public interface IPaymentService {
     void updateDefaultPaymentMethod(UUID userId, UUID paymentMethodId);
     void updatePaymentPlan(UUID userId, PaymentPlanDto paymentPlanRequest);
     PaymentPlanDto getPricingPlanByUserId(UUID userId);
+    List<BillDto> getBillingInfo(UUID userId);
 }
