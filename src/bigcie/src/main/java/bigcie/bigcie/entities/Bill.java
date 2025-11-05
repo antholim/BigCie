@@ -18,5 +18,4 @@ public abstract class Bill {
     protected UUID userId;
     protected double cost;
     protected UUID paymentInfoId;
-
 }

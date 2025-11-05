@@ -10,3 +10,12 @@ export const truncateId = (value) => {
     const str = String(value);
     return `${str.slice(0, 8)}...`;
 };
+
+export const dateValidation = (startDate, endDate) => {
+if (startDate && endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return start <= end;
+  }
+    return false;
+}

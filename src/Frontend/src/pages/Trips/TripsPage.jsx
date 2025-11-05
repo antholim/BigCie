@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { dateValidation } from "../../utils/utils";
 import { useNavigate } from "react-router-dom";
 import FetchingService from "../../services/FetchingService";
 import { useAuth } from "../../contexts/AuthContext";
@@ -69,6 +70,7 @@ export default function TripsPage() {
 
   // derive available bike types from loaded trips
   const bikeTypes = Array.from(new Set(trips.map((t) => (t.bikeType ?? t.type ?? t.bike_type ?? "")).filter(Boolean)));
+  const isDateRangeValid = dateValidation(startDate, endDate);
 
   return (
     <div className="db-page" style={{ minHeight: "100vh", background: "#f8fafc" }}>
@@ -114,7 +116,10 @@ export default function TripsPage() {
                 type="date"
                 aria-label="Start date"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                  console.log(e.target.value)
+                }}
                 style={{ padding: '6px 8px', borderRadius: 8, border: '1px solid #e2e8f0' }}
               />
               <label style={{ fontSize: 13, color: '#0f172a' }}>To</label>
@@ -187,8 +192,7 @@ export default function TripsPage() {
             </label>
           </div>
         </div>
-      
-        <div style={{ display: "grid", gap: 16 }}>
+              {isDateRangeValid && <div style={{ display: "grid", gap: 16 }}>
           {loading && <p className="db-muted">Loading trips...</p>}
           {!loading && error && <p style={{ color: "#dc2626" }}>{error}</p>}
 
@@ -232,7 +236,8 @@ export default function TripsPage() {
 
             return filteredTrips.map((trip) => <Trip key={trip.id ?? trip._id} trip={trip} />);
           })()}
-        </div>
+        </div> }
+        {isDateRangeValid || <div style={{ color: "#dc2626", marginTop: 12 }}>Please ensure the date range is valid.</div>}
       </main>
       </div>
     </div>
