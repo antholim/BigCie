@@ -73,69 +73,66 @@ export default function TripsPage() {
         </div>
       </header>
       <div style={{ display: "flex", gap: 24, alignItems: "flex-start", paddingTop: 24 }}>
-              <SideBar username={user?.username} email={user?.email} />
-      <main className="db-container" style={{ paddingTop: 48, paddingBottom: 64 }}>
-        <section style={{ marginBottom: 24 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Your trips</h1>
-          <p className="db-muted" style={{ margin: 0 }}>
-            A history of your rides — tap a trip for details.
-          </p>
-        </section>
-        {/* Pricing plan filter radios */}
-        <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ fontWeight: 600, color: "#0f172a" }}>Show</div>
-          <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <input
-              type="radio"
-              name="plan"
-              value="ALL"
-              checked={planFilter === "ALL"}
-              onChange={() => setPlanFilter("ALL")}
-            />
-            <span className="db-muted">All</span>
-          </label>
-          <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <input
-              type="radio"
-              name="plan"
-              value="SINGLE_RIDE"
-              checked={planFilter === "SINGLE_RIDE"}
-              onChange={() => setPlanFilter("SINGLE_RIDE")}
-            />
-            <span className="db-muted">Single ride</span>
-          </label>
-          <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <input
-              type="radio"
-              name="plan"
-              value="DAY_PASS"
-              checked={planFilter === "DAY_PASS"}
-              onChange={() => setPlanFilter("DAY_PASS")}
-            />
-            <span className="db-muted">Day pass</span>
-          </label>
-          <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <input
-              type="radio"
-              name="plan"
-              value="MONTHLY_PASS"
-              checked={planFilter === "MONTHLY_PASS"}
-              onChange={() => setPlanFilter("MONTHLY_PASS")}
-            />
-            <span className="db-muted">Monthly pass</span>
-          </label>
-        </div>
-      
-        <div style={{ display: "grid", gap: 16 }}>
-          {loading && <p className="db-muted">Loading trips...</p>}
-          {!loading && error && <p style={{ color: "#dc2626" }}>{error}</p>}
-          {!loading && !error && trips.length === 0 && (
-            <p className="db-muted">No trips found.</p>
-          )}
+        <SideBar username={user?.username} email={user?.email} />
+        <main className="db-container" style={{ paddingTop: 48, paddingBottom: 64 }}>
+          <section style={{ marginBottom: 24 }}>
+            <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Your trips</h1>
+            <p className="db-muted" style={{ margin: 0 }}>
+              A history of your rides — tap a trip for details.
+            </p>
+          </section>
+          {/* Pricing plan filter radios */}
+          <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ fontWeight: 600, color: "#0f172a" }}>Show</div>
+            <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <input
+                type="radio"
+                name="plan"
+                value="ALL"
+                checked={planFilter === "ALL"}
+                onChange={() => setPlanFilter("ALL")}
+              />
+              <span className="db-muted">All</span>
+            </label>
+            <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <input
+                type="radio"
+                name="plan"
+                value="SINGLE_RIDE"
+                checked={planFilter === "SINGLE_RIDE"}
+                onChange={() => setPlanFilter("SINGLE_RIDE")}
+              />
+              <span className="db-muted">Single ride</span>
+            </label>
+            <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <input
+                type="radio"
+                name="plan"
+                value="DAY_PASS"
+                checked={planFilter === "DAY_PASS"}
+                onChange={() => setPlanFilter("DAY_PASS")}
+              />
+              <span className="db-muted">Day pass</span>
+            </label>
+            <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <input
+                type="radio"
+                name="plan"
+                value="MONTHLY_PASS"
+                checked={planFilter === "MONTHLY_PASS"}
+                onChange={() => setPlanFilter("MONTHLY_PASS")}
+              />
+              <span className="db-muted">Monthly pass</span>
+            </label>
+          </div>
 
-          {!loading && !error && trips.map((trip) => {
-            return <Trip trip={trip} />;
-          })}
+          <div style={{ display: "grid", gap: 16 }}>
+            {loading && <p className="db-muted">Loading trips...</p>}
+            {!loading && error && <p style={{ color: "#dc2626" }}>{error}</p>}
+            {!loading && !error && trips.length === 0 && (
+              <p className="db-muted">No trips found.</p>
+            )}
+
             {!loading && !error &&
               trips
                 .filter((trip) => {
@@ -147,8 +144,8 @@ export default function TripsPage() {
                 .map((trip) => {
                   return <Trip trip={trip} />;
                 })}
-        </div>
-      </main>
+          </div>
+        </main>
       </div>
     </div>
   );

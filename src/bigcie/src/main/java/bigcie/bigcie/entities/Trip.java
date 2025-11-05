@@ -7,20 +7,18 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.mongodb.core.mapping.MongoId;
+import org.springframework.data.annotation.TypeAlias;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@TypeAlias("trip")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Trip {
+public class Trip extends Bill {
 
-    @MongoId
-    private UUID id;
-    private UUID userId;
     private UUID bikeId;
     private UUID bikeStationStartId;
     private UUID bikeStationEndId;
@@ -28,10 +26,8 @@ public class Trip {
     private LocalDateTime endDate;
     private TripStatus status;
     private double distanceInKm;
-    private double cost;
     private BikeType bikeType;
     private PricingPlan pricingPlan;
-    private UUID paymentInfoId;
 
     public static class Builder {
         private final Trip trip = new Trip();
