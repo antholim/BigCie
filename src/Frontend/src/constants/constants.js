@@ -1,0 +1,1 @@
+export const E_BIKE_CHARGE = 1.99

@@ -1,3 +1,4 @@
+import { E_BIKE_CHARGE } from "../../../constants/constants";
 import { formatDateTime } from "../../../utils/utils";
 
 function Trip({ trip }) {
@@ -30,7 +31,9 @@ function Trip({ trip }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                     <div className="db-muted" style={{ fontSize: 13 }}>Bike: {trip.bikeId ? trip.bikeId.slice(0, 8) : "—"}</div>
-                    <div className="db-muted" style={{ fontSize: 13 }}>Type: {trip.bikeType ?? trip.type ?? "—"}</div>
+                    <div className="db-muted" style={{ fontSize: 13 }}>
+                        Type: {trip.bikeType ?? trip.type ?? "—"} • E-Bike Charge {trip.bikeType === "E_BIKE" && trip.cost === 0 ? "Covered by subscription" : `$${trip.eBikeCharge?.toFixed(2) ?? E_BIKE_CHARGE}`}
+                    </div>
                     <div className="db-muted" style={{ fontSize: 12 }}>Trip ID: {trip.id ?? "—"}</div>
                 </div>
                 <div style={{ fontSize: 12, padding: "4px 8px", borderRadius: 8, background: trip.status === "COMPLETED" ? "#ecfdf5" : "#fff7ed", color: trip.status === "COMPLETED" ? "#065f46" : "#92400e" }}>
