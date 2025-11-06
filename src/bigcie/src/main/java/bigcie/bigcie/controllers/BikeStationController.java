@@ -5,6 +5,7 @@ import bigcie.bigcie.dtos.DockingRequest.DockBikeRequest;
 import bigcie.bigcie.entities.BikeStation;
 import bigcie.bigcie.entities.Reservation;
 import bigcie.bigcie.entities.enums.BikeStationStatus;
+import bigcie.bigcie.entities.enums.BikeType;
 import bigcie.bigcie.entities.enums.UserType;
 import bigcie.bigcie.services.interfaces.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -161,11 +162,13 @@ public class BikeStationController {
     @Operation(summary = "Undock a bike from a station")
     @PostMapping("/{stationId}/undock")
     public ResponseEntity<BikeStation> undockBike(
+            @RequestParam("bikeType") BikeType bikeType,
             @PathVariable UUID stationId,
             HttpServletRequest request) {
         String token = cookieService.getTokenFromCookie(request, "authToken");
         UUID userId = tokenService.extractUserId(token);
-        bikeStationService.undockBike(stationId, userId);
+        System.out.println(bikeType.toString());
+        bikeStationService.undockBike(stationId, userId, bikeType);
         return ResponseEntity.ok(null);
     }
 

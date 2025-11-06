@@ -24,7 +24,8 @@ public class BikeStation {
     private double longitude;
     private String address;
     private int capacity;
-    private int numberOfBikesDocked;
+    private int standardBikesDocked;
+    private int eBikesDocked;
     private List<UUID> bikesIds = new ArrayList<>();
     private int reservationHoldTimeMinutes; // in minutes
 }

@@ -60,17 +60,26 @@ public class BikeService implements IBikeService {
 
         // load all bikes for those ids from repository so the count reflects repository state (handles non-zero existing counts)
         List<Bike> bikesIterable = bikeRepository.findAllById(bikesIds);
-        int numberOfBikesDocked = 0;
+        int standardBikesDocked = 0;
+        int eBikesDocked = 0;
         for (Bike b : bikesIterable) {
             if (b.getStatus() == BikeStatus.AVAILABLE ||
                     b.getStatus() == BikeStatus.MAINTENANCE ||
                     b.getStatus() == BikeStatus.RESERVED) {
-                numberOfBikesDocked++;
+                switch (b.getBikeType()) {
+                    case STANDARD -> {
+                        standardBikesDocked++;
+                    }
+                    case E_BIKE -> {
+                        eBikesDocked++;
+                    }
+                }
             }
         }
 
         station.setBikesIds(bikesIds);
-        station.setNumberOfBikesDocked(numberOfBikesDocked);
+        station.setStandardBikesDocked(standardBikesDocked);
+        station.setEBikesDocked(eBikesDocked);
         bikeStationService.updateStation(station.getId(), station);
 
         return savedBike;

@@ -17,6 +17,7 @@ export default function MapDashboard() {
     const markerRef = useRef(null);
     const stationMarkersRef = useRef([]);
     const searchInputRef = useRef(null);
+    const [bikeType, setBikeType] = useState("STANDARD");
 
     const [loading, setLoading] = useState(true);
     const [center, setCenter] = useState({ lat: 45.497326, lng: -73.5816037 }); // default
@@ -70,12 +71,12 @@ export default function MapDashboard() {
                 const resp = await FetchingService.get("/api/v1/stations");
                 const data = resp?.data ?? [];
                 if (cancelled) return;
-                
+
                 // Filter out OUT_OF_SERVICE stations for regular users
-                const filteredData = isOperator 
-                    ? data 
+                const filteredData = isOperator
+                    ? data
                     : data.filter(station => station.status !== 'OUT_OF_SERVICE');
-                
+
                 setStations(filteredData);
 
                 // remove any existing markers
@@ -95,8 +96,8 @@ export default function MapDashboard() {
                 });
                 console.log(resp)
             } catch {
-                    console.error("Error fetching bike stations:");
-                }
+                console.error("Error fetching bike stations:");
+            }
         };
 
         loadStationsAndRender();
@@ -146,7 +147,7 @@ export default function MapDashboard() {
             });
         }
         // Leaflet sometimes needs a resize call when used in flex layouts
-            setTimeout(() => {
+        setTimeout(() => {
             try {
                 leafletRef.current.invalidateSize();
             } catch {
@@ -201,7 +202,7 @@ export default function MapDashboard() {
             // create a temporary marker and open popup
             const tmp = L.marker([lat, lng]).addTo(leafletRef.current);
             const popupHtml = `<strong>${station.name ?? station.address}</strong><br/>Lat: ${lat.toFixed(5)}<br/>Lng: ${lng.toFixed(5)}`;
-                    m.bindPopup(popupHtml, { maxWidth: 420 });
+            m.bindPopup(popupHtml, { maxWidth: 420 });
             setTimeout(() => tmp.remove(), 5000);
         }
         // open station action menu
@@ -214,21 +215,22 @@ export default function MapDashboard() {
         setSelectedStation(null);
     };
 
-    const performStationAction = async (action) => {
+    const performStationAction = async (action, query) => {
         if (!selectedStation) return;
         try {
             // Assumes backend supports POST /api/v1/stations/:id/{action}
             const path = `/api/v1/stations/${selectedStation.id}/${action}`;
-            await FetchingService.post(path);
+            await FetchingService.postWithParams(path, null, query);
             // Simple feedback; you can wire this into context/state/UI
             alert(`${action} successful`);
+            window.location.reload();
             // optionally refresh stations
             try {
                 const r = await FetchingService.get('/api/v1/stations');
                 const refreshedData = r.data || [];
                 // Filter out OUT_OF_SERVICE stations for regular users
-                const filteredData = isOperator 
-                    ? refreshedData 
+                const filteredData = isOperator
+                    ? refreshedData
                     : refreshedData.filter(station => station.status !== 'OUT_OF_SERVICE');
                 setStations(filteredData);
             } catch {
@@ -241,24 +243,25 @@ export default function MapDashboard() {
         }
     };
 
-        const performStationActionDock = async (action = "dock") => {
+    const performStationActionDock = async (action = "dock") => {
         if (!selectedStation) return;
         try {
             // Assumes backend supports POST /api/v1/stations/:id/{action}
             const path = `/api/v1/stations/${selectedStation.id}/${action}`;
             console.log(bikes[0])
             await FetchingService.post(path, {
-            bikeId: bikes[0] // ensure this is a UUID string
+                bikeId: bikes[0] // ensure this is a UUID string
             });
             // Simple feedback; you can wire this into context/state/UI
             alert(`${action} successful`);
+            window.location.reload();
             // optionally refresh stations
             try {
                 const r = await FetchingService.get('/api/v1/stations');
                 const refreshedData = r.data || [];
                 // Filter out OUT_OF_SERVICE stations for regular users
-                const filteredData = isOperator 
-                    ? refreshedData 
+                const filteredData = isOperator
+                    ? refreshedData
                     : refreshedData.filter(station => station.status !== 'OUT_OF_SERVICE');
                 setStations(filteredData);
             } catch {
@@ -283,13 +286,13 @@ export default function MapDashboard() {
                 const r = await FetchingService.get('/api/v1/stations');
                 const refreshedData = r.data || [];
                 // Filter out OUT_OF_SERVICE stations for regular users
-                const filteredData = isOperator 
-                    ? refreshedData 
+                const filteredData = isOperator
+                    ? refreshedData
                     : refreshedData.filter(station => station.status !== 'OUT_OF_SERVICE');
                 setStations(filteredData);
                 // Update selected station with new status
                 setSelectedStation(prev => ({ ...prev, status: newStatus }));
-                
+
                 // Close modal if station is now OUT_OF_SERVICE and user is not an operator
                 if (newStatus === 'OUT_OF_SERVICE' && !isOperator) {
                     closeStationMenu();
@@ -343,28 +346,28 @@ export default function MapDashboard() {
     };
 
     const loadBikes = useCallback(async () => {
-    if (!isAuthenticated || !user) return;
-    const identifier = user.id ?? user.userId;
-    if (!identifier) return;
-    // setBikesLoading(true);
-    // setBikesError("");
-    console.log("Loading bikes for user:", identifier);
-    try {
-      const response = await FetchingService.get("/api/v1/bikes/me");
-      const data = Array.isArray(response?.data) ? response.data : [];
-      setBikes(data);
-      console.log("Bikes data:", data);
-    } catch (err) {
-    //   setBikesError(
-    //     err.response?.data?.message || err.message || "Unable to load bikes right now."
-    //   );
-      console.log(err.response?.data?.message)
-    }
-  }, [isAuthenticated, user]);
+        if (!isAuthenticated || !user) return;
+        const identifier = user.id ?? user.userId;
+        if (!identifier) return;
+        // setBikesLoading(true);
+        // setBikesError("");
+        console.log("Loading bikes for user:", identifier);
+        try {
+            const response = await FetchingService.get("/api/v1/bikes/me");
+            const data = Array.isArray(response?.data) ? response.data : [];
+            setBikes(data);
+            console.log("Bikes data:", data);
+        } catch (err) {
+            //   setBikesError(
+            //     err.response?.data?.message || err.message || "Unable to load bikes right now."
+            //   );
+            console.log(err.response?.data?.message)
+        }
+    }, [isAuthenticated, user]);
 
-  useEffect(()=> {
-    loadBikes();
-  }, [loadBikes]);
+    useEffect(() => {
+        loadBikes();
+    }, [loadBikes]);
 
     return (
         <div style={styles.root}>
@@ -411,6 +414,7 @@ export default function MapDashboard() {
                                         const lat = Number(s.lat ?? s.latitude ?? 0);
                                         const lng = Number(s.lng ?? s.longitude ?? 0);
                                         const isOutOfService = s.status === 'OUT_OF_SERVICE';
+                                        console.log(s);
                                         return (
                                             <div
                                                 key={s.id}
@@ -425,7 +429,7 @@ export default function MapDashboard() {
                                                     border: isOutOfService && isOperator ? '1px solid #fecaca' : 'none'
                                                 }}
                                             >
-                                                <div style={{ 
+                                                <div style={{
                                                     fontWeight: 600,
                                                     display: 'flex',
                                                     justifyContent: 'space-between',
@@ -446,7 +450,8 @@ export default function MapDashboard() {
                                                     )}
                                                 </div>
                                                 <div style={{ fontSize: 12, color: '#555' }}>{lat.toFixed(5)}, {lng.toFixed(5)}</div>
-                                                <div style={{ fontSize: 12, color: '#666' }}>Bikes: {s.numberOfBikesDocked ?? s.bikes?.length ?? 0}</div>
+                                                <div style={{ fontSize: 12, color: '#666' }}>Standard Bikes: {s.standardBikesDocked ?? s.bikes?.length ?? 0}</div>
+                                                <div style={{ fontSize: 12, color: '#666' }}>Electric Bikes: {s.ebikesDocked}</div>
                                             </div>
                                         );
                                     })
@@ -509,10 +514,31 @@ export default function MapDashboard() {
                             <button onClick={closeStationMenu} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 18 }}>✕</button>
                         </div>
                         <div style={{ marginTop: 16, display: 'flex', gap: 12, alignItems: 'center' }}>
-                            <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationAction('undock')}>Rent</button>
+                            <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationAction('undock', { bikeType })}>Rent</button>
                             <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationAction('reserve')}>Reserve</button>
                             <button style={{ ...styles.button, padding: '10px 18px', fontSize: 15 }} onClick={() => performStationActionDock('dock')}>Dock</button>
                         </div>
+                        <div style={{ marginTop: 16, display: 'flex', gap: 12, alignItems: 'center' }}>
+                            <label htmlFor="action-rent">Standard Bike</label>
+                            <input
+                                type="radio"
+                                id="action-rent"
+                                name="station-action"
+                                value={bikeType}
+                                checked={bikeType === "STANDARD"}
+                                onChange={() => setBikeType("STANDARD")}
+                            />
+                            <label htmlFor="action-reserve">E-Bike</label>
+                            <input
+                                type="radio"
+                                id="action-reserve"
+                                name="station-action"
+                                value={bikeType}
+                                checked={bikeType === "E_BIKE"}
+                                onChange={() => setBikeType("E_BIKE")}
+                            />
+                        </div>
+
 
                         {/* Operator-only station status controls */}
                         {isOperator && (
@@ -551,9 +577,9 @@ export default function MapDashboard() {
                     </div>
                 </div>
             )}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <BikeBox bikeIdList={bikes} />
-          </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <BikeBox bikeIdList={bikes} />
+            </div>
         </div>
     );
 }

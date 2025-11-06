@@ -21,6 +21,13 @@ class FetchingService {
 		return this.axiosInstance.post(url, data, config);
 	}
 
+	// Convenience helper: send POST with query params
+	// Usage: postWithParams('/api/thing', payload, { foo: 'bar' }, { headers: {...} })
+	postWithParams(url, data, params = {}, config = {}) {
+		const merged = { ...config, params };
+		return this.axiosInstance.post(url, data, merged);
+	}
+
 	put(url, data, config) {
 		return this.axiosInstance.put(url, data, config);
 	}

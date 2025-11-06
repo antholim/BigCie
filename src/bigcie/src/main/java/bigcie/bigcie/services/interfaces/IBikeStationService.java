@@ -5,6 +5,7 @@ import bigcie.bigcie.entities.Bike;
 import bigcie.bigcie.entities.BikeStation;
 import bigcie.bigcie.entities.enums.BikeStationStatus;
 import bigcie.bigcie.entities.Reservation;
+import bigcie.bigcie.entities.enums.BikeType;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,7 +27,7 @@ public interface IBikeStationService {
 
     void dockBike(UUID stationId, UUID bikeId, UUID userId);
 
-    UUID undockBike(UUID stationId, UUID userId);
+    UUID undockBike(UUID stationId, UUID userId, BikeType bikeType);
 
     boolean hasAvailableDocks(UUID stationId);
 
