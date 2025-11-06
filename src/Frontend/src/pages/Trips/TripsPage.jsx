@@ -6,6 +6,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import "../../components/home.css";
 import SideBar from "../../components/SideBar";
 import Trip from "./components/Trip";
+import TripDetails from "./components/TripDetails";
 
 export default function TripsPage() {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ export default function TripsPage() {
   const [bikeTypeFilter, setBikeTypeFilter] = useState("ALL");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [selectedTrip, setSelectedTrip] = useState(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -234,10 +236,22 @@ export default function TripsPage() {
               return <p className="db-muted">No trips found.</p>;
             }
 
-            return filteredTrips.map((trip) => <Trip key={trip.id ?? trip._id} trip={trip} />);
+            return filteredTrips.map((trip) => (
+              <Trip 
+                key={trip.id ?? trip._id} 
+                trip={trip} 
+                onSelect={() => setSelectedTrip(trip)}
+              />
+            ));
           })()}
         </div> }
         {isDateRangeValid || <div style={{ color: "#dc2626", marginTop: 12 }}>Please ensure the date range is valid.</div>}
+        {selectedTrip && (
+          <TripDetails
+            trip={selectedTrip}
+            onClose={() => setSelectedTrip(null)}
+          />
+        )}
       </main>
       </div>
     </div>
