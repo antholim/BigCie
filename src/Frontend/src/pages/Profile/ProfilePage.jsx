@@ -15,7 +15,7 @@ export default function ProfilePage() {
   const isOperator = user?.userType === 'OPERATOR' || user?.type === 'OPERATOR';
   const [reservations, setReservations] = useState([]);
   const [reservationsLoading, setReservationsLoading] = useState(false);
-  const [bikes, setBikes] = useState([]);
+  const [bikeRentals, setBikeRentals] = useState([]);
   const [_bikesLoading, setBikesLoading] = useState(false);
   const [_bikesError, setBikesError] = useState("");
   const [reservationsError, setReservationsError] = useState("");
@@ -61,17 +61,62 @@ export default function ProfilePage() {
     if (!identifier) return;
     setBikesLoading(true);
     setBikesError("");
-    console.log("Loading bikes for user:", identifier);
     try {
-      const response = await FetchingService.get("/api/v1/bikes/me");
-      const data = Array.isArray(response?.data) ? response.data : [];
-      setBikes(data);
-      console.log("Bikes data:", data);
+      const [bikeIdsResp, tripsResp] = await Promise.all([
+        FetchingService.get("/api/v1/bikes/me"),
+        FetchingService.get("/api/v1/trips/me"),
+      ]);
+
+      const bikeIds = Array.isArray(bikeIdsResp?.data) ? bikeIdsResp.data : [];
+      const trips = Array.isArray(tripsResp?.data) ? tripsResp.data : [];
+      const normalizedUserId = String(identifier).toLowerCase();
+
+      const ongoingTrips = trips.filter((trip) => {
+        const tripUserId = trip.userId ?? trip.user_id ?? trip.user?.id;
+        const status = (trip.status ?? trip.tripStatus ?? "").toString().toUpperCase();
+        return tripUserId && String(tripUserId).toLowerCase() === normalizedUserId && status === "ONGOING";
+      });
+
+      const tripByBikeId = new Map(
+        ongoingTrips
+          .map((trip) => {
+            const bikeId = trip.bikeId ?? trip.bike_id;
+            return bikeId ? [String(bikeId).toLowerCase(), trip] : null;
+          })
+          .filter(Boolean)
+      );
+
+      const seenBikeIds = new Set();
+      const rentals = bikeIds.map((rawId) => {
+        const lookupKey = String(rawId).toLowerCase();
+        const trip = tripByBikeId.get(lookupKey);
+        seenBikeIds.add(lookupKey);
+        return {
+          bikeId: rawId,
+          bikeType: trip?.bikeType ?? trip?.type ?? null,
+          stationName: trip?.bikeStationStart ?? trip?.startStation ?? "Unknown station",
+          rentedAt: trip?.startDate ?? trip?.start_date ?? null,
+        };
+      });
+
+      ongoingTrips.forEach((trip) => {
+        const bikeId = trip.bikeId ?? trip.bike_id;
+        if (!bikeId) return;
+        const lookupKey = String(bikeId).toLowerCase();
+        if (seenBikeIds.has(lookupKey)) return;
+        rentals.push({
+          bikeId,
+          bikeType: trip.bikeType ?? trip.type ?? null,
+          stationName: trip.bikeStationStart ?? trip.startStation ?? "Unknown station",
+          rentedAt: trip.startDate ?? trip.start_date ?? null,
+        });
+      });
+
+      setBikeRentals(rentals);
     } catch (err) {
       setBikesError(
-        err.response?.data?.message || err.message || "Unable to load bikes right now."
+        err?.response?.data?.message || err?.message || "Unable to load bikes right now."
       );
-      console.log(err.response?.data?.message)
     } finally {
       setBikesLoading(false);
     }
@@ -334,14 +379,14 @@ export default function ProfilePage() {
                           </dl>
                         </div>
                       );
-                    })}°
+                    })}
                   </div>
                 )}
               </div>
 
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              <BikeBox bikeIdList={bikes} />
+              <BikeBox bikeRentals={bikeRentals} />
             </div>
             <div className="db-card" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               <div className="db-flex-between" style={{ alignItems: "center" }}>
