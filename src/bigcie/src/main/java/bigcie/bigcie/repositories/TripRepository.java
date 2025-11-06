@@ -10,4 +10,7 @@ import java.util.UUID;
 public interface TripRepository extends MongoRepository<Trip, UUID> {
     @Query("{ '_class': 'trip', 'userId': ?0 }")
     List<Trip> findByUserId(UUID userId);
+
+    @Query("{ '_class': 'trip', 'userId': ?0 }")
+    void deleteByUserId(UUID userId);
 }

@@ -77,6 +77,7 @@ public class BikeStationService implements IBikeStationService {
     }
 
     @Override
+    @Transactional
     public BikeStation updateStation(UUID id, BikeStation station) {
         BikeStation existingStation = getStationById(id);
         existingStation.setName(station.getName());
@@ -93,11 +94,13 @@ public class BikeStationService implements IBikeStationService {
     }
 
     @Override
+    @Transactional
     public void deleteStation(UUID id) {
         bikeStationRepository.deleteById(id);
     }
 
     @Override
+    @Transactional
     public BikeStation updateStationStatus(UUID id, BikeStationStatus status) {
 
         BikeStation station = getStationById(id);
@@ -107,6 +110,7 @@ public class BikeStationService implements IBikeStationService {
     }
 
     @Override
+    @Transactional
     public void dockBike(UUID stationId, UUID bikeId, UUID userId) {
 
         BikeStation station = getStationById(stationId);
@@ -254,6 +258,7 @@ public class BikeStationService implements IBikeStationService {
     }
 
     @Override
+    @Transactional
     public void holdBike(UUID stationId) {
         BikeStation station = getStationById(stationId);
         if (!hasAvailableBikes(stationId)) {

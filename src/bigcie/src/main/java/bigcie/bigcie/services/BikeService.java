@@ -11,6 +11,7 @@ import bigcie.bigcie.repositories.BikeRepository;
 import bigcie.bigcie.services.interfaces.IBikeService;
 import bigcie.bigcie.services.interfaces.INotificationService;
 import bigcie.bigcie.services.interfaces.IUserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class BikeService implements IBikeService {
     private final BikeRepository bikeRepository;
@@ -134,6 +136,7 @@ public class BikeService implements IBikeService {
             rider = (Rider) user;
             return rider.getCurrentBikes();
         }
+        log.info("User with id {} is not a rider or has no bikes", riderId);
         return List.of();
     }
 
