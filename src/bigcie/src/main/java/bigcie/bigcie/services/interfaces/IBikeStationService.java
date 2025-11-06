@@ -39,4 +39,5 @@ public interface IBikeStationService {
 
     List<Bike> getStationBikes(UUID stationId);
     String getStationNameById(UUID id);
+    void rebalanceBikes();
 }
