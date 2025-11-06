@@ -4,16 +4,7 @@ actor Rider
 participant "Frontend\nBillPage" as UI
 participant "PaymentController" as PaymentCtrl
 participant "PaymentService" as PaymentSvc
-participant "UserService" as UserSvc
 participant "PriceService" as PriceSvc
-participant "TripService" as TripSvc
-participant "BillAssembler" as BillAsm
-participant "BillMapper" as BillMap
-participant "PaymentInfoMapper" as PayInfoMap
-database "BillRepository" as BillRepo
-database "TripRepository" as TripRepo
-database "PlanBillRepository" as PlanBillRepo
-database "UserRepository" as UserRepo
 
 == View Current Plan ==
 Rider -> UI: Navigate to /bill
@@ -22,14 +13,6 @@ UI -> PaymentCtrl: GET /api/v1/payments/current-plan
 activate PaymentCtrl
 PaymentCtrl -> PaymentSvc: getPricingPlanByUserId(userId)
 activate PaymentSvc
-PaymentSvc -> UserSvc: getUserByUUID(userId)
-activate UserSvc
-UserSvc -> UserRepo: findById(userId)
-activate UserRepo
-UserRepo --> UserSvc: Rider
-deactivate UserRepo
-UserSvc --> PaymentSvc: Rider
-deactivate UserSvc
 
 PaymentSvc -> PaymentSvc: Extract PricingPlanInformation
 PaymentSvc --> PaymentCtrl: PaymentPlanDto
@@ -44,29 +27,6 @@ UI -> PaymentCtrl: GET /api/v1/payments/billing-info
 activate PaymentCtrl
 PaymentCtrl -> PaymentSvc: getBillingInfo(userId)
 activate PaymentSvc
-PaymentSvc -> BillRepo: findByUserId(userId)
-activate BillRepo
-BillRepo --> PaymentSvc: List<Bill> (Trip & PlanBill)
-deactivate BillRepo
-
-PaymentSvc -> BillAsm: toBillDtoList(bills, userId)
-activate BillAsm
-BillAsm -> BillMap: toDtos(bills)
-activate BillMap
-BillMap --> BillAsm: List<BillDto>
-deactivate BillMap
-
-loop For each Bill
-    BillAsm -> BillAsm: getPaymentInfo(bill.paymentInfoId, userId)
-    BillAsm -> PayInfoMap: toDto(paymentInfo)
-    activate PayInfoMap
-    PayInfoMap --> BillAsm: PaymentInfoDto
-    deactivate PayInfoMap
-    BillAsm -> BillAsm: Enrich BillDto with PaymentInfoDto
-end
-
-BillAsm --> PaymentSvc: List<BillDto> (enriched)
-deactivate BillAsm
 PaymentSvc --> PaymentCtrl: List<BillDto>
 deactivate PaymentSvc
 PaymentCtrl --> UI: 200 OK - List<BillDto>
@@ -81,15 +41,6 @@ activate PaymentCtrl
 note right: Request body: { pricingPlan }
 PaymentCtrl -> PaymentSvc: updatePaymentPlan(userId, paymentPlanDto)
 activate PaymentSvc
-
-PaymentSvc -> UserSvc: getUserByUUID(userId)
-activate UserSvc
-UserSvc -> UserRepo: findById(userId)
-activate UserRepo
-UserRepo --> UserSvc: Rider
-deactivate UserRepo
-UserSvc --> PaymentSvc: Rider
-deactivate UserSvc
 
 PaymentSvc -> PaymentSvc: Update PricingPlanInformation
 alt SINGLE_RIDE
@@ -108,20 +59,6 @@ note right
   - paymentInfoId (default)
 end note
 
-PaymentSvc -> BillRepo: save(planBill)
-activate BillRepo
-BillRepo --> PaymentSvc: PlanBill saved
-deactivate BillRepo
-
-PaymentSvc -> UserSvc: updateUser(rider)
-activate UserSvc
-UserSvc -> UserRepo: save(rider)
-activate UserRepo
-UserRepo --> UserSvc: Updated Rider
-deactivate UserRepo
-UserSvc --> PaymentSvc: Updated Rider
-deactivate UserSvc
-
 PaymentSvc --> PaymentCtrl: Success
 deactivate PaymentSvc
 PaymentCtrl --> UI: 200 OK - "Payment plan updated successfully"
@@ -130,23 +67,7 @@ UI --> Rider: Show confirmation message
 deactivate UI
 
 == Trip Cost Calculation (After Docking) ==
-note over TripSvc: Triggered when rider docks bike
-TripSvc -> TripSvc: endTrip(tripId, bikeStationEndId)
-activate TripSvc
-TripSvc -> TripRepo: findById(tripId)
-activate TripRepo
-TripRepo --> TripSvc: Trip
-deactivate TripRepo
 
-TripSvc -> TripSvc: Set endDate = now()
-TripSvc -> TripSvc: Calculate distanceInKm
-
-TripSvc -> UserSvc: getUserByUUID(userId)
-activate UserSvc
-UserSvc --> TripSvc: Rider with PricingPlan
-deactivate UserSvc
-
-TripSvc -> PriceSvc: calculatePrice(startTime, endTime, bikeType, pricingPlan)
 activate PriceSvc
 alt SINGLE_RIDE (Pay-As-You-Go)
     PriceSvc -> PriceSvc: Calculate minutes elapsed
@@ -158,20 +79,8 @@ alt SINGLE_RIDE (Pay-As-You-Go)
 else DAY_PASS or MONTHLY_PASS
     PriceSvc -> PriceSvc: cost = 0 (included in plan)
 end
-PriceSvc --> TripSvc: double cost
 deactivate PriceSvc
 
-TripSvc -> TripSvc: Set trip.cost = cost
-TripSvc -> TripSvc: Set trip.status = COMPLETED
-TripSvc -> TripRepo: save(trip)
-activate TripRepo
-TripRepo --> TripSvc: Trip saved
-deactivate TripRepo
-
-note over BillRepo: Trip extends Bill, automatically saved as billing record
-
-TripSvc --> PaymentSvc: Trip completed with cost
-deactivate TripSvc
 PaymentSvc --> Rider: Bill generated and available in billing history
 
 == View Trip Details in Billing ==
