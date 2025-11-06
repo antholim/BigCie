@@ -172,4 +172,15 @@ public class BikeStationController {
         return ResponseEntity.ok(null);
     }
 
+
+    @Operation(summary = "Rebalance bikes between stations")
+    @PostMapping("/rebalance-bikes")
+    public ResponseEntity<BikeStation> createStation(HttpServletRequest request) {
+        if (!authorizationService.hasRole(request, UserType.OPERATOR)) {
+            log.warn("Unauthorized attempt to create bike station");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        bikeStationService.rebalanceBikes();
+        return ResponseEntity.ok(null);
+    }
 }
