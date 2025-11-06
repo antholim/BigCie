@@ -1,0 +1,35 @@
+@startuml Rider Reservation and Checkout Sequence
+
+actor Rider
+participant "Frontend\nMapDashboard" as UI
+
+== Reservation Phase ==
+Rider -> UI: Navigate to /map
+activate UI
+UI --> Rider: Display stations on map
+deactivate UI
+
+Rider -> UI: Click station & select "Reserve"
+activate UI
+UI --> Rider: Show reservation confirmation
+deactivate UI
+
+== View Reservations ==
+Rider -> UI: Navigate to /profile
+activate UI
+UI --> Rider: Display active reservations
+deactivate UI
+
+== Undock/Checkout Phase ==
+Rider -> UI: Click "Rent" at station
+activate UI
+UI --> Rider: Trip started confirmation
+deactivate UI
+
+== Return/Complete Checkout ==
+Rider -> UI: Navigate to station & click "Dock"
+activate UI
+UI --> Rider: Trip completed, show summary
+deactivate UI
+
+@enduml
