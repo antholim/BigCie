@@ -1,0 +1,184 @@
+@startuml Rider Reservation and Checkout Sequence
+
+actor Rider
+participant "Frontend\nMapDashboard" as UI
+participant "BikeStationController" as Controller
+participant "ReservationService" as ReservationSvc
+participant "BikeService" as BikeSvc
+participant "BikeStationService" as StationSvc
+participant "TripService" as TripSvc
+participant "PaymentService" as PaymentSvc
+participant "NotificationService" as NotifySvc
+database "ReservationRepository" as ReservationRepo
+database "BikeRepository" as BikeRepo
+
+== Reservation Phase ==
+Rider -> UI: Navigate to /map
+activate UI
+UI -> Controller: GET /api/v1/stations
+activate Controller
+Controller -> StationSvc: getAllStations()
+activate StationSvc
+StationSvc --> UI: List<BikeStation>
+deactivate StationSvc
+deactivate Controller
+UI --> Rider: Display stations on map
+deactivate UI
+
+Rider -> UI: Click station & select "Reserve"
+activate UI
+UI -> Controller: POST /api/v1/stations/{stationId}/reserve
+activate Controller
+Controller -> ReservationSvc: createReservation(userId, stationId)
+activate ReservationSvc
+ReservationSvc -> StationSvc: getStationById(stationId)
+activate StationSvc
+StationSvc --> ReservationSvc: BikeStation
+deactivate StationSvc
+
+ReservationSvc -> ReservationRepo: findByUserId(userId)
+activate ReservationRepo
+ReservationRepo --> ReservationSvc: Check existing reservations
+deactivate ReservationRepo
+
+ReservationSvc -> StationSvc: getStationBikes(stationId)
+activate StationSvc
+StationSvc --> ReservationSvc: List<Bike> (filter AVAILABLE)
+deactivate StationSvc
+
+ReservationSvc -> BikeSvc: updateBikeStatus(bikeId, RESERVED)
+activate BikeSvc
+BikeSvc -> BikeRepo: save(bike)
+activate BikeRepo
+BikeRepo --> BikeSvc: Bike
+deactivate BikeRepo
+
+ReservationSvc -> ReservationRepo: save(reservation)
+activate ReservationRepo
+ReservationRepo --> ReservationSvc: Reservation
+deactivate ReservationRepo
+deactivate BikeSvc
+
+ReservationSvc --> Controller: Reservation
+deactivate ReservationSvc
+Controller --> UI: 201 Created - Reservation
+deactivate Controller
+
+UI --> Rider: Show reservation confirmation
+deactivate UI
+
+== View Reservations ==
+Rider -> UI: Navigate to /profile
+activate UI
+UI -> Controller: GET /api/v1/stations/reservations
+activate Controller
+Controller -> ReservationSvc: getAllReservations()
+activate ReservationSvc
+ReservationSvc -> ReservationRepo: findAll()
+activate ReservationRepo
+ReservationRepo --> ReservationSvc: List<Reservation>
+deactivate ReservationRepo
+ReservationSvc --> Controller: List<Reservation>
+deactivate ReservationSvc
+Controller --> UI: List<Reservation> (filtered by userId)
+deactivate Controller
+UI --> Rider: Display active reservations
+deactivate UI
+
+== Undock/Checkout Phase ==
+Rider -> UI: Click "Rent" at station
+activate UI
+UI -> Controller: POST /api/v1/stations/{stationId}/undock
+activate Controller
+Controller -> StationSvc: undockBike(stationId, userId)
+activate StationSvc
+
+StationSvc -> StationSvc: getStationById(stationId)
+StationSvc -> ReservationSvc: getReservationsByUserId(userId)
+activate ReservationSvc
+ReservationSvc -> ReservationRepo: findByUserId(userId)
+activate ReservationRepo
+ReservationRepo --> ReservationSvc: List<Reservation>
+deactivate ReservationRepo
+ReservationSvc --> StationSvc: Reservation (active)
+deactivate ReservationSvc
+
+StationSvc -> BikeSvc: getBikeById(bikeId)
+activate BikeSvc
+BikeSvc --> StationSvc: Bike
+deactivate BikeSvc
+
+StationSvc -> BikeSvc: updateBikeStatus(bikeId, ON_TRIP)
+activate BikeSvc
+BikeSvc -> BikeRepo: save(bike)
+activate BikeRepo
+BikeRepo --> BikeSvc: Bike
+deactivate BikeRepo
+BikeSvc -> NotifySvc: notifyBikeStatusChange(bikeId, ON_TRIP)
+activate NotifySvc
+deactivate NotifySvc
+deactivate BikeSvc
+
+StationSvc -> PaymentSvc: getRider payment info
+activate PaymentSvc
+PaymentSvc --> StationSvc: PaymentInfo (default)
+deactivate PaymentSvc
+
+StationSvc -> TripSvc: createTrip(userId, bikeId, stationId, pricingPlan, bikeType, paymentInfoId)
+activate TripSvc
+TripSvc --> StationSvc: Trip
+deactivate TripSvc
+
+StationSvc -> ReservationSvc: cancelReservation(reservationId)
+activate ReservationSvc
+ReservationSvc -> BikeSvc: updateBikeStatus(bikeId, AVAILABLE) [if needed]
+activate BikeSvc
+deactivate BikeSvc
+ReservationSvc -> ReservationRepo: deleteById(reservationId)
+activate ReservationRepo
+deactivate ReservationRepo
+ReservationSvc -> NotifySvc: notifyReservationChange(reservationId, "CANCELLED")
+activate NotifySvc
+deactivate NotifySvc
+deactivate ReservationSvc
+
+StationSvc --> Controller: UUID (tripId)
+deactivate StationSvc
+Controller --> UI: 200 OK
+deactivate Controller
+UI --> Rider: Trip started confirmation
+deactivate UI
+
+== Return/Complete Checkout ==
+Rider -> UI: Navigate to station & click "Dock"
+activate UI
+UI -> Controller: POST /api/v1/stations/{stationId}/dock
+activate Controller
+note right: Request body: { bikeId }
+Controller -> StationSvc: dockBike(stationId, bikeId, userId)
+activate StationSvc
+
+StationSvc -> TripSvc: endTrip(tripId, stationId)
+activate TripSvc
+TripSvc -> TripSvc: Calculate cost & distance
+TripSvc -> PaymentSvc: Process payment
+activate PaymentSvc
+PaymentSvc --> TripSvc: Payment processed
+deactivate PaymentSvc
+deactivate TripSvc
+
+StationSvc -> BikeSvc: updateBikeStatus(bikeId, AVAILABLE)
+activate BikeSvc
+BikeSvc -> NotifySvc: notifyBikeStatusChange(bikeId, AVAILABLE)
+activate NotifySvc
+deactivate NotifySvc
+deactivate BikeSvc
+
+StationSvc --> Controller: 200 OK
+deactivate StationSvc
+Controller --> UI: Success response
+deactivate Controller
+UI --> Rider: Trip completed, show summary
+deactivate UI
+
+@enduml
