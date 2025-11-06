@@ -28,7 +28,114 @@ export default function MapDashboard() {
     const [stationMenuOpen, setStationMenuOpen] = useState(false);
     const [tripEvents, setTripEvents] = useState([]);
     const [updatingStatus, setUpdatingStatus] = useState(false);
-    const [bikes, setBikes] = useState([]);
+    const [bikeRentals, setBikeRentals] = useState([]);
+
+    const getStationFullnessMeta = useCallback((station) => {
+        if (!station) {
+            return {
+                color: "#22c55e",
+                label: "Balanced",
+                percent: 0,
+            };
+        }
+
+        const toNumber = (value) => {
+            const num = Number(value);
+            return Number.isFinite(num) ? num : 0;
+        };
+
+        const capacity = Math.max(
+            toNumber(station.capacity ?? station.totalCapacity ?? station.maxCapacity ?? 0),
+            0
+        );
+
+        const standardDocked = toNumber(
+            station.standardBikesDocked ??
+            station.standardBikes ??
+            station.standard ??
+            0
+        );
+
+        const electricDocked = toNumber(
+            station.eBikesDocked ??
+            station.ebikesDocked ??
+            station.electricBikesDocked ??
+            station.electricBikes ??
+            0
+        );
+
+        const bikesListCount = Array.isArray(station.bikesIds)
+            ? station.bikesIds.length
+            : Array.isArray(station.bikes)
+                ? station.bikes.length
+                : 0;
+
+        const dockedTotal = standardDocked + electricDocked;
+        const totalDocked = dockedTotal > 0 ? dockedTotal : bikesListCount;
+
+        const fullnessRatio = capacity > 0
+            ? Math.min(Math.max(totalDocked / capacity, 0), 1)
+            : totalDocked > 0 ? 1 : 0;
+
+        const percent = fullnessRatio * 100;
+        const epsilon = 0.0001;
+        const isEmpty = percent <= epsilon;
+        const isFull = percent >= 100 - epsilon;
+
+        let color = "#22c55e";
+        let label = "Balanced";
+
+        if (isEmpty || isFull) {
+            color = "#ef4444";
+            label = isEmpty ? "Empty" : "Full";
+        } else if (percent < 25 || percent > 85) {
+            color = "#facc15";
+            label = percent < 50 ? "Almost empty" : "Almost full";
+        }
+
+        return {
+            color,
+            label,
+            percent: Math.round(percent),
+        };
+    }, []);
+
+    const createStationIcon = useCallback((color) => L.divIcon({
+        className: "",
+        html: `
+            <div style="
+                position: relative;
+                width: 24px;
+                height: 34px;
+            ">
+                <div style="
+                    position: absolute;
+                    top: 0;
+                    left: 50%;
+                    width: 22px;
+                    height: 22px;
+                    margin-left: -11px;
+                    border-radius: 50% 50% 50% 0;
+                    background: ${color};
+                    transform: rotate(-45deg);
+                    box-shadow: 0 0 0 2px #ffffff, 0 6px 12px rgba(15, 23, 42, 0.35);
+                "></div>
+                <div style="
+                    position: absolute;
+                    top: 6px;
+                    left: 50%;
+                    width: 12px;
+                    height: 12px;
+                    margin-left: -6px;
+                    border-radius: 50%;
+                    background: rgba(255,255,255,0.85);
+                "></div>
+            </div>
+        `,
+        iconSize: [24, 34],
+        iconAnchor: [12, 28],
+        popupAnchor: [0, -26],
+    }), []);
 
     // Check if user is an operator
     const isOperator = user?.userType === 'OPERATOR' || user?.type === 'OPERATOR';
@@ -87,14 +194,16 @@ export default function MapDashboard() {
                     const lat = Number(s.lat ?? s.latitude ?? 0);
                     const lng = Number(s.lng ?? s.longitude ?? 0);
                     const name = s.name ?? s.address ?? `Station ${s.id ?? ''}`;
-                    const m = L.marker([lat, lng]).addTo(leafletRef.current);
-                    const popupHtml = `<strong>${name}</strong><br/>Lat: ${lat.toFixed(5)}<br/>Lng: ${lng.toFixed(5)}`;
+                    const fullness = getStationFullnessMeta(s);
+                    const m = L.marker([lat, lng], {
+                        icon: createStationIcon(fullness.color),
+                    }).addTo(leafletRef.current);
+                    const popupHtml = `<strong>${name}</strong><br/>Lat: ${lat.toFixed(5)}<br/>Lng: ${lng.toFixed(5)}<br/>Fullness: ${fullness.percent}% (${fullness.label})`;
                     m.bindPopup(popupHtml);
                     // attach reference to station id for later lookup
                     m.stationId = s.id;
                     return m;
                 });
-                console.log(resp)
             } catch {
                 console.error("Error fetching bike stations:");
             }
@@ -108,7 +217,7 @@ export default function MapDashboard() {
             stationMarkersRef.current.forEach((m) => m.remove());
             stationMarkersRef.current = [];
         };
-    }, [mapReady, isOperator]); // Added isOperator dependency
+    }, [mapReady, isOperator, getStationFullnessMeta, createStationIcon]); // ensure icon colors stay in sync
 
     useEffect(() => {
         setLoading(true);
@@ -125,23 +234,15 @@ export default function MapDashboard() {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(leafletRef.current);
 
-        // marker
-        markerRef.current = L.marker([center.lat, center.lng], { draggable: true }).addTo(leafletRef.current);
-        markerRef.current.bindPopup("A pretty CSS popup.<br> Easily customizable.", { maxWidth: 480 }).openPopup();
-
-        markerRef.current.on("dragend", () => {
-            const pos = markerRef.current.getLatLng();
-            const newCenter = { lat: pos.lat, lng: pos.lng };
-            setCenter(newCenter);
-            leafletRef.current.panTo([newCenter.lat, newCenter.lng]);
-        });
-
         // Add station markers with popups
         if (mapReady) {
             stationMarkersRef.current.forEach((m) => m.remove());
             stationMarkersRef.current = stations.map((s) => {
-                const m = L.marker([s.lat, s.lng]).addTo(leafletRef.current);
-                const popupHtml = `<strong>${s.name}</strong><br/>Lat: ${s.lat.toFixed(5)}<br/>Lng: ${s.lng.toFixed(5)}`;
+                const fullness = getStationFullnessMeta(s);
+                const m = L.marker([s.lat, s.lng], {
+                    icon: createStationIcon(fullness.color),
+                }).addTo(leafletRef.current);
+                const popupHtml = `<strong>${s.name}</strong><br/>Lat: ${s.lat.toFixed(5)}<br/>Lng: ${s.lng.toFixed(5)}<br/>Fullness: ${fullness.percent}% (${fullness.label})`;
                 m.bindPopup(popupHtml);
                 return m;
             });
@@ -200,15 +301,18 @@ export default function MapDashboard() {
             m.openPopup();
         } else {
             // create a temporary marker and open popup
-            const tmp = L.marker([lat, lng]).addTo(leafletRef.current);
+            const fullness = getStationFullnessMeta(station);
+            const tmp = L.marker([lat, lng], {
+                icon: createStationIcon(fullness.color),
+            }).addTo(leafletRef.current);
             const popupHtml = `<strong>${station.name ?? station.address}</strong><br/>Lat: ${lat.toFixed(5)}<br/>Lng: ${lng.toFixed(5)}`;
-            m.bindPopup(popupHtml, { maxWidth: 420 });
+            tmp.bindPopup(popupHtml, { maxWidth: 420 }).openPopup();
             setTimeout(() => tmp.remove(), 5000);
         }
         // open station action menu
         setSelectedStation(station);
         setStationMenuOpen(true);
-    }, []);
+    }, [createStationIcon, getStationFullnessMeta]);
 
     const closeStationMenu = () => {
         setStationMenuOpen(false);
@@ -248,9 +352,12 @@ export default function MapDashboard() {
         try {
             // Assumes backend supports POST /api/v1/stations/:id/{action}
             const path = `/api/v1/stations/${selectedStation.id}/${action}`;
-            console.log(bikes[0])
+            const firstBikeId = bikeRentals[0]?.bikeId;
+            if (!firstBikeId) {
+                throw new Error("No bike available to dock");
+            }
             await FetchingService.post(path, {
-                bikeId: bikes[0] // ensure this is a UUID string
+                bikeId: firstBikeId // ensure this is a UUID string
             });
             // Simple feedback; you can wire this into context/state/UI
             alert(`${action} successful`);
@@ -349,19 +456,60 @@ export default function MapDashboard() {
         if (!isAuthenticated || !user) return;
         const identifier = user.id ?? user.userId;
         if (!identifier) return;
-        // setBikesLoading(true);
-        // setBikesError("");
-        console.log("Loading bikes for user:", identifier);
         try {
-            const response = await FetchingService.get("/api/v1/bikes/me");
-            const data = Array.isArray(response?.data) ? response.data : [];
-            setBikes(data);
-            console.log("Bikes data:", data);
+            const [bikeIdsResp, tripsResp] = await Promise.all([
+                FetchingService.get("/api/v1/bikes/me"),
+                FetchingService.get("/api/v1/trips/me"),
+            ]);
+
+            const bikeIds = Array.isArray(bikeIdsResp?.data) ? bikeIdsResp.data : [];
+            const trips = Array.isArray(tripsResp?.data) ? tripsResp.data : [];
+            const normalizedUserId = String(identifier).toLowerCase();
+
+            const ongoingTrips = trips.filter((trip) => {
+                const tripUserId = trip.userId ?? trip.user_id ?? trip.user?.id;
+                const status = (trip.status ?? trip.tripStatus ?? "").toString().toUpperCase();
+                return tripUserId && String(tripUserId).toLowerCase() === normalizedUserId && status === "ONGOING";
+            });
+
+            const tripByBikeId = new Map(
+                ongoingTrips
+                    .map((trip) => {
+                        const bikeId = trip.bikeId ?? trip.bike_id;
+                        return bikeId ? [String(bikeId).toLowerCase(), trip] : null;
+                    })
+                    .filter(Boolean)
+            );
+
+            const seenBikeIds = new Set();
+            const rentals = bikeIds.map((rawId) => {
+                const lookupKey = String(rawId).toLowerCase();
+                const trip = tripByBikeId.get(lookupKey);
+                seenBikeIds.add(lookupKey);
+                return {
+                    bikeId: rawId,
+                    bikeType: trip?.bikeType ?? trip?.type ?? null,
+                    stationName: trip?.bikeStationStart ?? trip?.startStation ?? "Unknown station",
+                    rentedAt: trip?.startDate ?? trip?.start_date ?? null,
+                };
+            });
+
+            ongoingTrips.forEach((trip) => {
+                const bikeId = trip.bikeId ?? trip.bike_id;
+                if (!bikeId) return;
+                const lookupKey = String(bikeId).toLowerCase();
+                if (seenBikeIds.has(lookupKey)) return;
+                rentals.push({
+                    bikeId,
+                    bikeType: trip.bikeType ?? trip.type ?? null,
+                    stationName: trip.bikeStationStart ?? trip.startStation ?? "Unknown station",
+                    rentedAt: trip.startDate ?? trip.start_date ?? null,
+                });
+            });
+
+            setBikeRentals(rentals);
         } catch (err) {
-            //   setBikesError(
-            //     err.response?.data?.message || err.message || "Unable to load bikes right now."
-            //   );
-            console.log(err.response?.data?.message)
+            console.log(err?.response?.data?.message ?? err?.message);
         }
     }, [isAuthenticated, user]);
 
@@ -414,7 +562,7 @@ export default function MapDashboard() {
                                         const lat = Number(s.lat ?? s.latitude ?? 0);
                                         const lng = Number(s.lng ?? s.longitude ?? 0);
                                         const isOutOfService = s.status === 'OUT_OF_SERVICE';
-                                        console.log(s);
+                                        const fullness = getStationFullnessMeta(s);
                                         return (
                                             <div
                                                 key={s.id}
@@ -435,7 +583,15 @@ export default function MapDashboard() {
                                                     justifyContent: 'space-between',
                                                     alignItems: 'center'
                                                 }}>
-                                                    <span>{s.name ?? s.address ?? 'Unnamed'}</span>
+                                                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                        <span style={{
+                                                            width: 10,
+                                                            height: 10,
+                                                            borderRadius: '50%',
+                                                            backgroundColor: fullness.color,
+                                                        }} />
+                                                        {s.name ?? s.address ?? 'Unnamed'}
+                                                    </span>
                                                     {isOperator && s.status && (
                                                         <span style={{
                                                             fontSize: 10,
@@ -452,6 +608,7 @@ export default function MapDashboard() {
                                                 <div style={{ fontSize: 12, color: '#555' }}>{lat.toFixed(5)}, {lng.toFixed(5)}</div>
                                                 <div style={{ fontSize: 12, color: '#666' }}>Standard Bikes: {s.standardBikesDocked ?? s.bikes?.length ?? 0}</div>
                                                 <div style={{ fontSize: 12, color: '#666' }}>Electric Bikes: {s.ebikesDocked}</div>
+                                                <div style={{ fontSize: 12, color: '#444' }}>Fullness: {fullness.percent}% ({fullness.label})</div>
                                             </div>
                                         );
                                     })
@@ -578,7 +735,7 @@ export default function MapDashboard() {
                 </div>
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                <BikeBox bikeIdList={bikes} />
+                <BikeBox bikeRentals={bikeRentals} />
             </div>
         </div>
     );
