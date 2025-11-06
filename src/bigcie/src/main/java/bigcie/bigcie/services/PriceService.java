@@ -13,9 +13,10 @@ import java.time.LocalDateTime;
 public class PriceService implements IPriceService {
 
     @Override
-    public double calculatePrice(LocalDateTime startTime, LocalDateTime endTime, BikeType bikeType, PricingPlan pricingPlan) {
+    public double calculatePrice(LocalDateTime startTime, LocalDateTime endTime, BikeType bikeType,
+            PricingPlan pricingPlan) {
         switch (pricingPlan) {
-            case DAY_PASS , MONTHLY_PASS ->  {
+            case DAY_PASS, MONTHLY_PASS -> {
                 return 0;
             }
             default -> {
@@ -26,5 +27,15 @@ public class PriceService implements IPriceService {
             }
 
         }
+    }
+
+    @Override
+    public double getFiveMinuteRate() {
+        return Prices.PRICE_PER_5_MINUTES;
+    }
+
+    @Override
+    public double getEBikeSurcharge() {
+        return Prices.E_BIKE_SURCHARGE;
     }
 }

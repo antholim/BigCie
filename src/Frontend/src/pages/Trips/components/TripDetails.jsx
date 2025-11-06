@@ -1,7 +1,38 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { formatDateTime } from "../../../utils/utils";
+import FetchingService from "../../../services/FetchingService";
 
 export default function TripDetails({ trip, onClose }) {
+  const [eBikeSurcharge, setEBikeSurcharge] = useState(null);
+  const [fiveMinRate, setFiveMinRate] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPricingInfo = async () => {
+      try {
+        const [surchargeRes, rateRes] = await Promise.all([
+          FetchingService.get("api/v1/payments/ebike-surcharge"),
+          FetchingService.get("api/v1/payments/5min-rate")
+        ]);
+        
+        console.log("E-bike surcharge:", surchargeRes.data);
+        setEBikeSurcharge(surchargeRes.data);
+        
+        console.log("5-min rate:", rateRes.data);
+        setFiveMinRate(rateRes.data);
+      } catch (error) {
+        console.error("Failed to fetch pricing info:", error);
+        // Fallback to default values from Prices constants
+        setEBikeSurcharge(2.50);
+        setFiveMinRate(1.25);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPricingInfo();
+  }, []);
+
   const calculateDuration = (start, end) => {
     const startTime = new Date(start).getTime();
     const endTime = new Date(end).getTime();
@@ -40,7 +71,7 @@ export default function TripDetails({ trip, onClose }) {
 
         <div style={{ display: "grid", gap: "16px" }}>
           <div><strong>Trip ID:</strong> {trip.id}</div>
-          <div><strong>Rider:</strong> {trip.user?.username || 'N/A'}</div>
+          <div><strong>Rider:</strong> {trip.userId || 'N/A'}</div>
           <div>
             <strong>Start Station:</strong> {trip.bikeStationStart || trip.startStation || 'N/A'}
             <br />
@@ -61,9 +92,16 @@ export default function TripDetails({ trip, onClose }) {
           <div>
             <strong>Cost Breakdown:</strong>
             <div style={{ marginLeft: "20px" }}>
-              <div>Base: ${(trip.cost?.base || 0).toFixed(2)}</div>
-              <div>Per-minute: ${(trip.cost?.perMinute || 0).toFixed(2)}</div>
-              <div>E-bike surcharge: ${(trip.eBikeCharge || 0).toFixed(2)}</div>
+              {loading ? (
+                <div>Loading pricing information...</div>
+              ) : (
+                <>
+                  <div>5-minute units rate: ${(fiveMinRate !== null ? fiveMinRate : trip.cost?.base || 0).toFixed(2)}</div>
+                  {trip.bikeType === "E_BIKE" && eBikeSurcharge > 0 && (
+                    <div>E-bike surcharge: ${(eBikeSurcharge || 0).toFixed(2)}</div>
+                  )}
+                </>
+              )}
               <div style={{ marginTop: "8px", fontWeight: "bold" }}>
                 Total: ${(trip.cost || 0).toFixed(2)}
               </div>
