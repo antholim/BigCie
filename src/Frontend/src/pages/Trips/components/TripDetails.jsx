@@ -92,13 +92,22 @@ export default function TripDetails({ trip, onClose }) {
           <div>
             <strong>Cost Breakdown:</strong>
             <div style={{ marginLeft: "20px" }}>
+              <div>Pricing Plan: {trip.pricingPlan || 'N/A'}</div>
               {loading ? (
                 <div>Loading pricing information...</div>
               ) : (
                 <>
-                  <div>5-minute units rate: ${(fiveMinRate !== null ? fiveMinRate : trip.cost?.base || 0).toFixed(2)}</div>
-                  {trip.bikeType === "E_BIKE" && eBikeSurcharge > 0 && (
-                    <div>E-bike surcharge: ${(eBikeSurcharge || 0).toFixed(2)}</div>
+                  {trip.pricingPlan === "DAY_PASS" || trip.pricingPlan === "MONTHLY_PASS" ? (
+                    <div style={{ color: "#22c55e", fontWeight: "500" }}>
+                      ✓ Trip covered by {trip.pricingPlan === "DAY_PASS" ? "daily" : "monthly"} pass
+                    </div>
+                  ) : (
+                    <>
+                      <div>5-minute units rate: ${(fiveMinRate !== null ? fiveMinRate : trip.cost?.base || 0).toFixed(2)} For {trip.bikeType === "E_BIKE" ? (((trip.cost - eBikeSurcharge) / 1.25) * 5) : ((trip.cost / 1.25) * 5) } minutes</div>
+                      {trip.bikeType === "E_BIKE" && eBikeSurcharge > 0 && (
+                        <div>E-bike surcharge: ${(eBikeSurcharge || 0).toFixed(2)}</div>
+                      )}
+                    </>
                   )}
                 </>
               )}
