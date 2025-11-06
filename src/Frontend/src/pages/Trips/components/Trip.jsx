@@ -1,9 +1,23 @@
 import { E_BIKE_CHARGE } from "../../../constants/constants";
 import { formatDateTime } from "../../../utils/utils";
 
-function Trip({ trip }) {
+function Trip({ trip, onSelect }) {
     return (
-        <div key={trip.id} className="db-card" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div 
+            key={trip.id} 
+            className="db-card" 
+            onClick={onSelect}
+            style={{ 
+                display: "flex", 
+                flexDirection: "column", 
+                gap: 8,
+                cursor: "pointer",
+                transition: "transform 0.1s ease-in-out",
+                ':hover': {
+                    transform: "translateY(-1px)"
+                }
+            }}
+        >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
                     <strong style={{ fontSize: 16 }}>{trip.pricingPlan || trip.bikeType || "Trip"}</strong>
