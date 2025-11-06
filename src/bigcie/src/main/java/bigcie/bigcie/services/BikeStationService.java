@@ -14,6 +14,8 @@ import bigcie.bigcie.services.interfaces.ITripService;
 import bigcie.bigcie.services.interfaces.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -320,6 +322,76 @@ public class BikeStationService implements IBikeStationService {
             return station.getName();
         }
         return "";
+    }
+
+    @Transactional
+    @Override
+    public void rebalanceBikes() {
+        // Placeholder for bike rebalancing logic
+        log.info("Rebalancing bikes across stations...");
+        List<BikeStation> stations = bikeStationRepository.findAll();
+        // Implement rebalancing algorithm here
+        int totalBikes = stations.stream()
+                .mapToInt(station -> station.getStandardBikesDocked() + station.getEBikesDocked())
+                .sum();
+        int average = totalBikes / stations.size(); // 2
+        List<UUID> bikeIdsToMove = new ArrayList<>(); // 10
+
+        for (BikeStation station : stations) {
+            bikeIdsToMove.addAll(station.getBikesIds());
+            station.getBikesIds().clear();
+            station.setStandardBikesDocked(0);
+            station.setEBikesDocked(0);
+        }
+
+        for (BikeStation station : stations) {
+            int standardBikes = 0;
+            int eBikes = 0;
+            for (int i = 0; i < average; i++) {
+                UUID bikeId = bikeIdsToMove.removeFirst();
+                Bike bike = bikeRepository.findBikeById(bikeId);
+                switch (bike.getBikeType()) {
+                    case STANDARD -> {
+                        standardBikes++;
+                    }
+                    case E_BIKE -> {
+                        eBikes++;
+                    }
+                }
+                station.getBikesIds().add(bikeId);
+                station.setStandardBikesDocked(standardBikes);
+                station.setEBikesDocked(eBikes);
+            }
+            bikeStationRepository.save(station);
+        }
+        if (!bikeIdsToMove.isEmpty()) {
+
+            for (BikeStation station : stations) {
+                int standardBikes = 0;
+                int eBikes = 0;
+                if (bikeIdsToMove.isEmpty()) {
+                    break;
+                }
+                UUID bikeId = bikeIdsToMove.removeFirst();
+                Bike bike = bikeRepository.findBikeById(bikeId);
+                switch (bike.getBikeType()) {
+                    case STANDARD -> {
+                        standardBikes++;
+                    }
+                    case E_BIKE -> {
+                        eBikes++;
+                    }
+                }
+                station.getBikesIds().add(bikeId);
+                station.setStandardBikesDocked(standardBikes);
+                station.setEBikesDocked(eBikes);
+                station.getBikesIds().add(bikeId);
+                bikeStationRepository.save(station);
+            }
+        }
+
+
+
     }
 
 }

@@ -1,0 +1,102 @@
+@startuml Pricing and Billing Sequence
+
+actor Rider
+participant "Frontend\nBillPage" as UI
+participant "PaymentController" as PaymentCtrl
+participant "PaymentService" as PaymentSvc
+participant "PriceService" as PriceSvc
+
+== View Current Plan ==
+Rider -> UI: Navigate to /bill
+activate UI
+UI -> PaymentCtrl: GET /api/v1/payments/current-plan
+activate PaymentCtrl
+PaymentCtrl -> PaymentSvc: getPricingPlanByUserId(userId)
+activate PaymentSvc
+
+PaymentSvc -> PaymentSvc: Extract PricingPlanInformation
+PaymentSvc --> PaymentCtrl: PaymentPlanDto
+deactivate PaymentSvc
+PaymentCtrl --> UI: 200 OK - PaymentPlanDto
+deactivate PaymentCtrl
+UI --> Rider: Display current plan (SINGLE_RIDE/DAY_PASS/MONTHLY_PASS)
+deactivate UI
+
+== View Billing History ==
+UI -> PaymentCtrl: GET /api/v1/payments/billing-info
+activate PaymentCtrl
+PaymentCtrl -> PaymentSvc: getBillingInfo(userId)
+activate PaymentSvc
+PaymentSvc --> PaymentCtrl: List<BillDto>
+deactivate PaymentSvc
+PaymentCtrl --> UI: 200 OK - List<BillDto>
+deactivate PaymentCtrl
+UI --> Rider: Display billing history with payment details
+
+== Update Payment Plan ==
+Rider -> UI: Select new plan (DAY_PASS/MONTHLY_PASS)
+activate UI
+UI -> PaymentCtrl: PATCH /api/v1/payments/update-plan
+activate PaymentCtrl
+note right: Request body: { pricingPlan }
+PaymentCtrl -> PaymentSvc: updatePaymentPlan(userId, paymentPlanDto)
+activate PaymentSvc
+
+PaymentSvc -> PaymentSvc: Update PricingPlanInformation
+alt SINGLE_RIDE
+    PaymentSvc -> PaymentSvc: Set startDate = null, endDate = null
+else DAY_PASS
+    PaymentSvc -> PaymentSvc: Set startDate = now(), endDate = now() + 1 day
+else MONTHLY_PASS
+    PaymentSvc -> PaymentSvc: Set startDate = now(), endDate = now() + 1 month
+end
+
+PaymentSvc -> PaymentSvc: Create PlanBill
+note right
+  PlanBill includes:
+  - cost from PricingConfig
+  - pricingPlan
+  - paymentInfoId (default)
+end note
+
+PaymentSvc --> PaymentCtrl: Success
+deactivate PaymentSvc
+PaymentCtrl --> UI: 200 OK - "Payment plan updated successfully"
+deactivate PaymentCtrl
+UI --> Rider: Show confirmation message
+deactivate UI
+
+== Trip Cost Calculation (After Docking) ==
+
+activate PriceSvc
+alt SINGLE_RIDE (Pay-As-You-Go)
+    PriceSvc -> PriceSvc: Calculate minutes elapsed
+    PriceSvc -> PriceSvc: units = ceil(minutes / 5)
+    PriceSvc -> PriceSvc: cost = units × $1.25
+    alt E_BIKE
+        PriceSvc -> PriceSvc: Add E_BIKE_SURCHARGE
+    end
+else DAY_PASS or MONTHLY_PASS
+    PriceSvc -> PriceSvc: cost = 0 (included in plan)
+end
+deactivate PriceSvc
+
+PaymentSvc --> Rider: Bill generated and available in billing history
+
+== View Trip Details in Billing ==
+Rider -> UI: Click on Trip bill in /bill
+activate UI
+UI --> Rider: Display Trip details
+deactivate UI
+note right
+  Shows:
+  - Trip start/end stations
+  - Duration
+  - Distance
+  - Cost
+  - Bike type
+  - Pricing plan used
+  - Payment method
+end note
+
+@enduml
