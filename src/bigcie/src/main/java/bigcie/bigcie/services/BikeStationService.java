@@ -39,7 +39,8 @@ public class BikeStationService implements IBikeStationService {
     private final ITripService tripService;
 
     public BikeStationService(BikeStationRepository bikeStationRepository, ReservationRepository reservationRepository,
-                              BikeRepository bikeRepository, INotificationService notificationService, IUserService userService, ITripService tripService) {
+            BikeRepository bikeRepository, INotificationService notificationService, IUserService userService,
+            ITripService tripService) {
         this.userService = userService;
         this.bikeStationRepository = bikeStationRepository;
         this.reservationRepository = reservationRepository;
@@ -59,7 +60,7 @@ public class BikeStationService implements IBikeStationService {
         bikeStationEntity.setAddress(station.getAddress());
         bikeStationEntity.setCapacity(station.getCapacity());
         bikeStationEntity.setReservationHoldTimeMinutes(station.getReservationHoldTimeMinutes());
-//        bikeStationEntity.setNumberOfBikesDocked(0);
+        // bikeStationEntity.setNumberOfBikesDocked(0);
         bikeStationEntity.setStandardBikesDocked(0);
         bikeStationEntity.setEBikesDocked(0);
         return bikeStationRepository.save(bikeStationEntity);
@@ -93,7 +94,7 @@ public class BikeStationService implements IBikeStationService {
         existingStation.setCapacity(station.getCapacity());
         existingStation.setEBikesDocked(station.getEBikesDocked());
         existingStation.setStandardBikesDocked(station.getStandardBikesDocked());
-//        existingStation.setNumberOfBikesDocked(station.getNumberOfBikesDocked());
+        // existingStation.setNumberOfBikesDocked(station.getNumberOfBikesDocked());
         // use bikesIds (UUID list) instead of embedded Bike objects
         existingStation.setBikesIds(station.getBikesIds());
         existingStation.setReservationHoldTimeMinutes(station.getReservationHoldTimeMinutes());
@@ -147,12 +148,13 @@ public class BikeStationService implements IBikeStationService {
                 station.setEBikesDocked(station.getEBikesDocked() + 1);
             }
         }
-//        station.setNumberOfBikesDocked(station.getNumberOfBikesDocked() + 1);
+        // station.setNumberOfBikesDocked(station.getNumberOfBikesDocked() + 1);
         notificationService.notifyBikeStatusChange(bike.getId(), BikeStatus.AVAILABLE);
         bike.setStatus(BikeStatus.AVAILABLE);
         bikeRepository.save(bike);
 
-        if (station.getStatus() == BikeStationStatus.OCCUPIED && (station.getEBikesDocked() + station.getStandardBikesDocked()) == station.getCapacity()) {
+        if (station.getStatus() == BikeStationStatus.OCCUPIED
+                && (station.getEBikesDocked() + station.getStandardBikesDocked()) == station.getCapacity()) {
             notificationService.notifyBikeStationStatusChange(station.getId(), BikeStationStatus.FULL);
             station.setStatus(BikeStationStatus.FULL);
         } else if (station.getStatus() == BikeStationStatus.EMPTY) {
@@ -167,8 +169,7 @@ public class BikeStationService implements IBikeStationService {
             rider.getCurrentBikes().remove(bike.getId());
             tripService.endTrip(
                     rider.getActiveTripId().getFirst(),
-                    stationId
-            );
+                    stationId);
             rider.setActiveTripId(null);
             userService.updateUser(rider);
         }
@@ -219,7 +220,7 @@ public class BikeStationService implements IBikeStationService {
                 station.setEBikesDocked(station.getEBikesDocked() - 1);
             }
         }
-//        station.setNumberOfBikesDocked(station.getNumberOfBikesDocked() - 1);
+        // station.setNumberOfBikesDocked(station.getNumberOfBikesDocked() - 1);
         if (station.getStandardBikesDocked() + station.getEBikesDocked() == 0) {
             station.setStatus(BikeStationStatus.EMPTY);
             notificationService.notifyBikeStationStatusChange(station.getId(), BikeStationStatus.EMPTY);
@@ -246,14 +247,12 @@ public class BikeStationService implements IBikeStationService {
                 stationId,
                 rider.getPricingPlanInformation().getPricingPlan(),
                 bike.getBikeType(),
-                rider.getDefaultPaymentInfo().getId()
-        );
+                rider.getDefaultPaymentInfo().getId());
         rider.getActiveTripId().add(trip.getId());
         userService.updateUser(rider);
 
         return bike.getId();
     }
-
 
     @Override
     public boolean hasAvailableDocks(UUID stationId) {
@@ -294,7 +293,8 @@ public class BikeStationService implements IBikeStationService {
 
         // Create a reservation
         Reservation reservation = new Reservation(UUID.randomUUID(), UUID.randomUUID(), stationId, bike.getId(),
-                LocalDateTime.now(), LocalDateTime.now().plusMinutes(station.getReservationHoldTimeMinutes()), ReservationStatus.ACTIVE);
+                LocalDateTime.now(), LocalDateTime.now().plusMinutes(station.getReservationHoldTimeMinutes()),
+                ReservationStatus.ACTIVE);
         reservationRepository.save(reservation);
 
         // Update bike status to RESERVED
@@ -304,6 +304,7 @@ public class BikeStationService implements IBikeStationService {
         bikeRepository.save(bike);
 
     }
+
     @Override
     public List<Bike> getStationBikes(UUID stationId) {
         BikeStation station = bikeStationRepository.findById(stationId)
@@ -362,6 +363,13 @@ public class BikeStationService implements IBikeStationService {
                 station.setStandardBikesDocked(standardBikes);
                 station.setEBikesDocked(eBikes);
             }
+            if (station.getBikesIds().size() == 0) {
+                station.setStatus(BikeStationStatus.EMPTY);
+            } else if (station.getBikesIds().size() < station.getCapacity()) {
+                station.setStatus(BikeStationStatus.OCCUPIED);
+            } else {
+                station.setStatus(BikeStationStatus.FULL);
+            }
             bikeStationRepository.save(station);
         }
         if (!bikeIdsToMove.isEmpty()) {
@@ -386,11 +394,16 @@ public class BikeStationService implements IBikeStationService {
                 station.setStandardBikesDocked(standardBikes);
                 station.setEBikesDocked(eBikes);
                 station.getBikesIds().add(bikeId);
+                if (station.getBikesIds().size() == 0) {
+                    station.setStatus(BikeStationStatus.EMPTY);
+                } else if (station.getBikesIds().size() < station.getCapacity()) {
+                    station.setStatus(BikeStationStatus.OCCUPIED);
+                } else {
+                    station.setStatus(BikeStationStatus.FULL);
+                }
                 bikeStationRepository.save(station);
             }
         }
-
-
 
     }
 
