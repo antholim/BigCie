@@ -1,6 +1,8 @@
 package bigcie.bigcie.repositories;
 
 import bigcie.bigcie.entities.Trip;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
@@ -13,4 +15,7 @@ public interface TripRepository extends MongoRepository<Trip, UUID> {
 
     @Query("{ '_class': 'trip', 'userId': ?0 }")
     void deleteByUserId(UUID userId);
+
+    @Query("{ '_class': 'trip', 'userId': ?0 }")
+    Page<Trip> findByUserId(UUID userId, Pageable pageable);
 }

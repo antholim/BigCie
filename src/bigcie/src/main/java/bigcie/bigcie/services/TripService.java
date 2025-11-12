@@ -9,6 +9,8 @@ import bigcie.bigcie.entities.enums.TripStatus;
 import bigcie.bigcie.repositories.TripRepository;
 import bigcie.bigcie.services.interfaces.IPriceService;
 import bigcie.bigcie.services.interfaces.ITripService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -75,6 +77,15 @@ public class TripService implements ITripService {
         }
     }
 
+    @Override
+    public Page<TripDto> getTripByUserId(UUID userId, Pageable pageable) {
+        Page<Trip> tripList = tripRepository.findByUserId(userId, pageable);
+        for (Trip trip : tripList) {
+            System.out.println("Trip ID: " + trip.getId() + ", Start Date: " + trip.getStartDate() +
+                    ", End Date: " + trip.getEndDate() + ", Status: " + trip.getStatus());
+        }
+        return tripAssembler.enrichTripDtoPage(tripList, userId);
+    }
     @Override
     public List<TripDto> getTripByUserId(UUID userId) {
         List<Trip> tripList = tripRepository.findByUserId(userId);

@@ -5,6 +5,9 @@ import bigcie.bigcie.entities.Trip;
 import bigcie.bigcie.entities.enums.BikeType;
 import bigcie.bigcie.entities.enums.PricingPlan;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -29,4 +32,5 @@ public interface ITripService {
 
         // get all trips - for admin purposes
         List<TripDto> getAllTrips();
+        Page<TripDto> getTripByUserId(UUID userId, Pageable pageable);
 }

@@ -8,9 +8,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -55,18 +60,37 @@ public class TripController {
 
     @Operation(summary = "Get Current User Trips", description = "Get all trips for the current authenticated user")
     @GetMapping("/me")
-    public ResponseEntity<List<TripDto>> getCurrentUserTrips(HttpServletRequest request) {
+    public ResponseEntity<?> getCurrentUserTrips(
+            HttpServletRequest request,
+            Pageable pageable,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+    ) {
         log.info("getCurrentUserTrips endpoint called");
+
         try {
             User user = authorizationService.getUserFromRequest(request);
             log.info("Getting trips for user: {}", user.getId());
-            List<TripDto> tripDtoList = tripService.getTripByUserId(user.getId());
-            log.info("Returning {} trips for user {}", tripDtoList.size(), user.getId());
-            return ResponseEntity.ok(tripDtoList);
+
+            if (page != null || size != null) {
+                Page<TripDto> tripPage = tripService.getTripByUserId(user.getId(), pageable);
+                log.info("Returning paginated trips for user {} — page: {}, size: {}, total elements: {}",
+                        user.getId(),
+                        tripPage.getNumber(),
+                        tripPage.getSize(),
+                        tripPage.getTotalElements());
+                return ResponseEntity.ok(tripPage);
+            }
+
+            List<TripDto> tripList = tripService.getTripByUserId(user.getId());
+            log.info("Returning {} trips for user {}", tripList.size(), user.getId());
+            return ResponseEntity.ok(tripList);
+
         } catch (Exception e) {
-            log.error("Error in getCurrentUserTrips: ", e);
+            log.error("Error in getCurrentUserTrips for request {}: ", request.getRequestURI(), e);
             throw e;
         }
     }
+
 
 }

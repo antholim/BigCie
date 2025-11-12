@@ -7,6 +7,8 @@ import bigcie.bigcie.mappers.TripMapper;
 import bigcie.bigcie.services.read.interfaces.IBikeStationLookup;
 import bigcie.bigcie.services.read.interfaces.IPaymentLookup;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -54,6 +56,12 @@ public class TripAssembler {
         }
         return tripDtos;
     }
+
+    public Page<TripDto> enrichTripDtoPage(Page<Trip> trips, UUID userId) {
+        List<TripDto> tripDtos = enrichTripDtoList(trips.getContent(), userId);
+        return new PageImpl<>(tripDtos, trips.getPageable(), trips.getTotalElements());
+    }
+
 
     // enrich to dtolist no logging
     public List<TripDto> enrichTripDtoListNoLogging(List<Trip> trips) {
