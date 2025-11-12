@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import bigcie.bigcie.services.interfaces.IPriceService;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,12 +26,16 @@ public class PaymentController {
     private final IPaymentService paymentService;
     private final TokenService tokenService;
     private final ICookieService cookieService;
+    private final IPriceService priceService;
 
-    public PaymentController(PaymentService paymentService, TokenService tokenService, ICookieService cookieService) {
+    public PaymentController(PaymentService paymentService, TokenService tokenService, ICookieService cookieService,
+            IPriceService priceService) {
         this.paymentService = paymentService;
         this.tokenService = tokenService;
         this.cookieService = cookieService;
+        this.priceService = priceService;
     }
+
     @Operation(summary = "Get Payment Method", description = "Get the payment methods for the authenticated user")
     @GetMapping("/me")
     public ResponseEntity<List<PaymentInfoDto>> getPaymentInfo(HttpServletRequest request) {
@@ -53,21 +58,23 @@ public class PaymentController {
     @Operation(summary = "Update Payment Method", description = "Set Default Payment Method for the authenticated user")
     @PatchMapping("/{id}/default")
     public ResponseEntity<?> addPaymentInfo(@PathVariable UUID id,
-                                            HttpServletRequest request) {
+            HttpServletRequest request) {
         String token = cookieService.getTokenFromCookie(request, "authToken");
         UUID userId = tokenService.extractUserId(token);
         paymentService.updateDefaultPaymentMethod(userId, id);
         return ResponseEntity.ok("Default payment method updated successfully");
     }
+
     @Operation(summary = "Update Payment Plan", description = "Update the payment plan for the authenticated user")
     @PatchMapping("/update-plan")
     public ResponseEntity<?> updatePaymentPlan(@RequestBody PaymentPlanDto paymentPlanRequest,
-                                               HttpServletRequest request) {
+            HttpServletRequest request) {
         String token = cookieService.getTokenFromCookie(request, "authToken");
         UUID userId = tokenService.extractUserId(token);
         paymentService.updatePaymentPlan(userId, paymentPlanRequest);
         return ResponseEntity.ok("Payment plan updated successfully");
     }
+
     @Operation(summary = "Get Current Plan", description = "Get the current payment plan for the authenticated user")
     @GetMapping("/current-plan")
     public ResponseEntity<PaymentPlanDto> getCurrentPaymentPlan(HttpServletRequest request) {
@@ -76,6 +83,7 @@ public class PaymentController {
         PaymentPlanDto pricingPlan = paymentService.getPricingPlanByUserId(userId);
         return ResponseEntity.ok(pricingPlan);
     }
+
     @Operation(summary = "Get Billing Info", description = "Get the billing information for the authenticated user")
     @GetMapping("/billing-info")
     public ResponseEntity<List<BillDto>> getBillingInfo(HttpServletRequest request) {
@@ -85,5 +93,20 @@ public class PaymentController {
         return ResponseEntity.ok(billingInfo);
     }
 
+    // send the 5min rate
+    @Operation(summary = "Get 5-Minute Rate", description = "Get the current 5-minute rate for bike rentals")
+    @GetMapping("/5min-rate")
+    public ResponseEntity<Double> getFiveMinuteRate() {
+        double rate = priceService.getFiveMinuteRate();
+        return ResponseEntity.ok(rate);
+    }
+
+    // send the e-bike surcharge
+    @Operation(summary = "Get E-Bike Surcharge", description = "Get the current e-bike surcharge for bike rentals")
+    @GetMapping("/ebike-surcharge")
+    public ResponseEntity<Double> getEBikeSurcharge() {
+        double surcharge = priceService.getEBikeSurcharge();
+        return ResponseEntity.ok(surcharge);
+    }
 
 }

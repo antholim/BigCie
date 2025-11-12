@@ -116,7 +116,7 @@ export default function BillPage() {
 
               {/* Bills List */}
               {bills.length > 0 ? (
-                bills.map((bill) => (
+                bills.slice().reverse().map((bill) => (
                   <div key={bill.id} className="db-card" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     <div>
                       <h2 style={{ marginBottom: 4, fontSize: 18, fontWeight: 600 }}>Bill</h2>

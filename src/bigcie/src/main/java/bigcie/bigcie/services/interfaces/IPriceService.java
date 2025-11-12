@@ -7,4 +7,8 @@ import java.time.LocalDateTime;
 
 public interface IPriceService {
     double calculatePrice(LocalDateTime startTime, LocalDateTime endTime, BikeType bikeType, PricingPlan pricingPlan);
+
+    double getFiveMinuteRate();
+
+    double getEBikeSurcharge();
 }
