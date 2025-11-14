@@ -1,6 +1,7 @@
 package bigcie.bigcie.controllers;
 
 import bigcie.bigcie.dtos.BikeRequest.BikeStationRequest;
+import bigcie.bigcie.dtos.BikeStationRequest.MoveBikeRequest;
 import bigcie.bigcie.dtos.DockingRequest.DockBikeRequest;
 import bigcie.bigcie.entities.BikeStation;
 import bigcie.bigcie.entities.Reservation;
@@ -175,12 +176,26 @@ public class BikeStationController {
 
     @Operation(summary = "Rebalance bikes between stations")
     @PostMapping("/rebalance-bikes")
-    public ResponseEntity<BikeStation> createStation(HttpServletRequest request) {
+    public ResponseEntity<BikeStation> rebalanceStation(HttpServletRequest request) {
+        if (!authorizationService.hasRole(request, UserType.OPERATOR)) {
+            log.warn("Unauthorized attempt to move bike station");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        bikeStationService.rebalanceBikes();
+        return ResponseEntity.ok(null);
+    }
+
+    @Operation(summary = "Move bike from source station to destination station")
+    @PostMapping("/move-bike")
+    public ResponseEntity<BikeStation> moveBike(
+            HttpServletRequest request,
+            @RequestBody MoveBikeRequest moveBikeRequest
+    ) {
         if (!authorizationService.hasRole(request, UserType.OPERATOR)) {
             log.warn("Unauthorized attempt to create bike station");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        bikeStationService.rebalanceBikes();
+        bikeStationService.moveBike(moveBikeRequest);
         return ResponseEntity.ok(null);
     }
 }

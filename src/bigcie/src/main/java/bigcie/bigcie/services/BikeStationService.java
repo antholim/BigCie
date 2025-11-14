@@ -1,11 +1,15 @@
 package bigcie.bigcie.services;
 
 import bigcie.bigcie.dtos.BikeRequest.BikeStationRequest;
+import bigcie.bigcie.dtos.BikeStationRequest.MoveBikeRequest;
 import bigcie.bigcie.entities.*;
 import bigcie.bigcie.entities.enums.BikeStationStatus;
 import bigcie.bigcie.entities.enums.BikeType;
 import bigcie.bigcie.entities.enums.ReservationStatus;
 import bigcie.bigcie.exceptions.RiderAlreadyHasBikeException;
+import bigcie.bigcie.exceptions.SourceAndTargetStationAreEqualsException;
+import bigcie.bigcie.exceptions.StationIsEmptyException;
+import bigcie.bigcie.exceptions.StationIsFullException;
 import bigcie.bigcie.repositories.BikeRepository;
 import bigcie.bigcie.repositories.BikeStationRepository;
 import bigcie.bigcie.services.interfaces.IBikeStationService;
@@ -327,6 +331,59 @@ public class BikeStationService implements IBikeStationService {
             return station.getName();
         }
         return "";
+    }
+
+    @Transactional
+    @Override
+    public void moveBike(MoveBikeRequest moveBikeRequest) {
+        UUID sourceStationId = moveBikeRequest.getSourceStationId();
+        UUID destinationStationId = moveBikeRequest.getDestinationStationId();
+        BikeStation sourceStation = getStationById(sourceStationId);
+        BikeStation destinationStation = getStationById(destinationStationId);
+
+        if (sourceStation.equals(destinationStation)) {
+            throw new SourceAndTargetStationAreEqualsException();
+        }
+        if (!hasAvailableBikes(sourceStationId)) {
+            throw new StationIsEmptyException();
+        }
+        Bike bike = getStationBikes(sourceStationId).stream()
+                .filter(b -> b.getStatus() == BikeStatus.AVAILABLE)
+                .findFirst()
+                .orElseThrow(() -> new StationIsFullException("No available docks at destination station"));
+
+        sourceStation.getBikesIds().remove(bike.getId());
+        switch (bike.getBikeType()) {
+            case STANDARD -> {
+                sourceStation.setStandardBikesDocked(sourceStation.getStandardBikesDocked() - 1);
+            }
+            case E_BIKE -> {
+                sourceStation.setEBikesDocked(sourceStation.getEBikesDocked() - 1);
+            }
+        }
+        if (sourceStation.getStandardBikesDocked() + sourceStation.getEBikesDocked() == 0) {
+            sourceStation.setStatus(BikeStationStatus.EMPTY);
+            notificationService.notifyBikeStationStatusChange(sourceStation.getId(), BikeStationStatus.EMPTY);
+        }
+        bikeStationRepository.save(sourceStation);
+
+
+        destinationStation.getBikesIds().add(bike.getId());
+        switch (bike.getBikeType()) {
+            case STANDARD -> {
+                destinationStation.setStandardBikesDocked(destinationStation.getStandardBikesDocked() + 1);
+            }
+            case E_BIKE -> {
+                destinationStation.setEBikesDocked(destinationStation.getEBikesDocked() + 1);
+            }
+        }
+        if (destinationStation.getStatus() == BikeStationStatus.OCCUPIED
+                && (destinationStation.getEBikesDocked() + destinationStation.getStandardBikesDocked()) == destinationStation.getCapacity()) {
+            notificationService.notifyBikeStationStatusChange(destinationStation.getId(), BikeStationStatus.FULL);
+            destinationStation.setStatus(BikeStationStatus.FULL);
+        }
+        bikeStationRepository.save(destinationStation);
+
     }
 
     @Transactional

@@ -1,6 +1,7 @@
 package bigcie.bigcie.services.interfaces;
 
 import bigcie.bigcie.dtos.BikeRequest.BikeStationRequest;
+import bigcie.bigcie.dtos.BikeStationRequest.MoveBikeRequest;
 import bigcie.bigcie.entities.Bike;
 import bigcie.bigcie.entities.BikeStation;
 import bigcie.bigcie.entities.enums.BikeStationStatus;
@@ -40,4 +41,5 @@ public interface IBikeStationService {
     List<Bike> getStationBikes(UUID stationId);
     String getStationNameById(UUID id);
     void rebalanceBikes();
+    void moveBike(MoveBikeRequest moveBikeRequest);
 }
