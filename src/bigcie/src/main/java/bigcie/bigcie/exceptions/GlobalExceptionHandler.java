@@ -40,4 +40,11 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse(ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
+
+    @ExceptionHandler(RiderAlreadyHasBikeException.class)
+    public ResponseEntity<ErrorResponse> handleRiderAlreadyHasBikeException(RiderAlreadyHasBikeException ex) {
+        log.error("RiderAlreadyHasBikeException: {}", ex.getMessage(), ex);
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
 }

@@ -343,7 +343,7 @@ export default function MapDashboard() {
             closeStationMenu();
         } catch (err) {
             console.error(`${action} failed`, err);
-            alert(`${action} failed: ${err?.message ?? err}`);
+            alert(`${action} failed: ${err?.response?.data?.error ?? err?.message ?? err}`);
         }
     };
 

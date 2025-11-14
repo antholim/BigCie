@@ -5,6 +5,7 @@ import bigcie.bigcie.entities.*;
 import bigcie.bigcie.entities.enums.BikeStationStatus;
 import bigcie.bigcie.entities.enums.BikeType;
 import bigcie.bigcie.entities.enums.ReservationStatus;
+import bigcie.bigcie.exceptions.RiderAlreadyHasBikeException;
 import bigcie.bigcie.repositories.BikeRepository;
 import bigcie.bigcie.repositories.BikeStationRepository;
 import bigcie.bigcie.services.interfaces.IBikeStationService;
@@ -185,7 +186,13 @@ public class BikeStationService implements IBikeStationService {
         if (station.getStatus() == BikeStationStatus.OUT_OF_SERVICE) {
             throw new IllegalStateException("Station is out of service");
         }
-
+        User user = userService.getUserByUUID(userId);
+        if (!(user instanceof Rider rider)) {
+            throw new IllegalArgumentException("User is not a rider");
+        }
+        if (rider.getDefaultPaymentInfo() == null) {
+            throw new IllegalStateException("No default payment method found for rider");
+        }
         List<Reservation> reservations = reservationRepository.findByUserId(userId);
         for (Reservation reservation : reservations) {
             if (stationId.equals(reservation.getBikeStationId())) {
@@ -205,6 +212,9 @@ public class BikeStationService implements IBikeStationService {
         }
         if (!hasAvailableBikes(stationId)) {
             throw new IllegalStateException("No available bikes to undock");
+        }
+        if (!rider.getCurrentBikes().isEmpty()) {
+            throw new RiderAlreadyHasBikeException();
         }
         Bike bike = stationBikes.stream()
                 .filter(b -> b.getStatus() == BikeStatus.AVAILABLE && b.getBikeType() == bikeType)
@@ -231,13 +241,7 @@ public class BikeStationService implements IBikeStationService {
         bikeRepository.save(bike);
         notificationService.notifyBikeStatusChange(bike.getId(), BikeStatus.ON_TRIP);
 
-        User user = userService.getUserByUUID(userId);
-        if (!(user instanceof Rider rider)) {
-            throw new IllegalArgumentException("User is not a rider");
-        }
-        if (rider.getDefaultPaymentInfo() == null) {
-            throw new IllegalStateException("No default payment method found for rider");
-        }
+
         rider.getCurrentBikes().add(bike.getId());
         userService.updateUser(rider);
 
