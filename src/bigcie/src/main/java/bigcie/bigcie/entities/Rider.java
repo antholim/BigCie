@@ -1,6 +1,6 @@
 package bigcie.bigcie.entities;
 
-import bigcie.bigcie.entities.enums.PricingPlan;
+import bigcie.bigcie.entities.enums.LoyaltyTier;
 import bigcie.bigcie.entities.enums.UserType;
 import bigcie.bigcie.entities.factory.UserBuilder;
 import lombok.Getter;
@@ -26,6 +26,8 @@ public class Rider extends User {
     private List<UUID> currentBikes = new ArrayList<>();
     private List<UUID> activeTripId = new ArrayList<>();
     private PricingPlanInformation pricingPlanInformation = new PricingPlanInformation();
+    private LoyaltyTier loyaltyTier = LoyaltyTier.DEFAULT;
+
 
     public PaymentInfo getDefaultPaymentInfo() {
         return paymentInfos.stream()
