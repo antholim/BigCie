@@ -28,6 +28,8 @@ export default function MapDashboard() {
     const [stationMenuOpen, setStationMenuOpen] = useState(false);
     const [tripEvents, setTripEvents] = useState([]);
     const [updatingStatus, setUpdatingStatus] = useState(false);
+    const [moveDestinationStationId, setMoveDestinationStationId] = useState(null);
+    const [movingBike, setMovingBike] = useState(false);
     const [bikeRentals, setBikeRentals] = useState([]);
 
     const getStationFullnessMeta = useCallback((station) => {
@@ -415,6 +417,48 @@ export default function MapDashboard() {
         }
     };
 
+    const moveBikeToStation = async () => {
+        if (!selectedStation || !isOperator) return;
+        const sourceStationId = selectedStation.id;
+        const destinationStationId = moveDestinationStationId;
+        if (!destinationStationId) return alert('Please select a destination station');
+
+        setMovingBike(true);
+        try {
+            // Backend contract: POST /api/v1/stations/move-bike with MoveBikeRequest
+            await FetchingService.post('/api/v1/stations/move-bike', {
+                sourceStationId,
+                destinationStationId,
+            });
+
+            alert('Bike moved successfully');
+
+            // Refresh station list
+            try {
+                const r = await FetchingService.get('/api/v1/stations');
+                const refreshedData = r.data || [];
+                const filteredData = isOperator
+                    ? refreshedData
+                    : refreshedData.filter(station => station.status !== 'OUT_OF_SERVICE');
+                setStations(filteredData);
+
+                const updatedSelected = filteredData.find(s => String(s.id) === String(selectedStation.id));
+                setSelectedStation(updatedSelected ?? null);
+            } catch {
+                // ignore refresh error
+            }
+
+            // reset selection and close
+            setMoveDestinationStationId(null);
+            closeStationMenu();
+        } catch (err) {
+            console.error('Move bike failed', err);
+            alert(`Move bike failed: ${err?.response?.data?.message || err?.message || 'Unknown error'}`);
+        } finally {
+            setMovingBike(false);
+        }
+    };
+
     const _zoomIn = useCallback(() => {
         const next = Math.min(21, zoom + 1);
         setZoom(next);
@@ -724,6 +768,31 @@ export default function MapDashboard() {
                                             {updatingStatus ? 'Updating...' : status.replace(/_/g, ' ')}
                                         </button>
                                     ))}
+                                </div>
+
+                                <div style={{ marginTop: 12, borderTop: '1px solid #e6eef8', paddingTop: 12 }}>
+                                    <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, color: '#374151' }}>
+                                        Move a bike to another station
+                                    </div>
+                                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                                        <select
+                                            value={moveDestinationStationId ?? ''}
+                                            onChange={(e) => setMoveDestinationStationId(e.target.value || null)}
+                                            style={{ padding: '8px', borderRadius: 6, border: '1px solid #d1d5db', minWidth: 220 }}
+                                        >
+                                            <option value="">Select destination station</option>
+                                            {stations.filter(s => String(s.id) !== String(selectedStation.id)).map((s) => (
+                                                <option key={s.id} value={s.id}>{s.name ?? s.address ?? `Station ${s.id}`}</option>
+                                            ))}
+                                        </select>
+                                        <button
+                                            onClick={moveBikeToStation}
+                                            disabled={movingBike || !moveDestinationStationId}
+                                            style={{ padding: '8px 12px', borderRadius: 6, background: movingBike ? '#9ca3af' : '#3b82f6', color: '#fff', border: 'none', cursor: movingBike ? 'not-allowed' : 'pointer' }}
+                                        >
+                                            {movingBike ? 'Moving…' : 'Move a bike'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}
