@@ -31,6 +31,23 @@ export default function MapDashboard() {
     const [moveDestinationStationId, setMoveDestinationStationId] = useState(null);
     const [movingBike, setMovingBike] = useState(false);
     const [bikeRentals, setBikeRentals] = useState([]);
+    const legendItems = [
+        {
+            color: "#22c55e",
+            label: "Balanced",
+            description: "Plenty of bikes and docks available",
+        },
+        {
+            color: "#facc15",
+            label: "Almost empty / full",
+            description: "Action needed soon to rebalance",
+        },
+        {
+            color: "#ef4444",
+            label: "Empty / full",
+            description: "No bikes or no docks available",
+        },
+    ];
 
     const getStationFullnessMeta = useCallback((station) => {
         if (!station) {
@@ -565,21 +582,38 @@ export default function MapDashboard() {
         <div style={styles.root}>
             <header style={styles.header}>
                 <h1 style={{ margin: 0, fontSize: 18 }}>Map Dashboard</h1>
-                <button
-                    style={{
-                        marginLeft: "auto",
-                        padding: "8px 16px",
-                        borderRadius: "9999px",
-                        border: "1px solid rgba(59, 130, 246, 0.6)",
-                        background: "#fff",
-                        color: "#2563eb",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                    }}
-                    onClick={() => navigate("/")}
-                >
-                    Back to Home
-                </button>
+                <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+                    {isAuthenticated && (
+                        <button
+                            style={{
+                                padding: "8px 16px",
+                                borderRadius: "9999px",
+                                border: "1px solid rgba(59, 130, 246, 0.6)",
+                                background: "#fff",
+                                color: "#2563eb",
+                                fontWeight: 600,
+                                cursor: "pointer",
+                            }}
+                            onClick={() => navigate("/profile")}
+                        >
+                            Back to Profile
+                        </button>
+                    )}
+                    <button
+                        style={{
+                            padding: "8px 16px",
+                            borderRadius: "9999px",
+                            border: "1px solid rgba(59, 130, 246, 0.6)",
+                            background: "#fff",
+                            color: "#2563eb",
+                            fontWeight: 600,
+                            cursor: "pointer",
+                        }}
+                        onClick={() => navigate("/")}
+                    >
+                        Back to Home
+                    </button>
+                </div>
             </header>
 
             <div style={styles.body}>
@@ -693,6 +727,18 @@ export default function MapDashboard() {
                             <div style={styles.loadingOverlay}>Loading map…</div>
                         )}
                         <div ref={mapRef} style={styles.map} />
+                        <div style={styles.legendContainer}>
+                            <div style={styles.legendTitle}>Station status</div>
+                            {legendItems.map((item) => (
+                                <div key={item.label} style={styles.legendItem}>
+                                    <span style={{ ...styles.legendSwatch, backgroundColor: item.color }} />
+                                    <div>
+                                        <div style={{ fontSize: 12, fontWeight: 600, color: "#0f172a" }}>{item.label}</div>
+                                        <div style={{ fontSize: 11, color: "#475569" }}>{item.description}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </main>
             </div>
