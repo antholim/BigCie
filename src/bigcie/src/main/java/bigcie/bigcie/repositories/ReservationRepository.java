@@ -42,4 +42,7 @@ public interface ReservationRepository extends MongoRepository<Reservation, UUID
     List<Reservation> findByBikeStationId(UUID bikeStationId);
 
     List<Reservation> findByExpiryBefore(LocalDateTime time, ReservationStatus status);
+
+    List<Reservation> findByUserIdAndStatus(UUID userId, ReservationStatus status);
+
 }

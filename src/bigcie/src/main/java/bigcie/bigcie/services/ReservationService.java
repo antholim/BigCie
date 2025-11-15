@@ -5,10 +5,12 @@ import bigcie.bigcie.entities.Reservation;
 import bigcie.bigcie.entities.BikeStation;
 import bigcie.bigcie.entities.enums.BikeStatus;
 import bigcie.bigcie.entities.enums.ReservationStatus;
+import bigcie.bigcie.exceptions.StationIsEmptyException;
+import bigcie.bigcie.exceptions.UserAlreadyHasReservationException;
 import bigcie.bigcie.repositories.ReservationRepository;
 import bigcie.bigcie.services.interfaces.IReservationService;
 import org.springframework.stereotype.Service;
-import org.springframework.scheduling.annotation.Scheduled;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,14 +43,14 @@ public class ReservationService implements IReservationService {
         // check if client has reservation already
         if (reservationRepository.findByUserId(userId).stream()
                 .anyMatch(reservation -> reservation.getBikeStationId().equals(bikeStationId))) {
-            throw new RuntimeException("User already has a reservation at this station: " + bikeStationId);
+            throw new UserAlreadyHasReservationException();
         }
 
         // Find an available bike at the station
         Bike availableBike = bikeStationService.getStationBikes(bikeStationId).stream()
                 .filter(bike -> bike.getStatus() == BikeStatus.AVAILABLE)
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("No available bikes at station: " + bikeStationId));
+                .orElseThrow(StationIsEmptyException::new);
 
         // Create reservation
         Reservation reservation = new Reservation(
@@ -190,18 +192,27 @@ public class ReservationService implements IReservationService {
         return reservationRepository.findAll();
     }
 
+    @Override
+    public List<Reservation> getExpiredReservationsPastYearByUserId(UUID userId) {
+        List<Reservation> reservations = reservationRepository.findByUserIdAndStatus(userId, ReservationStatus.EXPIRED);
+        LocalDateTime oneYearAgo = LocalDateTime.now().minusYears(1);
+        return reservations.stream()
+                .filter(reservation -> reservation.getExpiry().isAfter(oneYearAgo))
+                .toList();
+    }
+
     /**
      * Clean up expired reservations and release reserved bikes
      */
-    @Scheduled(fixedDelay = 60000) // Runs every minute
-    public void cleanupExpiredReservations() {
-        // Use MongoDB query to find expired reservations efficiently
-        List<Reservation> expiredReservations = reservationRepository.findExpiredReservations(LocalDateTime.now());
-
-        for (Reservation reservation : expiredReservations) {
-            Bike bike = bikeService.getBikeById(reservation.getBikeId());
-            bikeService.updateBikeStatus(bike.getId(), BikeStatus.AVAILABLE);
-            reservationRepository.deleteById(reservation.getId());
-        }
-    }
+//    @Scheduled(fixedDelay = 60000) // Runs every minute
+//    public void cleanupExpiredReservations() {
+//        // Use MongoDB query to find expired reservations efficiently
+//        List<Reservation> expiredReservations = reservationRepository.findExpiredReservations(LocalDateTime.now());
+//
+//        for (Reservation reservation : expiredReservations) {
+//            Bike bike = bikeService.getBikeById(reservation.getBikeId());
+//            bikeService.updateBikeStatus(bike.getId(), BikeStatus.AVAILABLE);
+//            reservationRepository.deleteById(reservation.getId());
+//        }
+//    }
 }

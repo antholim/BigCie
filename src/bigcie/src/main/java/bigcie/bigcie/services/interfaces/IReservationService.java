@@ -28,6 +28,7 @@ public interface IReservationService {
     public void deleteReservation(UUID reservationId);
 
     public List<Reservation> getAllReservations();
+    List<Reservation> getExpiredReservationsPastYearByUserId(UUID userId);
 
-    public void cleanupExpiredReservations();
+//    public void cleanupExpiredReservations();
 }

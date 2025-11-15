@@ -1,6 +1,6 @@
 package bigcie.bigcie.entities;
 
-import bigcie.bigcie.entities.enums.LoyaltyTier;
+import bigcie.bigcie.models.loyalty.state.LoyaltyTier;
 import bigcie.bigcie.entities.enums.UserType;
 import bigcie.bigcie.entities.factory.UserBuilder;
 import lombok.Getter;

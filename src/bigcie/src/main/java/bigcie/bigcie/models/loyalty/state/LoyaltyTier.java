@@ -1,4 +1,4 @@
-package bigcie.bigcie.entities.enums;
+package bigcie.bigcie.models.loyalty.state;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

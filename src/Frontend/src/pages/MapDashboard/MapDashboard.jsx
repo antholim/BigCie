@@ -781,7 +781,7 @@ export default function MapDashboard() {
                                             style={{ padding: '8px', borderRadius: 6, border: '1px solid #d1d5db', minWidth: 220 }}
                                         >
                                             <option value="">Select destination station</option>
-                                            {stations.filter(s => String(s.id) !== String(selectedStation.id)).map((s) => (
+                                            {stations.filter(s => (String(s.id) !== String(selectedStation.id) && (s.status !== 'OUT_OF_SERVICE' && s.status !== "FULL"))).map((s) => (
                                                 <option key={s.id} value={s.id}>{s.name ?? s.address ?? `Station ${s.id}`}</option>
                                             ))}
                                         </select>
