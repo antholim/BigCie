@@ -1,6 +1,7 @@
 package bigcie.bigcie.models.loyalty;
 
 import bigcie.bigcie.models.loyalty.state.LoyaltyTierFactory;
+import bigcie.bigcie.services.interfaces.INotificationService;
 import bigcie.bigcie.services.interfaces.IReservationService;
 import bigcie.bigcie.services.interfaces.ITripService;
 import bigcie.bigcie.services.interfaces.IUserService;
@@ -14,11 +15,13 @@ public class LoyaltyTierContext {
     private final IReservationService reservationService;
     private final ITripService tripService;
     private final LoyaltyTierFactory loyaltyTierFactory;
+    private final INotificationService notificationService;
 
-    public LoyaltyTierContext(IUserService userService, IReservationService reservationService, ITripService tripService, LoyaltyTierFactory loyaltyTierFactory) {
+    public LoyaltyTierContext(IUserService userService, IReservationService reservationService, ITripService tripService, LoyaltyTierFactory loyaltyTierFactory, INotificationService notificationService) {
         this.userService = userService;
         this.reservationService = reservationService;
         this.tripService = tripService;
         this.loyaltyTierFactory = loyaltyTierFactory;
+        this.notificationService = notificationService;
     }
 }
