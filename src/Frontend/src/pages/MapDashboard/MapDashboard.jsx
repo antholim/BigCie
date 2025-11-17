@@ -337,8 +337,9 @@ export default function MapDashboard() {
         setStationMenuOpen(false);
         setSelectedStation(null);
     };
-
+    const userNotLoggedIn = !isAuthenticated || !user;
     const performStationAction = async (action, query) => {
+        if (userNotLoggedIn) return alert("You must be logged in to perform this action");
         if (!selectedStation) return;
         try {
             // Assumes backend supports POST /api/v1/stations/:id/{action}
@@ -367,6 +368,7 @@ export default function MapDashboard() {
     };
 
     const performStationActionDock = async (action = "dock") => {
+        if (userNotLoggedIn) return alert("You must be logged in to perform this action");
         if (!selectedStation) return;
         try {
             // Assumes backend supports POST /api/v1/stations/:id/{action}
