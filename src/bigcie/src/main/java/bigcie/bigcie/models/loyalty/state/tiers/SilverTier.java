@@ -1,5 +1,7 @@
 package bigcie.bigcie.models.loyalty.state.tiers;
 
+import bigcie.bigcie.entities.Rider;
+import bigcie.bigcie.models.loyalty.LoyaltyTierContext;
 import bigcie.bigcie.models.loyalty.state.ILoyaltyTierState;
 import bigcie.bigcie.models.loyalty.state.LoyaltyTier;
 
@@ -13,7 +15,12 @@ public class SilverTier implements ILoyaltyTierState {
 
     }
 
-    private boolean eligibleForGoldTier(int totalPoints) {
+    @Override
+    public void evaluateTierUpgrade(Rider rider, LoyaltyTierContext ctx) {
+        if (ctx.getTripService().meetsWeeklyTripRequirement(rider.getId(), 5, 3)) {
+            rider.setLoyaltyTier(LoyaltyTier.GOLD);
+        }
+        ctx.getUserService().updateUser(rider);
 
     }
 
