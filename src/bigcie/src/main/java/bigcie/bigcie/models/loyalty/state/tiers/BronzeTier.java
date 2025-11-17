@@ -20,9 +20,12 @@ public class BronzeTier implements ILoyaltyTierState {
     }
 
     @Override
-    public void evaluateTierUpgrade(Rider rider, LoyaltyTierContext tierContext) {
-        List<Reservation> reservations = tierContext.getReservationService().getReservationsPastYearByUserIdAndStatus(rider.getId(), ReservationStatus.COMPLETED);
-        if (reservations.size() >= 5 && tierContext.getTripService().meetsMonthlyTripRequirement(rider.getId(), 5, 3)) {
+    public void evaluateTierUpgrade(Rider rider, LoyaltyTierContext ctx) {
+        if (evaluateToDefault(rider, ctx)) {
+            return;
+        }
+        List<Reservation> reservations = ctx.getReservationService().getReservationsPastYearByUserIdAndStatus(rider.getId(), ReservationStatus.COMPLETED);
+        if (reservations.size() >= 5 && ctx.getTripService().meetsMonthlyTripRequirement(rider.getId(), 5, 3)) {
             rider.setLoyaltyTier(LoyaltyTier.SILVER);
         }
 

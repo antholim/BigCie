@@ -17,6 +17,9 @@ public class SilverTier implements ILoyaltyTierState {
 
     @Override
     public void evaluateTierUpgrade(Rider rider, LoyaltyTierContext ctx) {
+        if (evaluateToDefault(rider, ctx)) {
+            return;
+        }
         if (ctx.getTripService().meetsWeeklyTripRequirement(rider.getId(), 5, 3)) {
             rider.setLoyaltyTier(LoyaltyTier.GOLD);
         }
