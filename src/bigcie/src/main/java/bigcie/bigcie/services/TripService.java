@@ -103,4 +103,13 @@ public class TripService implements ITripService {
         return tripAssembler.enrichTripDtoListNoLogging(tripList);
     }
 
+    @Override
+    public List<Trip> getCompletedTripsPastYearByUserId(UUID userId) {
+        List<Trip> trips = tripRepository.findByUserIdAndStatus(userId, TripStatus.COMPLETED);
+        LocalDateTime oneYearAgo = LocalDateTime.now().minusYears(1);
+        return trips.stream()
+                .filter(trip -> trip.getEndDate() != null && trip.getEndDate().isAfter(oneYearAgo))
+                .toList();
+    }
+
 }

@@ -1,6 +1,7 @@
 package bigcie.bigcie.repositories;
 
 import bigcie.bigcie.entities.Trip;
+import bigcie.bigcie.entities.enums.TripStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -18,4 +19,7 @@ public interface TripRepository extends MongoRepository<Trip, UUID> {
 
     @Query("{ '_class': 'trip', 'userId': ?0 }")
     Page<Trip> findByUserId(UUID userId, Pageable pageable);
+
+    @Query
+    List<Trip> findByUserIdAndStatus(UUID userId, TripStatus status);
 }

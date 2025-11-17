@@ -201,6 +201,15 @@ public class ReservationService implements IReservationService {
                 .toList();
     }
 
+    @Override
+    public List<Reservation> getReservationsPastYearByUserIdAndStatus(UUID userId, ReservationStatus status) {
+        List<Reservation> reservations = reservationRepository.findByUserIdAndStatus(userId, status);
+        LocalDateTime oneYearAgo = LocalDateTime.now().minusYears(1);
+        return reservations.stream()
+                .filter(reservation -> reservation.getExpiry().isAfter(oneYearAgo))
+                .toList();
+    }
+
     /**
      * Clean up expired reservations and release reserved bikes
      */

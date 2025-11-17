@@ -33,4 +33,5 @@ public interface ITripService {
         // get all trips - for admin purposes
         List<TripDto> getAllTrips();
         Page<TripDto> getTripByUserId(UUID userId, Pageable pageable);
+        List<Trip> getCompletedTripsPastYearByUserId(UUID userId);
 }
