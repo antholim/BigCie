@@ -27,7 +27,9 @@ public interface ITripService {
 
         void endTrip(
                         UUID tripId,
-                        UUID bikeStationEndId);
+                        UUID bikeStationEndId,
+                        int discount
+        );
 
         List<TripDto> getTripByUserId(UUID userId);
 

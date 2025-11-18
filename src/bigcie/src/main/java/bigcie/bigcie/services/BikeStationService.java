@@ -174,7 +174,7 @@ public class BikeStationService implements IBikeStationService {
             rider.getCurrentBikes().remove(bike.getId());
             tripService.endTrip(
                     rider.getActiveTripId().getFirst(),
-                    stationId);
+                    stationId, rider.getLoyaltyTier().getDiscountPercentage());
             rider.setActiveTripId(null);
             userService.updateUser(rider);
             loyaltyTierContext.evaluateUserTierUpgrade(rider);
