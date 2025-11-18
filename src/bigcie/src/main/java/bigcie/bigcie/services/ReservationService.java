@@ -1,15 +1,15 @@
 package bigcie.bigcie.services;
 
-import bigcie.bigcie.entities.Bike;
-import bigcie.bigcie.entities.Reservation;
-import bigcie.bigcie.entities.BikeStation;
+import bigcie.bigcie.entities.*;
 import bigcie.bigcie.entities.enums.BikeStatus;
 import bigcie.bigcie.entities.enums.ReservationStatus;
 import bigcie.bigcie.exceptions.StationIsEmptyException;
 import bigcie.bigcie.exceptions.UserAlreadyHasReservationException;
+import bigcie.bigcie.exceptions.UserIsNotRiderException;
 import bigcie.bigcie.repositories.ReservationRepository;
 import bigcie.bigcie.services.interfaces.IReservationService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.LocalDateTime;
@@ -21,13 +21,15 @@ public class ReservationService implements IReservationService {
     private final ReservationRepository reservationRepository;
     private final BikeService bikeService;
     private final BikeStationService bikeStationService;
+    private final UserService userService;
 
     public ReservationService(ReservationRepository reservationRepository,
-            BikeService bikeService,
-            BikeStationService bikeStationService) {
+                              BikeService bikeService,
+                              BikeStationService bikeStationService, UserService userService) {
         this.reservationRepository = reservationRepository;
         this.bikeService = bikeService;
         this.bikeStationService = bikeStationService;
+        this.userService = userService;
     }
 
     /**
@@ -37,11 +39,21 @@ public class ReservationService implements IReservationService {
      * @param bikeStationId The ID of the bike station where the bike is reserved
      * @return The created reservation
      */
+    @Override
+    @Transactional
     public Reservation createReservation(UUID userId, UUID bikeStationId) {
+        User user = userService.getUserByUUID(userId);
+        Rider rider;
+        if (user instanceof Rider) {
+            rider = (Rider) user;
+        } else {
+            throw new UserIsNotRiderException();
+        }
         BikeStation station = bikeStationService.getStationById(bikeStationId);
 
         // check if client has reservation already
         if (reservationRepository.findByUserId(userId).stream()
+                .filter(reservation -> reservation.getStatus() == ReservationStatus.ACTIVE)
                 .anyMatch(reservation -> reservation.getBikeStationId().equals(bikeStationId))) {
             throw new UserAlreadyHasReservationException();
         }
@@ -59,7 +71,7 @@ public class ReservationService implements IReservationService {
                 bikeStationId,
                 availableBike.getId(),
                 LocalDateTime.now(),
-                LocalDateTime.now().plusMinutes(station.getReservationHoldTimeMinutes()),
+                LocalDateTime.now().plusMinutes(station.getReservationHoldTimeMinutes() + rider.getLoyaltyTier().getExtraReservationMinutesHold()),
                 ReservationStatus.ACTIVE
                 );
 
