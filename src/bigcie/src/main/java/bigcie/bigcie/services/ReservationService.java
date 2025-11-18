@@ -190,6 +190,10 @@ public class ReservationService implements IReservationService {
     public List<Reservation> getAllReservations() {
         return reservationRepository.findAll();
     }
+    @Override
+    public List<Reservation> getAllActiveReservationsForUser(UUID userId) {
+        return reservationRepository.findByUserIdAndStatus(userId, ReservationStatus.ACTIVE);
+    }
 
     @Override
     public List<Reservation> getExpiredReservationsPastYearByUserId(UUID userId) {

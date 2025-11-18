@@ -108,6 +108,15 @@ public class BikeStationController {
         return ResponseEntity.ok(reservations);
     }
 
+    @Operation(summary = "Get all reservations for the authenticated user")
+    @GetMapping("/reservations/me")
+    public ResponseEntity<List<Reservation>> getAllActiveReservationsForUser(HttpServletRequest request) {
+        String token = cookieService.getTokenFromCookie(request, "authToken");
+        UUID userId = tokenService.extractUserId(token);
+        List<Reservation> reservations = reservationService.getAllActiveReservationsForUser(userId);
+        return ResponseEntity.ok(reservations);
+    }
+
     @Operation(summary = "update a reservation")
     @PutMapping("/reservations/{reservationId}")
     public ResponseEntity<Reservation> updateReservation(@PathVariable UUID reservationId,

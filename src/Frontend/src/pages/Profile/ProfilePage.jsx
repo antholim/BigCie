@@ -37,8 +37,9 @@ export default function ProfilePage() {
     setReservationsLoading(true);
     setReservationsError("");
     try {
-      const response = await FetchingService.get("/api/v1/stations/reservations");
+      const response = await FetchingService.get("/api/v1/stations/reservations/me");
       const data = Array.isArray(response?.data) ? response.data : [];
+      console.log(data)
       const filtered = data.filter((entry) => {
         const reservationUserId = entry.userId ?? entry.user?.id ?? entry.user_id;
         if (!reservationUserId) return false;
