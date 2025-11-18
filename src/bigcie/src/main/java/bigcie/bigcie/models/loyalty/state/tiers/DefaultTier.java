@@ -25,7 +25,7 @@ public class DefaultTier implements ILoyaltyTierState {
 
     @Override
     public void evaluateTierUpgrade(Rider rider, LoyaltyTierContext ctx) {
-        List<Reservation> expiredReservationsPastYear = ctx.getReservationService().getExpiredReservationsPastYearByUserId(rider.getId());
+        List<Reservation> expiredReservationsPastYear = ctx.getReservationLookup().getExpiredReservationsPastYearByUserId(rider.getId());
         List<Trip> completedTripsPastYear = ctx.getTripService().getCompletedTripsPastYearByUserId(rider.getId());
         if (expiredReservationsPastYear.isEmpty() && completedTripsPastYear.size() >= 10) {
             rider.setLoyaltyTier(LoyaltyTier.BRONZE);

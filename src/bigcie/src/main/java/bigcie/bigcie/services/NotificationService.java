@@ -2,6 +2,7 @@ package bigcie.bigcie.services;
 
 import bigcie.bigcie.dtos.events.TripEventDto;
 import bigcie.bigcie.entities.Bike;
+import bigcie.bigcie.models.loyalty.state.LoyaltyTier;
 import bigcie.bigcie.services.interfaces.INotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,7 @@ public class NotificationService implements INotificationService {
     private final SimpMessagingTemplate messagingTemplate;
 
     private static final String OPERATOR_DESTINATION = "/topic/operator-events";
+    private static final String USER_DESTINATION = "/topic/user-events";
 
     @Override
     public void publishTripEvent(TripEventDto event) {
@@ -63,6 +65,13 @@ public class NotificationService implements INotificationService {
         log.debug("Notifying reservation {} status change to {}", reservationId, newStatus);
         messagingTemplate.convertAndSend(OPERATOR_DESTINATION,
                 new ReservationChangeDTO(reservationId.toString(), newStatus));
+    }
+
+    @Override
+    public void notifyUserLoyaltyStatusChange(UUID userId, LoyaltyTier newLoyaltyTier) {
+        log.info("Notifying user {} loyalty tier change to {}", userId, newLoyaltyTier);
+        messagingTemplate.convertAndSend(USER_DESTINATION, newLoyaltyTier);
+        // Implement notification logic here
     }
 
 }

@@ -29,7 +29,7 @@ public class BronzeTier implements ILoyaltyTierState {
             ctx.getNotificationService().notifyUserLoyaltyStatusChange(rider.getId(), LoyaltyTier.DEFAULT);
             return;
         }
-        List<Reservation> reservations = ctx.getReservationService().getReservationsPastYearByUserIdAndStatus(rider.getId(), ReservationStatus.COMPLETED);
+        List<Reservation> reservations = ctx.getReservationLookup().getReservationsPastYearByUserIdAndStatus(rider.getId(), ReservationStatus.COMPLETED);
         if (reservations.size() >= 5 && ctx.getTripService().meetsMonthlyTripRequirement(rider.getId(), 5, 3)) {
             rider.setLoyaltyTier(LoyaltyTier.SILVER);
             ctx.getUserService().updateUser(rider);

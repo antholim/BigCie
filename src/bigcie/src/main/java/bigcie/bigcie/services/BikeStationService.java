@@ -10,6 +10,7 @@ import bigcie.bigcie.exceptions.RiderAlreadyHasBikeException;
 import bigcie.bigcie.exceptions.SourceAndTargetStationAreEqualsException;
 import bigcie.bigcie.exceptions.StationIsEmptyException;
 import bigcie.bigcie.exceptions.StationIsFullException;
+import bigcie.bigcie.models.loyalty.LoyaltyTierContext;
 import bigcie.bigcie.repositories.BikeRepository;
 import bigcie.bigcie.repositories.BikeStationRepository;
 import bigcie.bigcie.services.interfaces.IBikeStationService;
@@ -42,16 +43,18 @@ public class BikeStationService implements IBikeStationService {
     private final INotificationService notificationService;
     private final IUserService userService;
     private final ITripService tripService;
+    private final LoyaltyTierContext loyaltyTierContext;
 
     public BikeStationService(BikeStationRepository bikeStationRepository, ReservationRepository reservationRepository,
-            BikeRepository bikeRepository, INotificationService notificationService, IUserService userService,
-            ITripService tripService) {
+                              BikeRepository bikeRepository, INotificationService notificationService, IUserService userService,
+                              ITripService tripService, LoyaltyTierContext loyaltyTierContext) {
         this.userService = userService;
         this.bikeStationRepository = bikeStationRepository;
         this.reservationRepository = reservationRepository;
         this.bikeRepository = bikeRepository;
         this.notificationService = notificationService;
         this.tripService = tripService;
+        this.loyaltyTierContext = loyaltyTierContext;
     }
 
     @Override
@@ -177,6 +180,7 @@ public class BikeStationService implements IBikeStationService {
                     stationId);
             rider.setActiveTripId(null);
             userService.updateUser(rider);
+            loyaltyTierContext.evaluateUserTierUpgrade(rider);
         }
 
         bikeStationRepository.save(station);
@@ -257,6 +261,8 @@ public class BikeStationService implements IBikeStationService {
                 bike.getBikeType(),
                 rider.getDefaultPaymentInfo().getId());
         rider.getActiveTripId().add(trip.getId());
+
+//        loyaltyTierContext.evaluateUserTierUpgrade(rider);
         userService.updateUser(rider);
 
         return bike.getId();

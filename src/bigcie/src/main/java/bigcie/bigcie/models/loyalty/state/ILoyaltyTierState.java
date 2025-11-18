@@ -12,7 +12,7 @@ public interface ILoyaltyTierState {
     void evaluateTierUpgrade(Rider rider, LoyaltyTierContext tierContext);
 
     default boolean evaluateToDefault(Rider rider, LoyaltyTierContext ctx) {
-        List<Reservation> expiredReservationsPastYear = ctx.getReservationService().getExpiredReservationsPastYearByUserId(rider.getId());
+        List<Reservation> expiredReservationsPastYear = ctx.getReservationLookup().getExpiredReservationsPastYearByUserId(rider.getId());
         if (!expiredReservationsPastYear.isEmpty()) {
             rider.setLoyaltyTier(LoyaltyTier.DEFAULT);
             ctx.getUserService().updateUser(rider);

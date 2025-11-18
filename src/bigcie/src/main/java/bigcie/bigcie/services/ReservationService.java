@@ -113,9 +113,8 @@ public class ReservationService implements IReservationService {
         Bike bike = bikeService.getBikeById(reservation.getBikeId());
         bikeService.updateBikeStatus(bike.getId(), BikeStatus.AVAILABLE);
 
-        // Delete the reservation
         reservationRepository.deleteById(reservationId);
-    }
+        }
 
     /**
      * Check if a reservation has expired
