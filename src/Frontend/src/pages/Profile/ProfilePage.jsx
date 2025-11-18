@@ -22,6 +22,8 @@ export default function ProfilePage() {
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [unreservingIds, setUnreservingIds] = useState(new Set());
+  const [userProfileInformation, setUserProfileInformation] = useState(null);
+  const [showLoyaltyModal, setShowLoyaltyModal] = useState(false);
 
 
   useEffect(() => {
@@ -29,7 +31,18 @@ export default function ProfilePage() {
       navigate("/login", { replace: true });
     }
   }, [authLoading, isAuthenticated, navigate]);
+  const loadUserProfile = useCallback(async () => {
+    if (!isAuthenticated || !user) return;
+    const identifier = user.id ?? user.userId;
+    if (!identifier) return;
 
+    try {
+      const response = await FetchingService.get("/api/v1/user/my-profile");
+      setUserProfileInformation(response.data);
+    } catch (err) {
+      console.error("Failed to load user profile information:", err);
+    }
+  })
   const loadReservations = useCallback(async () => {
     if (!isAuthenticated || !user) return;
     const identifier = user.id ?? user.userId;
@@ -156,10 +169,46 @@ export default function ProfilePage() {
     }
   };
 
+  const renderTierBadge = (tier) => {
+    const t = String(tier ?? '').toUpperCase();
+    const map = {
+      GOLD: { label: 'Gold', color: '#f59e0b' },
+      SILVER: { label: 'Silver', color: '#9ca3af' },
+      BRONZE: { label: 'Bronze', color: '#a16207' },
+      DEFAULT: { label: 'Default', color: '#cbd5e1' },
+    };
+    const info = map[t] || map.DEFAULT;
+    return (
+      <span style={{
+        display: 'inline-block',
+        padding: '6px 10px',
+        borderRadius: 999,
+        backgroundColor: info.color,
+        color: '#031024',
+        fontWeight: 700,
+        fontSize: 13,
+        marginLeft: 8,
+      }}>{info.label}</span>
+    );
+  };
+
+  // Close modal on ESC
   useEffect(() => {
-    loadReservations();
-    loadBikes();
-  }, [loadReservations, loadBikes]);
+    const onKey = (e) => {
+      if (e.key === 'Escape') setShowLoyaltyModal(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+useEffect(() => {
+  if (!isAuthenticated || !user) return;
+
+  loadReservations();
+  loadBikes();
+  loadUserProfile();
+}, [isAuthenticated, user]);
+
   const hasReservations = reservations.length > 0;
 
   if (authLoading) {
@@ -274,6 +323,52 @@ export default function ProfilePage() {
               alignItems: "stretch",
             }}
           >
+            <div className="db-card" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div className="db-flex-between" style={{ alignItems: "center" }}>
+                <div>
+                  <h2 style={{ marginBottom: "4px" }}>Loyalty Program</h2>
+                  <p className="db-muted" style={{ margin: 0 }}>
+                    Track your current tier and benefits.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "#f9fafb",
+                  border: "1px solid #e2e8f0",
+                  padding: "16px",
+                  borderRadius: "12px",
+                }}
+              >
+                <h3 style={{ margin: "0 0 8px", fontSize: "20px", display: 'flex', alignItems: 'center' }}>
+                  {userProfileInformation?.loyaltyTier ?? "DEFAULT"}
+                  {renderTierBadge(userProfileInformation?.loyaltyTier)}
+                </h3>
+
+                <p className="db-muted" style={{ marginTop: 0 }}>
+                  You're currently enjoying the benefits associated with the <strong>{userProfileInformation?.loyaltyTier ?? "DEFAULT"}</strong> tier.
+                </p>
+
+                {(userProfileInformation?.loyaltyTier === "SILVER" || userProfileInformation?.loyaltyTier === "GOLD") && (
+                  <div style={{ marginTop: "12px", padding: "12px", background: "#ecfdf5", borderRadius: "8px", border: "1px solid #a7f3d0" }}>
+                    <p style={{ margin: 0, fontWeight: 600 }}>
+                      🎉 Congrats! You're in a premium tier.
+                    </p>
+                  </div>
+                )}
+
+                <div style={{ marginTop: 12 }}>
+                  <button
+                    className="db-btn"
+                    type="button"
+                    onClick={() => setShowLoyaltyModal(true)}
+                  >
+                    View benefits & requirements
+                  </button>
+                </div>
+              </div>
+            </div>
             <div className="db-card" style={{ display: "flex", flexDirection: "column" }}>
               <div className="db-flex-between" style={{ marginBottom: "16px", gap: "12px" }}>
                 <div>
@@ -425,6 +520,51 @@ export default function ProfilePage() {
           </div>
         </main>
       </div>
+
+      {showLoyaltyModal && (
+        <div style={{ position: 'fixed', left: 0, top: 0, right: 0, bottom: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div onClick={() => setShowLoyaltyModal(false)} style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.35)' }} />
+          <div role="dialog" aria-modal="true" style={{ position: 'relative', background: '#fff', padding: 20, borderRadius: 12, boxShadow: '0 12px 36px rgba(0,0,0,0.18)', width: 720, maxWidth: 'calc(100% - 48px)', maxHeight: '80vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 800 }}>Loyalty Program — Benefits & Requirements</div>
+                <div style={{ fontSize: 13, color: '#666', marginTop: 4 }}>Tier: <strong>{userProfileInformation?.loyaltyTier ?? 'DEFAULT'}</strong>{renderTierBadge(userProfileInformation?.loyaltyTier)}</div>
+              </div>
+              <button onClick={() => setShowLoyaltyModal(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 18 }}>✕</button>
+            </div>
+
+            <div style={{ marginTop: 16, lineHeight: 1.45 }}>
+              <h3 style={{ marginBottom: 6 }}>Bronze tier</h3>
+              <ul>
+                <li><strong>BR-001:</strong> Rider has to have no missed reservations within the last year.</li>
+                <li><strong>BR-002:</strong> Rider returned all bikes that they ever took successfully.</li>
+                <li><strong>BR-003:</strong> Rider has surpassed 10 trips in the last year.</li>
+                <li><strong>BR-004:</strong> Rider gets 5% discount on trips.</li>
+              </ul>
+
+              <h3 style={{ marginBottom: 6, marginTop: 12 }}>Silver tier</h3>
+              <ul>
+                <li><strong>SL-001:</strong> Rider covers Bronze tier eligibility.</li>
+                <li><strong>SL-002:</strong> Rider has to have at least 5 reservations of bikes that were successfully claimed within the last year.</li>
+                <li><strong>SL-003:</strong> Rider has surpassed 5 trips per month for the last three months.</li>
+                <li><strong>SL-004:</strong> Rider gets a 10% discount on trips and an extra 2-minute reservation hold.</li>
+              </ul>
+
+              <h3 style={{ marginBottom: 6, marginTop: 12 }}>Gold tier</h3>
+              <ul>
+                <li><strong>GL-001:</strong> Rider covers Silver tier eligibility.</li>
+                <li><strong>GL-002:</strong> Rider surpasses 5 trips every week for the last 3 months.</li>
+                <li><strong>GL-003:</strong> Rider gets a 15% discount on trips and an extra 5-minute reservation hold.</li>
+              </ul>
+            </div>
+
+            <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button className="db-btn" onClick={() => setShowLoyaltyModal(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
