@@ -1,6 +1,6 @@
 package bigcie.bigcie.services;
 
-import bigcie.bigcie.dtos.events.TripEventDto;
+import bigcie.bigcie.dtos.events.*;
 import bigcie.bigcie.entities.Bike;
 import bigcie.bigcie.models.loyalty.state.LoyaltyTier;
 import bigcie.bigcie.services.interfaces.INotificationService;
@@ -12,10 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import bigcie.bigcie.entities.enums.BikeStatus;
-import bigcie.bigcie.dtos.events.BikeStatusChangeDTO;
 import bigcie.bigcie.entities.enums.BikeStationStatus;
-import bigcie.bigcie.dtos.events.DockStatusDTO;
-import bigcie.bigcie.dtos.events.ReservationChangeDTO;
 
 @Service
 @Slf4j
@@ -70,7 +67,11 @@ public class NotificationService implements INotificationService {
     @Override
     public void notifyUserLoyaltyStatusChange(UUID userId, LoyaltyTier newLoyaltyTier) {
         log.info("Notifying user {} loyalty tier change to {}", userId, newLoyaltyTier);
-        messagingTemplate.convertAndSend(USER_DESTINATION, newLoyaltyTier);
+//        messagingTemplate.convertAndSend(USER_DESTINATION, newLoyaltyTier);
+        messagingTemplate.convertAndSend(USER_DESTINATION, new LoyaltyTierChangeDTO(
+                userId,
+                newLoyaltyTier
+        ));
         // Implement notification logic here
     }
 
