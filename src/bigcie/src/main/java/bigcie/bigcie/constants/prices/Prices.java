@@ -5,6 +5,8 @@ public class Prices {
     public final static double DAY_PASS_PRICE = 7.99;
     public final static double MONTHLY_PASS_PRICE = 19.99;
     public final static double E_BIKE_SURCHARGE = 2.50;
-    public final static double FLEX_DOLLAR_REWARD = 5.0;
+    public final static double FIVE_MIN_RATE = 1.19;
+
+    public final static double FLEX_DOLLAR_REWARD = 1.0;
     public final static double MIN_CAPACITY_THRESHOLD = 0.25;
 }
