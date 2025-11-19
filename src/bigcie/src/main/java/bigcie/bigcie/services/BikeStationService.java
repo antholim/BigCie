@@ -175,12 +175,17 @@ public class BikeStationService implements IBikeStationService {
         Rider rider;
         if (user instanceof Rider) {
             rider = (Rider) user;
+            UUID activeTripId = rider.getActiveTripId() != null ? rider.getActiveTripId().getFirst() : null;
+            
             rider.getCurrentBikes().remove(bike.getId());
-            tripService.endTrip(
-                    rider.getActiveTripId().getFirst(),
-                    stationId, rider.getLoyaltyTier().getDiscountPercentage());
             rider.setActiveTripId(null);
             userService.updateUser(rider);
+            
+            // End trip after updating rider to avoid overwriting flex dollar deductions
+            if (activeTripId != null) {
+                tripService.endTrip(activeTripId, stationId, rider.getLoyaltyTier().getDiscountPercentage());
+            }
+            
             loyaltyTierContext.evaluateUserTierUpgrade(rider);
         }
 
