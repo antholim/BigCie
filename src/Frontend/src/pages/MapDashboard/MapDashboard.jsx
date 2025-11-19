@@ -7,6 +7,7 @@ import FetchingService from "../../services/FetchingService";
 import NotificationService from "../../services/NotificationService";
 import { useAuth } from "../../contexts/AuthContext";
 import BikeBox from "../Profile/components/BikeBox";
+import Toast from "../../components/Toast";
 
 
 export default function MapDashboard() {
@@ -31,6 +32,7 @@ export default function MapDashboard() {
     const [moveDestinationStationId, setMoveDestinationStationId] = useState(null);
     const [movingBike, setMovingBike] = useState(false);
     const [bikeRentals, setBikeRentals] = useState([]);
+    const [toastMessage, setToastMessage] = useState(null);
     const legendItems = [
         {
             color: "#22c55e",
@@ -55,6 +57,7 @@ export default function MapDashboard() {
                 color: "#22c55e",
                 label: "Balanced",
                 percent: 0,
+                isFlexEligible: false,
             };
         }
 
@@ -100,6 +103,7 @@ export default function MapDashboard() {
         const epsilon = 0.0001;
         const isEmpty = percent <= epsilon;
         const isFull = percent >= 100 - epsilon;
+        const isFlexEligible = percent < 25;
 
         let color = "#22c55e";
         let label = "Balanced";
@@ -116,6 +120,7 @@ export default function MapDashboard() {
             color,
             label,
             percent: Math.round(percent),
+            isFlexEligible,
         };
     }, []);
 
@@ -371,6 +376,9 @@ export default function MapDashboard() {
         if (userNotLoggedIn) return alert("You must be logged in to perform this action");
         if (!selectedStation) return;
         try {
+            // Check if station is flex dollar eligible BEFORE docking
+            const { isFlexEligible } = getStationFullnessMeta(selectedStation);
+            
             // Assumes backend supports POST /api/v1/stations/:id/{action}
             const path = `/api/v1/stations/${selectedStation.id}/${action}`;
             const firstBikeId = bikeRentals[0]?.bikeId;
@@ -380,6 +388,14 @@ export default function MapDashboard() {
             await FetchingService.post(path, {
                 bikeId: firstBikeId // ensure this is a UUID string
             });
+            
+            // Show flex dollar toast if eligible
+            if (isFlexEligible) {
+                setToastMessage('You earned $1 flex dollar!');
+                // Wait a moment for toast to be visible before showing alert
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
             // Simple feedback; you can wire this into context/state/UI
             alert(`${action} successful`);
             window.location.reload();
@@ -848,12 +864,26 @@ export default function MapDashboard() {
                             <div style={{ fontSize: 14 }}>Location</div>
                             <div style={{ fontSize: 13, color: '#666' }}>{(selectedStation.latitude ?? selectedStation.lat ?? selectedStation.longitude ?? selectedStation.lng) ? `${Number(selectedStation.latitude ?? selectedStation.lat ?? 0).toFixed(5)}, ${Number(selectedStation.longitude ?? selectedStation.lng ?? 0).toFixed(5)}` : 'Unknown'}</div>
                         </div>
+                        {getStationFullnessMeta(selectedStation).isFlexEligible && (
+                            <div style={{ marginTop: 12, padding: '12px', background: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)', borderRadius: 8, border: '1px solid #e9d5ff' }}>
+                                <div style={{ fontSize: 14, fontWeight: 600, color: '#9333ea', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    💰 Earn $1 for docking at this station with less than 25% capacity
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 <BikeBox bikeRentals={bikeRentals} />
             </div>
+            {toastMessage && (
+                <Toast
+                    message={toastMessage}
+                    onClose={() => setToastMessage(null)}
+                    icon="🎉"
+                />
+            )}
         </div>
     );
 }

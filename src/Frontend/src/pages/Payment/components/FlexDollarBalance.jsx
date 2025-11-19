@@ -91,7 +91,7 @@ export default function FlexDollarBalance({ refreshTrigger }) {
       >
         <p style={{ margin: 0, marginBottom: 6, fontWeight: 600 }}>How it works:</p>
         <ul style={{ margin: 0, paddingLeft: 20 }}>
-          <li>Earn $5 by docking at stations below 25% capacity</li>
+          <li>Earn $1 by docking at stations below 25% capacity</li>
           <li>Automatically applied to trips and plans</li>
           <li>Never expires</li>
         </ul>
