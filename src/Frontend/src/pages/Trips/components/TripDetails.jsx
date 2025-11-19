@@ -111,8 +111,28 @@ export default function TripDetails({ trip, onClose }) {
                   )}
                 </>
               )}
-              <div style={{ marginTop: "8px", fontWeight: "bold" }}>
-                Total: ${(trip.cost || 0).toFixed(2)}
+              <div style={{ marginTop: "12px", padding: "12px", background: "#f8fafc", borderRadius: "8px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                  <span>Total Cost:</span>
+                  <span style={{ fontWeight: "600" }}>${(trip.cost || 0).toFixed(2)}</span>
+                </div>
+                {trip.flexDollarsUsed > 0 && (
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", color: "#16a34a" }}>
+                    <span>💰 Flex Dollars Used:</span>
+                    <span style={{ fontWeight: "600" }}>-${(trip.flexDollarsUsed || 0).toFixed(2)}</span>
+                  </div>
+                )}
+                <div style={{ 
+                  display: "flex", 
+                  justifyContent: "space-between", 
+                  paddingTop: "8px", 
+                  borderTop: "2px solid #e2e8f0",
+                  fontSize: "16px",
+                  fontWeight: "700"
+                }}>
+                  <span>Amount Charged:</span>
+                  <span>${(trip.amountCharged !== undefined ? trip.amountCharged : trip.cost || 0).toFixed(2)}</span>
+                </div>
               </div>
             </div>
           </div>

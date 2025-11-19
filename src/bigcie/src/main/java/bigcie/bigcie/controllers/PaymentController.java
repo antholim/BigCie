@@ -121,4 +121,13 @@ public class PaymentController {
         return ResponseEntity.ok(balance);
     }
 
+    @Operation(summary = "Reset Flex Dollar Balance", description = "Reset the flex dollar balance to 0 for the authenticated user (dev/testing only)")
+    @DeleteMapping("/flex-dollars/reset")
+    public ResponseEntity<?> resetFlexDollarBalance(HttpServletRequest request) {
+        String token = cookieService.getTokenFromCookie(request, "authToken");
+        UUID userId = tokenService.extractUserId(token);
+        flexDollarService.resetFlexDollars(userId);
+        return ResponseEntity.ok("Flex dollar balance reset to 0");
+    }
+
 }

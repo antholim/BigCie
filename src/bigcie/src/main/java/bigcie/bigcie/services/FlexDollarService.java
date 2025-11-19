@@ -72,4 +72,17 @@ public class FlexDollarService implements IFlexDollarService {
 
         return rider.getFlexDollars();
     }
+
+    @Override
+    public void resetFlexDollars(UUID userId) {
+        User user = userService.getUserByUUID(userId);
+        if (!(user instanceof Rider rider)) {
+            log.warn("Attempted to reset flex dollars for non-rider user: {}", userId);
+            return;
+        }
+
+        rider.setFlexDollars(0.0);
+        userService.updateUser(rider);
+        log.info("Reset flex dollars to 0 for rider {}", userId);
+    }
 }

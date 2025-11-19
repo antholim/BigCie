@@ -24,4 +24,10 @@ public interface IFlexDollarService {
      * @return The current flex dollar balance
      */
     double getFlexDollarBalance(UUID userId);
+
+    /**
+     * Reset flex dollar balance to 0 for a rider (dev/testing only)
+     * @param userId The ID of the rider
+     */
+    void resetFlexDollars(UUID userId);
 }

@@ -24,7 +24,21 @@ function Trip({ trip, onSelect }) {
                     <div className="db-muted" style={{ fontSize: 13 }}>{trip.bikeType} • {trip.status}</div>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                    <div style={{ fontWeight: 700 }}>${(trip.cost ?? 0).toFixed(2)}</div>
+                    {trip.flexDollarsUsed > 0 ? (
+                        <>
+                            <div style={{ fontSize: 12, color: "#16a34a", textDecoration: "line-through" }}>
+                                ${(trip.cost ?? 0).toFixed(2)}
+                            </div>
+                            <div style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 4, justifyContent: "flex-end" }}>
+                                ${(trip.amountCharged ?? 0).toFixed(2)}
+                                <span style={{ fontSize: 11, background: "#dcfce7", color: "#166534", padding: "2px 6px", borderRadius: 4, fontWeight: 600 }}>
+                                    💰 FLEX
+                                </span>
+                            </div>
+                        </>
+                    ) : (
+                        <div style={{ fontWeight: 700 }}>${(trip.cost ?? 0).toFixed(2)}</div>
+                    )}
                     <div className="db-muted" style={{ fontSize: 13 }}>{(trip.distanceInKm ?? 0).toFixed(2)} km</div>
                 </div>
             </div>

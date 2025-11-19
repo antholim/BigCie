@@ -126,9 +126,23 @@ export default function BillPage() {
                     </div>
 
                     <dl style={{ display: "grid", gridTemplateColumns: "auto 1fr", rowGap: 12, columnGap: 16, margin: 0 }}>
-                      <dt style={{ fontWeight: 600, color: "#0f172a" }}>Cost</dt>
+                      <dt style={{ fontWeight: 600, color: "#0f172a" }}>Total Cost</dt>
                       <dd style={{ margin: 0, color: "#475569" }}>
                         ${(bill.cost || 0).toFixed(2)}
+                      </dd>
+
+                      {bill.flexDollarsUsed > 0 && (
+                        <>
+                          <dt style={{ fontWeight: 600, color: "#16a34a" }}>Flex Dollars Used</dt>
+                          <dd style={{ margin: 0, color: "#16a34a" }}>
+                            -${(bill.flexDollarsUsed || 0).toFixed(2)}
+                          </dd>
+                        </>
+                      )}
+
+                      <dt style={{ fontWeight: 600, color: "#0f172a" }}>Amount Charged</dt>
+                      <dd style={{ margin: 0, color: "#0f172a", fontWeight: 700 }}>
+                        ${(bill.amountCharged !== undefined ? bill.amountCharged : bill.cost || 0).toFixed(2)}
                       </dd>
 
                       {bill.billingDate && (

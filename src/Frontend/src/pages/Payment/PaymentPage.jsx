@@ -7,6 +7,7 @@ import { formatDateTime } from "../../utils/utils";
 import SideBar from "../../components/SideBar";
 import PaymentInfo from "./components/PaymentInfo";
 import PaymentPlan from "./components/PaymentPlan";
+import FlexDollarBalance from "./components/FlexDollarBalance";
 
 export default function PaymentPage() {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ export default function PaymentPage() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [flexRefreshKey, setFlexRefreshKey] = useState(0);
     const [paymentInfos, setPaymentInfos] = useState({
       creditCardNumber: "",
       cardExpiry: "",
@@ -51,6 +53,8 @@ export default function PaymentPage() {
 
   useEffect(() => {
     loadPayments();
+    // Refresh flex dollars when page loads
+    setFlexRefreshKey(prev => prev + 1);
   }, [loadPayments]);
 
     const updatePayment = (field, value) =>
@@ -124,6 +128,7 @@ export default function PaymentPage() {
               <SideBar username={user?.username} email={user?.email} />
       
       <main className="db-container" style={{ paddingTop: 48, paddingBottom: 64 }}>
+        <FlexDollarBalance refreshTrigger={flexRefreshKey} />
         <PaymentPlan/>
     
                       <div className="db-card" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
