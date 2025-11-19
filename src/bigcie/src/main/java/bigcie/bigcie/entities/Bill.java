@@ -20,6 +20,8 @@ public abstract class Bill {
     protected double cost;
     protected UUID paymentInfoId;
     protected LocalDateTime billingDate = LocalDateTime.now();
+    protected double flexDollarsUsed = 0.0;
+    protected double amountCharged = 0.0;
 
     @Transient
     @JsonProperty("_class")

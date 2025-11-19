@@ -27,6 +27,7 @@ public class Rider extends User {
     private List<UUID> activeTripId = new ArrayList<>();
     private PricingPlanInformation pricingPlanInformation = new PricingPlanInformation();
     private LoyaltyTier loyaltyTier = LoyaltyTier.DEFAULT;
+    private double flexDollars = 0.0;
 
 
     public PaymentInfo getDefaultPaymentInfo() {
