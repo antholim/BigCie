@@ -9,6 +9,8 @@ import bigcie.bigcie.entities.enums.TripStatus;
 import bigcie.bigcie.repositories.TripRepository;
 import bigcie.bigcie.services.interfaces.IPriceService;
 import bigcie.bigcie.services.interfaces.ITripService;
+import bigcie.bigcie.services.interfaces.IFlexDollarService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,16 +19,20 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class TripService implements ITripService {
     private final TripRepository tripRepository;
     private final IPriceService priceService;
     private final TripAssembler tripAssembler;
+    private final IFlexDollarService flexDollarService;
 
-    public TripService(TripRepository tripRepository, IPriceService priceService, TripAssembler tripAssembler) {
+    public TripService(TripRepository tripRepository, IPriceService priceService, TripAssembler tripAssembler,
+            IFlexDollarService flexDollarService) {
         this.tripRepository = tripRepository;
         this.priceService = priceService;
         this.tripAssembler = tripAssembler;
+        this.flexDollarService = flexDollarService;
     }
 
     @Override
@@ -69,8 +75,19 @@ public class TripService implements ITripService {
             trip.setBikeStationEndId(bikeStationEndId);
             trip.setEndDate(endTime);
             trip.setStatus(TripStatus.COMPLETED);
-            trip.setCost(priceService.calculatePrice(trip.getStartDate(), endTime, trip.getBikeType(),
-                    trip.getPricingPlan()));
+            
+            double totalCost = priceService.calculatePrice(trip.getStartDate(), endTime, trip.getBikeType(),
+                    trip.getPricingPlan());
+            trip.setCost(totalCost);
+            
+            // Auto-apply flex dollars
+            double flexDollarsDeducted = flexDollarService.deductFlexDollars(trip.getUserId(), totalCost);
+            trip.setFlexDollarsUsed(flexDollarsDeducted);
+            trip.setAmountCharged(totalCost - flexDollarsDeducted);
+            
+            log.info("Trip {} completed. Total: ${}, Flex: ${}, Charged: ${}", 
+                    tripId, totalCost, flexDollarsDeducted, trip.getAmountCharged());
+            
             tripRepository.save(trip);
         } else {
             throw new IllegalArgumentException("Trip not found or already completed");

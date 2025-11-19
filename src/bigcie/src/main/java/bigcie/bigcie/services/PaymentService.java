@@ -14,6 +14,7 @@ import bigcie.bigcie.repositories.PlanBillRepository;
 import bigcie.bigcie.repositories.TripRepository;
 import bigcie.bigcie.services.interfaces.IPaymentService;
 import bigcie.bigcie.services.interfaces.IUserService;
+import bigcie.bigcie.services.interfaces.IFlexDollarService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -33,10 +34,11 @@ public class PaymentService implements IPaymentService {
     private final BillRepository billRepository;
     private final PricingConfig pricingConfig;
     private final PlanBillRepository planBillRepository;
+    private final IFlexDollarService flexDollarService;
 
     public PaymentService(IUserService userService, PaymentInfoMapper paymentInfoMapper, TripRepository tripRepository,
             BillAssembler billAssembler, BillRepository billRepository, PricingConfig pricingConfig,
-            PlanBillRepository planBillRepository) {
+            PlanBillRepository planBillRepository, IFlexDollarService flexDollarService) {
         this.userService = userService;
         this.paymentInfoMapper = paymentInfoMapper;
         this.tripRepository = tripRepository;
@@ -44,6 +46,7 @@ public class PaymentService implements IPaymentService {
         this.billRepository = billRepository;
         this.pricingConfig = pricingConfig;
         this.planBillRepository = planBillRepository;
+        this.flexDollarService = flexDollarService;
     }
 
     @Override
@@ -141,9 +144,21 @@ public class PaymentService implements IPaymentService {
         PlanBill planBill = new PlanBill();
         planBill.setId(UUID.randomUUID());
         planBill.setUserId(user.getId());
-        planBill.setCost(pricingConfig.getPriceForPlan(plan));
+        
+        double planCost = pricingConfig.getPriceForPlan(plan);
+        planBill.setCost(planCost);
+        
+        // Auto-apply flex dollars
+        double flexDollarsDeducted = flexDollarService.deductFlexDollars(user.getId(), planCost);
+        planBill.setFlexDollarsUsed(flexDollarsDeducted);
+        planBill.setAmountCharged(planCost - flexDollarsDeducted);
+        
         planBill.setPricingPlan(plan);
         planBill.setPaymentInfoId(rider.getDefaultPaymentInfo().getId());
+        
+        log.info("Plan {} purchased. Total: ${}, Flex: ${}, Charged: ${}", 
+                plan, planCost, flexDollarsDeducted, planBill.getAmountCharged());
+        
         billRepository.save(planBill);
         userService.updateUser(user);
     }
