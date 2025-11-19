@@ -17,6 +17,8 @@ import bigcie.bigcie.services.interfaces.INotificationService;
 
 import bigcie.bigcie.services.interfaces.ITripService;
 import bigcie.bigcie.services.interfaces.IUserService;
+import bigcie.bigcie.services.interfaces.IFlexDollarService;
+import bigcie.bigcie.constants.prices.Prices;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -42,16 +44,18 @@ public class BikeStationService implements IBikeStationService {
     private final INotificationService notificationService;
     private final IUserService userService;
     private final ITripService tripService;
+    private final IFlexDollarService flexDollarService;
 
     public BikeStationService(BikeStationRepository bikeStationRepository, ReservationRepository reservationRepository,
             BikeRepository bikeRepository, INotificationService notificationService, IUserService userService,
-            ITripService tripService) {
+            ITripService tripService, IFlexDollarService flexDollarService) {
         this.userService = userService;
         this.bikeStationRepository = bikeStationRepository;
         this.reservationRepository = reservationRepository;
         this.bikeRepository = bikeRepository;
         this.notificationService = notificationService;
         this.tripService = tripService;
+        this.flexDollarService = flexDollarService;
     }
 
     @Override
@@ -180,6 +184,16 @@ public class BikeStationService implements IBikeStationService {
         }
 
         bikeStationRepository.save(station);
+
+        // Award flex dollars if station capacity is below minimum threshold
+        int totalBikesDocked = station.getStandardBikesDocked() + station.getEBikesDocked();
+        double capacityPercentage = (double) totalBikesDocked / station.getCapacity();
+        
+        if (capacityPercentage < Prices.MIN_CAPACITY_THRESHOLD) {
+            flexDollarService.addFlexDollars(userId, Prices.FLEX_DOLLAR_REWARD);
+            log.info("Awarded {} flex dollars to user {} for docking at low-capacity station {} ({}% capacity)", 
+                    Prices.FLEX_DOLLAR_REWARD, userId, stationId, capacityPercentage * 100);
+        }
 
     }
 
