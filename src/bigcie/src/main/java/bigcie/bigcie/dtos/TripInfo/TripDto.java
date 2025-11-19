@@ -30,6 +30,8 @@ public class TripDto {
     private BikeType bikeType;
     private PricingPlan pricingPlan;
     private PaymentInfoDto paymentInfo;
+    private double flexDollarsUsed;
+    private double amountCharged;
 
     public static class Builder {
         private final TripDto tripDto = new TripDto();
@@ -96,6 +98,16 @@ public class TripDto {
 
         public Builder paymentInfo(PaymentInfoDto paymentInfo) {
             tripDto.paymentInfo = paymentInfo;
+            return this;
+        }
+
+        public Builder flexDollarsUsed(double flexDollarsUsed) {
+            tripDto.flexDollarsUsed = flexDollarsUsed;
+            return this;
+        }
+
+        public Builder amountCharged(double amountCharged) {
+            tripDto.amountCharged = amountCharged;
             return this;
         }
 
