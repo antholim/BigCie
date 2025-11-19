@@ -15,6 +15,8 @@ public class BillDto {
     private PaymentInfoDto paymentInfo;
     private LocalDateTime billingDate;
     private String _billClass;
+    private double flexDollarsUsed;
+    private double amountCharged;
 
     public static class Builder {
         private final BillDto billingDto = new BillDto();
@@ -42,6 +44,17 @@ public class BillDto {
             billingDto._billClass = billClass;
             return this;
         }
+        
+        public Builder flexDollarsUsed(double flexDollarsUsed) {
+            billingDto.flexDollarsUsed = flexDollarsUsed;
+            return this;
+        }
+        
+        public Builder amountCharged(double amountCharged) {
+            billingDto.amountCharged = amountCharged;
+            return this;
+        }
+        
         public BillDto build() {
             if (billingDto.id == null) {
                 billingDto.id = UUID.randomUUID();

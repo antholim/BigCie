@@ -14,6 +14,8 @@ public class BillMapper {
                 .cost(bill.getCost())
                 .billingDate(bill.getBillingDate())
                 ._billClass(bill.getClassDiscriminator())
+                .flexDollarsUsed(bill.getFlexDollarsUsed())
+                .amountCharged(bill.getAmountCharged())
                 .build();
 
         return billDto;

@@ -9,6 +9,7 @@ import bigcie.bigcie.services.PaymentService;
 import bigcie.bigcie.services.TokenService;
 import bigcie.bigcie.services.interfaces.ICookieService;
 import bigcie.bigcie.services.interfaces.IPaymentService;
+import bigcie.bigcie.services.interfaces.IFlexDollarService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,13 +28,15 @@ public class PaymentController {
     private final TokenService tokenService;
     private final ICookieService cookieService;
     private final IPriceService priceService;
+    private final IFlexDollarService flexDollarService;
 
     public PaymentController(PaymentService paymentService, TokenService tokenService, ICookieService cookieService,
-            IPriceService priceService) {
+            IPriceService priceService, IFlexDollarService flexDollarService) {
         this.paymentService = paymentService;
         this.tokenService = tokenService;
         this.cookieService = cookieService;
         this.priceService = priceService;
+        this.flexDollarService = flexDollarService;
     }
 
     @Operation(summary = "Get Payment Method", description = "Get the payment methods for the authenticated user")
@@ -107,6 +110,15 @@ public class PaymentController {
     public ResponseEntity<Double> getEBikeSurcharge() {
         double surcharge = priceService.getEBikeSurcharge();
         return ResponseEntity.ok(surcharge);
+    }
+
+    @Operation(summary = "Get Flex Dollar Balance", description = "Get the current flex dollar balance for the authenticated user")
+    @GetMapping("/flex-dollars")
+    public ResponseEntity<Double> getFlexDollarBalance(HttpServletRequest request) {
+        String token = cookieService.getTokenFromCookie(request, "authToken");
+        UUID userId = tokenService.extractUserId(token);
+        double balance = flexDollarService.getFlexDollarBalance(userId);
+        return ResponseEntity.ok(balance);
     }
 
 }

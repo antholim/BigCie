@@ -26,6 +26,8 @@ public class TripMapper {
                 .pricingPlan(trip.getPricingPlan())
                 .bikeType(trip.getBikeType())
                 .cost(trip.getCost())
+                .flexDollarsUsed(trip.getFlexDollarsUsed())
+                .amountCharged(trip.getAmountCharged())
                 .build();
         return dto;
     }
