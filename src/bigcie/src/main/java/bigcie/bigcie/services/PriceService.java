@@ -14,7 +14,8 @@ public class PriceService implements IPriceService {
 
     @Override
     public double calculatePrice(LocalDateTime startTime, LocalDateTime endTime, BikeType bikeType,
-            PricingPlan pricingPlan) {
+            PricingPlan pricingPlan, int discountPercentage
+    ) {
         switch (pricingPlan) {
             case DAY_PASS, MONTHLY_PASS -> {
                 return 0;
@@ -23,7 +24,12 @@ public class PriceService implements IPriceService {
                 long seconds = Duration.between(startTime, endTime).getSeconds();
                 long minutes = (long) Math.ceil(seconds / 60.0);
                 long units = (long) Math.ceil(minutes / 5.0);
-                return units * Prices.PRICE_PER_5_MINUTES + (bikeType == BikeType.E_BIKE ? Prices.E_BIKE_SURCHARGE : 0);
+                return Math.round(
+                        ((units * Prices.PRICE_PER_5_MINUTES
+                                + (bikeType == BikeType.E_BIKE ? Prices.E_BIKE_SURCHARGE : 0))
+                                * (100 - discountPercentage) / 100.0)
+                                * 100.0
+                ) / 100.0;
             }
 
         }

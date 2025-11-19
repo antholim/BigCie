@@ -5,7 +5,9 @@ import bigcie.bigcie.dtos.TripInfo.TripDto;
 import bigcie.bigcie.entities.Trip;
 import bigcie.bigcie.entities.enums.BikeType;
 import bigcie.bigcie.entities.enums.PricingPlan;
+import bigcie.bigcie.entities.enums.TripPeriod;
 import bigcie.bigcie.entities.enums.TripStatus;
+import bigcie.bigcie.entities.records.YearWeek;
 import bigcie.bigcie.repositories.TripRepository;
 import bigcie.bigcie.services.interfaces.IPriceService;
 import bigcie.bigcie.services.interfaces.ITripService;
@@ -15,9 +17,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.WeekFields;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -68,7 +76,8 @@ public class TripService implements ITripService {
 
     public void endTrip(
             UUID tripId,
-            UUID bikeStationEndId) {
+            UUID bikeStationEndId,
+            int discountPercentage) {
         Trip trip = getTripById(tripId);
         LocalDateTime endTime = LocalDateTime.now();
         if (trip != null && trip.getStatus() == TripStatus.ONGOING) {
@@ -77,7 +86,7 @@ public class TripService implements ITripService {
             trip.setStatus(TripStatus.COMPLETED);
             
             double totalCost = priceService.calculatePrice(trip.getStartDate(), endTime, trip.getBikeType(),
-                    trip.getPricingPlan());
+                    trip.getPricingPlan(), discountPercentage);
             trip.setCost(totalCost);
             
             // Auto-apply flex dollars
@@ -119,5 +128,83 @@ public class TripService implements ITripService {
         List<Trip> tripList = tripRepository.findAll();
         return tripAssembler.enrichTripDtoListNoLogging(tripList);
     }
+
+    @Override
+    public List<Trip> getCompletedTripsPastYearByUserId(UUID userId) {
+        List<Trip> trips = tripRepository.findByUserIdAndStatus(userId, TripStatus.COMPLETED);
+        LocalDateTime oneYearAgo = LocalDateTime.now().minusYears(1);
+        return trips.stream()
+                .filter(trip -> trip.getEndDate() != null && trip.getEndDate().isAfter(oneYearAgo))
+                .toList();
+    }
+    @Override
+    public boolean meetsMonthlyTripRequirement(UUID userId, int minTripsPerMonth, int months) {
+
+        List<Trip> trips = tripRepository.findByUserId(userId);
+
+        Map<YearMonth, Long> tripCounts = trips.stream()
+                .filter(trip -> trip.getStartDate().isAfter(LocalDateTime.now().minusMonths(months)))
+                .collect(Collectors.groupingBy(
+                        trip -> YearMonth.from(trip.getStartDate()),
+                        Collectors.counting()
+                ));
+
+        for (int i = 0; i < months; i++) {
+            YearMonth month = YearMonth.from(LocalDate.now().minusMonths(i));
+            long count = tripCounts.getOrDefault(month, 0L);
+            if (count < minTripsPerMonth) return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean meetsWeeklyTripRequirement(UUID userId, int minTripsPerWeek, int months) {
+
+        List<Trip> trips = tripRepository.findByUserId(userId);
+
+        // compute start date
+        LocalDateTime start = LocalDateTime.now().minusMonths(months);
+
+        int totalWeeks = computeWeeksBetween(start, LocalDateTime.now());
+
+        Map<YearWeek, Long> tripCounts = trips.stream()
+                .filter(trip -> trip.getStartDate().isAfter(start))
+                .collect(Collectors.groupingBy(
+                        trip -> YearWeek.from(trip.getStartDate()),
+                        Collectors.counting()
+                ));
+
+        for (int i = 0; i < totalWeeks; i++) {
+            YearWeek yw = YearWeek.from(LocalDate.now().minusWeeks(i));
+            long count = tripCounts.getOrDefault(yw, 0L);
+            if (count < minTripsPerWeek) return false;
+        }
+
+        return true;
+    }
+
+    private int computeWeeksBetween(LocalDateTime start, LocalDateTime end) {
+
+        LocalDate startDate = start.toLocalDate();
+        LocalDate endDate = end.toLocalDate();
+
+        startDate = startDate.with(WeekFields.ISO.getFirstDayOfWeek());
+        endDate = endDate.with(WeekFields.ISO.getFirstDayOfWeek());
+
+        int weeks = 0;
+
+        while (!startDate.isAfter(endDate)) {
+            weeks++;
+            startDate = startDate.plusWeeks(1);
+        }
+
+        return weeks;
+    }
+
+
+
+
+
 
 }

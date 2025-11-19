@@ -103,7 +103,7 @@ export default function TripDetails({ trip, onClose }) {
                     </div>
                   ) : (
                     <>
-                      <div>5-minute units rate: ${(fiveMinRate !== null ? fiveMinRate : trip.cost?.base || 0).toFixed(2)} For {trip.bikeType === "E_BIKE" ? (((trip.cost - eBikeSurcharge) / 1.25) * 5) : ((trip.cost / 1.25) * 5) } minutes</div>
+                      <div>5-minute units rate: $1.25 For 5 minutes</div>
                       {trip.bikeType === "E_BIKE" && eBikeSurcharge > 0 && (
                         <div>E-bike surcharge: ${(eBikeSurcharge || 0).toFixed(2)}</div>
                       )}

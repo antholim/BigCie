@@ -6,10 +6,8 @@ import bigcie.bigcie.entities.*;
 import bigcie.bigcie.entities.enums.BikeStationStatus;
 import bigcie.bigcie.entities.enums.BikeType;
 import bigcie.bigcie.entities.enums.ReservationStatus;
-import bigcie.bigcie.exceptions.RiderAlreadyHasBikeException;
-import bigcie.bigcie.exceptions.SourceAndTargetStationAreEqualsException;
-import bigcie.bigcie.exceptions.StationIsEmptyException;
-import bigcie.bigcie.exceptions.StationIsFullException;
+import bigcie.bigcie.exceptions.*;
+import bigcie.bigcie.models.loyalty.LoyaltyTierContext;
 import bigcie.bigcie.repositories.BikeRepository;
 import bigcie.bigcie.repositories.BikeStationRepository;
 import bigcie.bigcie.services.interfaces.IBikeStationService;
@@ -45,10 +43,11 @@ public class BikeStationService implements IBikeStationService {
     private final IUserService userService;
     private final ITripService tripService;
     private final IFlexDollarService flexDollarService;
+    private final LoyaltyTierContext loyaltyTierContext;
 
     public BikeStationService(BikeStationRepository bikeStationRepository, ReservationRepository reservationRepository,
             BikeRepository bikeRepository, INotificationService notificationService, IUserService userService,
-            ITripService tripService, IFlexDollarService flexDollarService) {
+            ITripService tripService, IFlexDollarService flexDollarService, LoyaltyTierContext loyaltyTierContext) {
         this.userService = userService;
         this.bikeStationRepository = bikeStationRepository;
         this.reservationRepository = reservationRepository;
@@ -56,6 +55,7 @@ public class BikeStationService implements IBikeStationService {
         this.notificationService = notificationService;
         this.tripService = tripService;
         this.flexDollarService = flexDollarService;
+        this.loyaltyTierContext = loyaltyTierContext;
     }
 
     @Override
@@ -178,9 +178,10 @@ public class BikeStationService implements IBikeStationService {
             rider.getCurrentBikes().remove(bike.getId());
             tripService.endTrip(
                     rider.getActiveTripId().getFirst(),
-                    stationId);
+                    stationId, rider.getLoyaltyTier().getDiscountPercentage());
             rider.setActiveTripId(null);
             userService.updateUser(rider);
+            loyaltyTierContext.evaluateUserTierUpgrade(rider);
         }
 
         bikeStationRepository.save(station);
@@ -202,14 +203,14 @@ public class BikeStationService implements IBikeStationService {
     public UUID undockBike(UUID stationId, UUID userId, BikeType bikeType) {
         BikeStation station = getStationById(stationId);
         if (station.getStatus() == BikeStationStatus.OUT_OF_SERVICE) {
-            throw new IllegalStateException("Station is out of service");
+            throw new StationOutOfServiceException();
         }
         User user = userService.getUserByUUID(userId);
         if (!(user instanceof Rider rider)) {
-            throw new IllegalArgumentException("User is not a rider");
+            throw new UserIsNotRiderException();
         }
         if (rider.getDefaultPaymentInfo() == null) {
-            throw new IllegalStateException("No default payment method found for rider");
+            throw new NoDefaultPaymentMethodFoundException();
         }
         List<Reservation> reservations = reservationRepository.findByUserId(userId);
         for (Reservation reservation : reservations) {
@@ -223,13 +224,10 @@ public class BikeStationService implements IBikeStationService {
 
         List<Bike> stationBikes = getStationBikes(stationId);
         if (stationBikes.isEmpty()) {
-            throw new IllegalStateException("No bikes at station");
+            throw new StationIsEmptyException();
         }
         if (stationBikes.stream().allMatch(b -> b.getStatus() == BikeStatus.RESERVED)) {
-            throw new IllegalStateException("All bikes are reserved");
-        }
-        if (!hasAvailableBikes(stationId)) {
-            throw new IllegalStateException("No available bikes to undock");
+            throw new AllBikesReservedException();
         }
         if (!rider.getCurrentBikes().isEmpty()) {
             throw new RiderAlreadyHasBikeException();
@@ -237,7 +235,7 @@ public class BikeStationService implements IBikeStationService {
         Bike bike = stationBikes.stream()
                 .filter(b -> b.getStatus() == BikeStatus.AVAILABLE && b.getBikeType() == bikeType)
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No available bikes of the requested type found"));
+                .orElseThrow(NoAvailableBikesOfRequestedTypeException::new);
 
         station.getBikesIds().remove(bike.getId());
         switch (bike.getBikeType()) {
@@ -271,6 +269,8 @@ public class BikeStationService implements IBikeStationService {
                 bike.getBikeType(),
                 rider.getDefaultPaymentInfo().getId());
         rider.getActiveTripId().add(trip.getId());
+
+//        loyaltyTierContext.evaluateUserTierUpgrade(rider);
         userService.updateUser(rider);
 
         return bike.getId();
@@ -311,7 +311,7 @@ public class BikeStationService implements IBikeStationService {
         Bike bike = getStationBikes(stationId).stream()
                 .filter(b -> b.getStatus() == BikeStatus.AVAILABLE)
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No available bikes found"));
+                .orElseThrow(StationIsEmptyException::new);
 
         // Create a reservation
         Reservation reservation = new Reservation(UUID.randomUUID(), UUID.randomUUID(), stationId, bike.getId(),
@@ -330,7 +330,7 @@ public class BikeStationService implements IBikeStationService {
     @Override
     public List<Bike> getStationBikes(UUID stationId) {
         BikeStation station = bikeStationRepository.findById(stationId)
-                .orElseThrow(() -> new NoSuchElementException("station not found"));
+                .orElseThrow(StationNotFoundException::new);
         List<UUID> bikeIds = station.getBikesIds();
         List<Bike> bikes = StreamSupport.stream(bikeRepository.findAllById(bikeIds).spliterator(), false)
                 .collect(Collectors.toList());
@@ -340,7 +340,7 @@ public class BikeStationService implements IBikeStationService {
     @Override
     public String getStationNameById(UUID id) {
         BikeStation station = bikeStationRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("station not found"));
+                .orElseThrow(StationNotFoundException::new);
         if (station != null) {
             return station.getName();
         }
@@ -364,7 +364,7 @@ public class BikeStationService implements IBikeStationService {
         Bike bike = getStationBikes(sourceStationId).stream()
                 .filter(b -> b.getStatus() == BikeStatus.AVAILABLE)
                 .findFirst()
-                .orElseThrow(() -> new StationIsFullException("No available docks at destination station"));
+                .orElseThrow(StationIsFullException::new);
 
         sourceStation.getBikesIds().remove(bike.getId());
         switch (bike.getBikeType()) {

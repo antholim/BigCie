@@ -2,10 +2,7 @@ package bigcie.bigcie.controllers;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import bigcie.bigcie.dtos.auth.LoginRequest;
 import bigcie.bigcie.dtos.auth.RegisterRequest;
