@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { dateValidation } from "../../utils/utils";
 import { useNavigate } from "react-router-dom";
 import FetchingService from "../../services/FetchingService";
@@ -7,6 +7,8 @@ import "../../components/home.css";
 import SideBar from "../../components/SideBar";
 import Trip from "./components/Trip";
 import TripDetails from "./components/TripDetails";
+
+const TRIPS_PER_PAGE = 5;
 
 export default function TripsPage() {
   const navigate = useNavigate();
@@ -20,6 +22,7 @@ export default function TripsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedTrip, setSelectedTrip] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -59,6 +62,55 @@ export default function TripsPage() {
   useEffect(() => {
     loadTrips();
   }, [loadTrips]);
+
+  const filteredTrips = useMemo(() => {
+    const q = String(searchQuery || "").trim().toLowerCase();
+    const start = startDate ? new Date(startDate + "T00:00:00") : null;
+    const end = endDate ? new Date(endDate + "T23:59:59.999") : null;
+
+    return trips.filter((trip) => {
+      if (planFilter !== "ALL") {
+        const plan = trip.pricingPlan ?? trip.pricing_plan ?? trip.pricing;
+        if (String(plan) !== planFilter) return false;
+      }
+
+      if (bikeTypeFilter !== "ALL") {
+        const ttype = trip.bikeType ?? trip.type ?? trip.bike_type ?? "";
+        if (String(ttype) !== bikeTypeFilter) return false;
+      }
+
+      if (start || end) {
+        const sd = trip.startDate ?? trip.start_date ?? trip.start ?? trip.createdAt ?? trip.created_at;
+        if (!sd) return false;
+        const tripDate = new Date(sd);
+        if (isNaN(tripDate)) return false;
+        if (start && tripDate < start) return false;
+        if (end && tripDate > end) return false;
+      }
+
+      if (q.length > 0) {
+        const idStr = String(trip.id ?? trip._id ?? "");
+        return idStr.includes(q);
+      }
+
+      return true;
+    });
+  }, [trips, planFilter, searchQuery, startDate, endDate, bikeTypeFilter]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [planFilter, searchQuery, startDate, endDate, bikeTypeFilter]);
+
+  useEffect(() => {
+    const maxPage = Math.max(1, Math.ceil(filteredTrips.length / TRIPS_PER_PAGE));
+    setCurrentPage((prev) => Math.min(prev, maxPage));
+  }, [filteredTrips]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredTrips.length / TRIPS_PER_PAGE));
+  const paginationStart = Math.max(0, (currentPage - 1) * TRIPS_PER_PAGE);
+  const paginatedTrips = filteredTrips.slice(paginationStart, paginationStart + TRIPS_PER_PAGE);
+  const pageSummaryStart = filteredTrips.length === 0 ? 0 : paginationStart + 1;
+  const pageSummaryEnd = Math.min(paginationStart + TRIPS_PER_PAGE, filteredTrips.length);
 
   if (authLoading) {
     return (
@@ -194,57 +246,65 @@ export default function TripsPage() {
             </label>
           </div>
         </div>
-              {isDateRangeValid && <div style={{ display: "grid", gap: 16 }}>
-          {loading && <p className="db-muted">Loading trips...</p>}
-          {!loading && error && <p style={{ color: "#dc2626" }}>{error}</p>}
+        {isDateRangeValid && (
+          <div style={{ display: "grid", gap: 16 }}>
+            {loading && <p className="db-muted">Loading trips...</p>}
+            {!loading && error && <p style={{ color: "#dc2626" }}>{error}</p>}
 
-          {/* Apply combined filters: planFilter and searchQuery (trip ID) */}
-          {!loading && !error && (() => {
-            const q = String(searchQuery || "").trim().toLowerCase();
-            const start = startDate ? new Date(startDate + "T00:00:00") : null;
-            const end = endDate ? new Date(endDate + "T23:59:59.999") : null;
-
-            const filteredTrips = trips.filter((trip) => {
-              // plan filter
-              if (planFilter !== "ALL") {
-                const plan = trip.pricingPlan ?? trip.pricing_plan ?? trip.pricing;
-                if (String(plan) !== planFilter) return false;
-              }
-              // bike type filter
-              if (bikeTypeFilter !== "ALL") {
-                const ttype = trip.bikeType ?? trip.type ?? trip.bike_type ?? "";
-                if (String(ttype) !== bikeTypeFilter) return false;
-              }
-              // date range filter (based on trip start date)
-              if (start || end) {
-                const sd = trip.startDate ?? trip.start_date ?? trip.start ?? trip.createdAt ?? trip.created_at;
-                if (!sd) return false;
-                const tripDate = new Date(sd);
-                if (isNaN(tripDate)) return false;
-                if (start && tripDate < start) return false;
-                if (end && tripDate > end) return false;
-              }
-              // search by trip id (partial match)
-              if (q.length > 0) {
-                const idStr = String(trip.id ?? trip._id ?? "");
-                return idStr.includes(q);
-              }
-              return true;
-            });
-
-            if (filteredTrips.length === 0) {
-              return <p className="db-muted">No trips found.</p>;
-            }
-
-            return filteredTrips.map((trip) => (
-              <Trip 
-                key={trip.id ?? trip._id} 
-                trip={trip} 
-                onSelect={() => setSelectedTrip(trip)}
-              />
-            ));
-          })()}
-        </div> }
+            {!loading && !error && (
+              filteredTrips.length === 0 ? (
+                <p className="db-muted">No trips found.</p>
+              ) : (
+                <>
+                  {paginatedTrips.map((trip) => (
+                    <Trip
+                      key={trip.id ?? trip._id}
+                      trip={trip}
+                      onSelect={() => setSelectedTrip(trip)}
+                    />
+                  ))}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginTop: 8,
+                      flexWrap: "wrap",
+                      gap: 12,
+                    }}
+                  >
+                    <span className="db-muted">
+                      Showing {pageSummaryStart}-{pageSummaryEnd} of {filteredTrips.length} trips
+                    </span>
+                    {filteredTrips.length > TRIPS_PER_PAGE && (
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <button
+                          type="button"
+                          className="db-btn"
+                          onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                          disabled={currentPage === 1}
+                          style={{ padding: "6px 12px" }}
+                        >
+                          Previous
+                        </button>
+                        <span className="db-muted">Page {currentPage} of {totalPages}</span>
+                        <button
+                          type="button"
+                          className="db-btn"
+                          onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                          disabled={currentPage === totalPages}
+                          style={{ padding: "6px 12px" }}
+                        >
+                          Next
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )
+            )}
+          </div>
+        )}
         {isDateRangeValid || <div style={{ color: "#dc2626", marginTop: 12 }}>Please ensure the date range is valid.</div>}
         {selectedTrip && (
           <TripDetails
