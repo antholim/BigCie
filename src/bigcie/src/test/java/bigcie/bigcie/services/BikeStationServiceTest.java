@@ -288,7 +288,7 @@ class BikeStationServiceTest {
         when(bikeStationRepository.findById(testStationId)).thenReturn(Optional.of(testStation));
 
         // Act & Assert
-        assertThrows(IllegalStateException.class, 
+        assertThrows(IllegalStateException.class,
                 () -> bikeStationService.dockBike(testStationId, testBikeId, testUserId));
     }
 

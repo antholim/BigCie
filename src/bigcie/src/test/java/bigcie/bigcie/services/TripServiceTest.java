@@ -117,7 +117,7 @@ class TripServiceTest {
         });
 
         // Act
-        Trip result = tripService.createTrip(testUserId, testBikeId, testStationStartId, 
+        Trip result = tripService.createTrip(testUserId, testBikeId, testStationStartId,
                 PricingPlan.SINGLE_RIDE, BikeType.STANDARD, testPaymentInfoId);
 
         // Assert
@@ -199,7 +199,8 @@ class TripServiceTest {
         int discountPercentage = 10;
 
         when(tripRepository.findById(testTrip.getId())).thenReturn(Optional.of(testTrip));
-        when(priceService.calculatePrice(any(), any(), eq(BikeType.STANDARD), eq(PricingPlan.SINGLE_RIDE), eq(discountPercentage)))
+        when(priceService.calculatePrice(any(), any(), eq(BikeType.STANDARD), eq(PricingPlan.SINGLE_RIDE),
+                eq(discountPercentage)))
                 .thenReturn(discountedCost);
         when(flexDollarService.deductFlexDollars(testUserId, discountedCost)).thenReturn(flexDollarsUsed);
         when(tripRepository.save(any(Trip.class))).thenReturn(testTrip);
@@ -220,7 +221,7 @@ class TripServiceTest {
         when(tripRepository.findById(testTrip.getId())).thenReturn(Optional.of(testTrip));
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, 
+        assertThrows(IllegalArgumentException.class,
                 () -> tripService.endTrip(testTrip.getId(), testStationEndId, 0));
     }
 
@@ -460,7 +461,7 @@ class TripServiceTest {
         for (PricingPlan plan : PricingPlan.values()) {
             Trip result = tripService.createTrip(testUserId, testBikeId, testStationStartId,
                     plan, BikeType.STANDARD, testPaymentInfoId);
-            
+
             assertNotNull(result);
             assertEquals(plan, result.getPricingPlan());
         }
@@ -475,7 +476,7 @@ class TripServiceTest {
         for (BikeType bikeType : BikeType.values()) {
             Trip result = tripService.createTrip(testUserId, testBikeId, testStationStartId,
                     PricingPlan.SINGLE_RIDE, bikeType, testPaymentInfoId);
-            
+
             assertNotNull(result);
             assertEquals(bikeType, result.getBikeType());
         }
@@ -519,7 +520,7 @@ class TripServiceTest {
     void testEndTrip_StatusTransitionONGOINGtoCOMPLETED() {
         // Arrange
         assertEquals(TripStatus.ONGOING, testTrip.getStatus());
-        
+
         when(tripRepository.findById(testTrip.getId())).thenReturn(Optional.of(testTrip));
         when(priceService.calculatePrice(any(), any(), any(), any(), anyInt())).thenReturn(10.0);
         when(flexDollarService.deductFlexDollars(any(), anyDouble())).thenReturn(0.0);

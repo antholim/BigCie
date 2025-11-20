@@ -42,7 +42,8 @@ class ReservationServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        reservationService = new ReservationService(reservationRepository, bikeService, bikeStationService, userService);
+        reservationService = new ReservationService(reservationRepository, bikeService, bikeStationService,
+                userService);
     }
 
     // ======================== createReservation Tests ========================
@@ -97,8 +98,7 @@ class ReservationServiceTest {
         when(userService.getUserByUUID(userId)).thenReturn(nonRider);
 
         // Act & Assert
-        assertThrows(UserIsNotRiderException.class, () -> 
-            reservationService.createReservation(userId, bikeStationId));
+        assertThrows(UserIsNotRiderException.class, () -> reservationService.createReservation(userId, bikeStationId));
     }
 
     @Test
@@ -121,8 +121,7 @@ class ReservationServiceTest {
         when(reservationRepository.findByUserId(userId)).thenReturn(Collections.emptyList());
 
         // Act & Assert
-        assertThrows(StationIsEmptyException.class, () -> 
-            reservationService.createReservation(userId, bikeStationId));
+        assertThrows(StationIsEmptyException.class, () -> reservationService.createReservation(userId, bikeStationId));
     }
 
     @Test
@@ -144,8 +143,8 @@ class ReservationServiceTest {
         when(reservationRepository.findByUserId(userId)).thenReturn(Collections.singletonList(existingReservation));
 
         // Act & Assert
-        assertThrows(UserAlreadyHasReservationException.class, () -> 
-            reservationService.createReservation(userId, bikeStationId));
+        assertThrows(UserAlreadyHasReservationException.class,
+                () -> reservationService.createReservation(userId, bikeStationId));
     }
 
     @Test
@@ -207,11 +206,11 @@ class ReservationServiceTest {
         when(reservationRepository.findById(reservationId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> 
-            reservationService.getReservationById(reservationId));
+        assertThrows(RuntimeException.class, () -> reservationService.getReservationById(reservationId));
     }
 
-    // ======================== getReservationsByUserId Tests ========================
+    // ======================== getReservationsByUserId Tests
+    // ========================
 
     @Test
     @DisplayName("Should get all reservations for a specific user")
@@ -219,10 +218,9 @@ class ReservationServiceTest {
         // Arrange
         UUID userId = UUID.randomUUID();
         List<Reservation> reservations = Arrays.asList(
-            mock(Reservation.class),
-            mock(Reservation.class),
-            mock(Reservation.class)
-        );
+                mock(Reservation.class),
+                mock(Reservation.class),
+                mock(Reservation.class));
 
         when(reservationRepository.findByUserId(userId)).thenReturn(reservations);
 
@@ -248,7 +246,8 @@ class ReservationServiceTest {
         assertTrue(result.isEmpty());
     }
 
-    // ======================== getReservationsByBikeStation Tests ========================
+    // ======================== getReservationsByBikeStation Tests
+    // ========================
 
     @Test
     @DisplayName("Should get all reservations at a specific bike station")
@@ -256,9 +255,8 @@ class ReservationServiceTest {
         // Arrange
         UUID bikeStationId = UUID.randomUUID();
         List<Reservation> reservations = Arrays.asList(
-            mock(Reservation.class),
-            mock(Reservation.class)
-        );
+                mock(Reservation.class),
+                mock(Reservation.class));
 
         when(reservationRepository.findByBikeStationId(bikeStationId)).thenReturn(reservations);
 
@@ -318,8 +316,7 @@ class ReservationServiceTest {
         when(reservationRepository.findById(reservationId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> 
-            reservationService.cancelReservation(reservationId));
+        assertThrows(RuntimeException.class, () -> reservationService.cancelReservation(reservationId));
     }
 
     // ======================== isReservationExpired Tests ========================
@@ -396,8 +393,7 @@ class ReservationServiceTest {
         when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> 
-            reservationService.extendReservation(reservationId, 10));
+        assertThrows(RuntimeException.class, () -> reservationService.extendReservation(reservationId, 10));
     }
 
     @Test
@@ -421,7 +417,8 @@ class ReservationServiceTest {
         verify(reservation).setExpiry(originalExpiry.plusMinutes(additionalMinutes));
     }
 
-    // ======================== getAllActiveReservations Tests ========================
+    // ======================== getAllActiveReservations Tests
+    // ========================
 
     @Test
     @DisplayName("Should get all active (non-expired) reservations")
@@ -547,11 +544,10 @@ class ReservationServiceTest {
     void testGetAllReservations() {
         // Arrange
         List<Reservation> reservations = Arrays.asList(
-            mock(Reservation.class),
-            mock(Reservation.class),
-            mock(Reservation.class),
-            mock(Reservation.class)
-        );
+                mock(Reservation.class),
+                mock(Reservation.class),
+                mock(Reservation.class),
+                mock(Reservation.class));
 
         when(reservationRepository.findAll()).thenReturn(reservations);
 
@@ -576,7 +572,8 @@ class ReservationServiceTest {
         assertTrue(result.isEmpty());
     }
 
-    // ======================== getAllActiveReservationsForUser Tests ========================
+    // ======================== getAllActiveReservationsForUser Tests
+    // ========================
 
     @Test
     @DisplayName("Should get all active reservations for a specific user")
@@ -584,12 +581,11 @@ class ReservationServiceTest {
         // Arrange
         UUID userId = UUID.randomUUID();
         List<Reservation> activeReservations = Arrays.asList(
-            mock(Reservation.class),
-            mock(Reservation.class)
-        );
+                mock(Reservation.class),
+                mock(Reservation.class));
 
         when(reservationRepository.findByUserIdAndStatus(userId, ReservationStatus.ACTIVE))
-            .thenReturn(activeReservations);
+                .thenReturn(activeReservations);
 
         // Act
         List<Reservation> result = reservationService.getAllActiveReservationsForUser(userId);
@@ -606,7 +602,7 @@ class ReservationServiceTest {
         UUID userId = UUID.randomUUID();
 
         when(reservationRepository.findByUserIdAndStatus(userId, ReservationStatus.ACTIVE))
-            .thenReturn(Collections.emptyList());
+                .thenReturn(Collections.emptyList());
 
         // Act
         List<Reservation> result = reservationService.getAllActiveReservationsForUser(userId);
@@ -615,7 +611,8 @@ class ReservationServiceTest {
         assertTrue(result.isEmpty());
     }
 
-    // ======================== getExpiredReservationsPastYearByUserId Tests ========================
+    // ======================== getExpiredReservationsPastYearByUserId Tests
+    // ========================
 
     @Test
     @DisplayName("Should get expired reservations from past year for user")
@@ -628,7 +625,7 @@ class ReservationServiceTest {
         when(expiredReservation.getExpiry()).thenReturn(sixMonthsAgo);
 
         when(reservationRepository.findByUserIdAndStatus(userId, ReservationStatus.EXPIRED))
-            .thenReturn(Collections.singletonList(expiredReservation));
+                .thenReturn(Collections.singletonList(expiredReservation));
 
         // Act
         List<Reservation> result = reservationService.getExpiredReservationsPastYearByUserId(userId);
@@ -653,7 +650,7 @@ class ReservationServiceTest {
 
         List<Reservation> allExpired = Arrays.asList(recentExpired, oldExpired);
         when(reservationRepository.findByUserIdAndStatus(userId, ReservationStatus.EXPIRED))
-            .thenReturn(allExpired);
+                .thenReturn(allExpired);
 
         // Act
         List<Reservation> result = reservationService.getExpiredReservationsPastYearByUserId(userId);
@@ -663,7 +660,8 @@ class ReservationServiceTest {
         assertEquals(recentExpired, result.get(0));
     }
 
-    // ======================== getReservationsPastYearByUserIdAndStatus Tests ========================
+    // ======================== getReservationsPastYearByUserIdAndStatus Tests
+    // ========================
 
     @Test
     @DisplayName("Should get reservations with specific status from past year")
@@ -677,7 +675,7 @@ class ReservationServiceTest {
         when(reservation.getExpiry()).thenReturn(nineMonthsAgo);
 
         when(reservationRepository.findByUserIdAndStatus(userId, status))
-            .thenReturn(Collections.singletonList(reservation));
+                .thenReturn(Collections.singletonList(reservation));
 
         // Act
         List<Reservation> result = reservationService.getReservationsPastYearByUserIdAndStatus(userId, status);
@@ -702,7 +700,7 @@ class ReservationServiceTest {
         when(old.getExpiry()).thenReturn(eighteenMonthsAgo);
 
         when(reservationRepository.findByUserIdAndStatus(userId, status))
-            .thenReturn(Arrays.asList(recent, old));
+                .thenReturn(Arrays.asList(recent, old));
 
         // Act
         List<Reservation> result = reservationService.getReservationsPastYearByUserIdAndStatus(userId, status);
@@ -784,10 +782,9 @@ class ReservationServiceTest {
         // Arrange
         UUID stationId = UUID.randomUUID();
         List<Reservation> stationReservations = Arrays.asList(
-            mock(Reservation.class),
-            mock(Reservation.class),
-            mock(Reservation.class)
-        );
+                mock(Reservation.class),
+                mock(Reservation.class),
+                mock(Reservation.class));
 
         when(reservationRepository.findByBikeStationId(stationId)).thenReturn(stationReservations);
 

@@ -61,8 +61,10 @@ class PriceServiceTest {
         LocalDateTime endTime = LocalDateTime.of(2024, 1, 1, 10, 5);
 
         // Act
-        double regularPrice = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD, PricingPlan.SINGLE_RIDE, 0);
-        double eBikePrice = priceService.calculatePrice(startTime, endTime, BikeType.E_BIKE, PricingPlan.SINGLE_RIDE, 0);
+        double regularPrice = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD,
+                PricingPlan.SINGLE_RIDE, 0);
+        double eBikePrice = priceService.calculatePrice(startTime, endTime, BikeType.E_BIKE, PricingPlan.SINGLE_RIDE,
+                0);
 
         // Assert
         assertTrue(eBikePrice > regularPrice);
@@ -106,8 +108,10 @@ class PriceServiceTest {
         LocalDateTime endTime = LocalDateTime.of(2024, 1, 1, 10, 10);
 
         // Act
-        double priceWithoutDiscount = priceService.calculatePrice(startTime, endTime, BikeType.E_BIKE, PricingPlan.SINGLE_RIDE, 0);
-        double priceWithDiscount = priceService.calculatePrice(startTime, endTime, BikeType.E_BIKE, PricingPlan.SINGLE_RIDE, 10);
+        double priceWithoutDiscount = priceService.calculatePrice(startTime, endTime, BikeType.E_BIKE,
+                PricingPlan.SINGLE_RIDE, 0);
+        double priceWithDiscount = priceService.calculatePrice(startTime, endTime, BikeType.E_BIKE,
+                PricingPlan.SINGLE_RIDE, 10);
 
         // Assert
         assertTrue(priceWithDiscount < priceWithoutDiscount);
@@ -116,9 +120,9 @@ class PriceServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-            "5, 1",      // 5 minutes = 1 unit
-            "10, 2",     // 10 minutes = 2 units
-            "15, 3"      // 15 minutes = 3 units
+            "5, 1", // 5 minutes = 1 unit
+            "10, 2", // 10 minutes = 2 units
+            "15, 3" // 15 minutes = 3 units
     })
     void testCalculatePrice_VariousDurations(int minutes, int expectedUnits) {
         // Arrange
@@ -135,10 +139,10 @@ class PriceServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-            "0, 1.0",   // No discount
-            "10, 0.9",   // 10% discount
-            "20, 0.8",   // 20% discount
-            "50, 0.5"    // 50% discount
+            "0, 1.0", // No discount
+            "10, 0.9", // 10% discount
+            "20, 0.8", // 20% discount
+            "50, 0.5" // 50% discount
     })
     void testCalculatePrice_WithVariousDiscounts(int discount, double multiplier) {
         // Arrange
@@ -146,8 +150,10 @@ class PriceServiceTest {
         LocalDateTime endTime = startTime.plusMinutes(5);
 
         // Act
-        double basePrice = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD, PricingPlan.SINGLE_RIDE, 0);
-        double discountedPrice = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD, PricingPlan.SINGLE_RIDE, discount);
+        double basePrice = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD, PricingPlan.SINGLE_RIDE,
+                0);
+        double discountedPrice = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD,
+                PricingPlan.SINGLE_RIDE, discount);
 
         // Assert
         assertEquals(basePrice * multiplier, discountedPrice, 0.01);
@@ -195,7 +201,8 @@ class PriceServiceTest {
         // Assert
         assertTrue(price > 0);
         // Verify it's greater than standard bike price for same duration
-        double standardPrice = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD, PricingPlan.SINGLE_RIDE, 0);
+        double standardPrice = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD,
+                PricingPlan.SINGLE_RIDE, 0);
         assertTrue(price > standardPrice);
     }
 
@@ -233,8 +240,10 @@ class PriceServiceTest {
         LocalDateTime endTime = LocalDateTime.of(2024, 2, 1, 14, 15);
 
         // Act
-        double priceWithoutDiscount = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD, PricingPlan.SINGLE_RIDE, 0);
-        double priceWithDiscount = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD, PricingPlan.SINGLE_RIDE, 10);
+        double priceWithoutDiscount = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD,
+                PricingPlan.SINGLE_RIDE, 0);
+        double priceWithDiscount = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD,
+                PricingPlan.SINGLE_RIDE, 10);
 
         // Assert
         assertEquals(priceWithoutDiscount * 0.9, priceWithDiscount, 0.01);
@@ -247,8 +256,10 @@ class PriceServiceTest {
         LocalDateTime endTime = LocalDateTime.of(2024, 1, 1, 10, 30);
 
         // Act
-        double standardPrice = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD, PricingPlan.SINGLE_RIDE, 0);
-        double eBikePrice = priceService.calculatePrice(startTime, endTime, BikeType.E_BIKE, PricingPlan.SINGLE_RIDE, 0);
+        double standardPrice = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD,
+                PricingPlan.SINGLE_RIDE, 0);
+        double eBikePrice = priceService.calculatePrice(startTime, endTime, BikeType.E_BIKE, PricingPlan.SINGLE_RIDE,
+                0);
 
         // Assert
         // E-bike should cost more due to surcharge
@@ -291,7 +302,8 @@ class PriceServiceTest {
         LocalDateTime endTime = LocalDateTime.of(2024, 1, 1, 10, 10);
 
         // Act
-        double price = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD, PricingPlan.SINGLE_RIDE, 100); // 100% discount
+        double price = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD, PricingPlan.SINGLE_RIDE, 100); // 100%
+                                                                                                                         // discount
 
         // Assert
         assertEquals(0.0, price);
@@ -332,8 +344,10 @@ class PriceServiceTest {
         LocalDateTime endTime = LocalDateTime.of(2024, 1, 1, 10, 20);
 
         // Act
-        double basePrice = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD, PricingPlan.SINGLE_RIDE, 0);
-        double discountedPrice = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD, PricingPlan.SINGLE_RIDE, 75);
+        double basePrice = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD, PricingPlan.SINGLE_RIDE,
+                0);
+        double discountedPrice = priceService.calculatePrice(startTime, endTime, BikeType.STANDARD,
+                PricingPlan.SINGLE_RIDE, 75);
 
         // Assert
         assertEquals(basePrice * 0.25, discountedPrice, 0.01);
@@ -346,8 +360,10 @@ class PriceServiceTest {
         LocalDateTime endTime = LocalDateTime.of(2024, 1, 1, 10, 15);
 
         // Act
-        double priceWithoutDiscount = priceService.calculatePrice(startTime, endTime, BikeType.E_BIKE, PricingPlan.SINGLE_RIDE, 0);
-        double priceWithDiscount = priceService.calculatePrice(startTime, endTime, BikeType.E_BIKE, PricingPlan.SINGLE_RIDE, 20);
+        double priceWithoutDiscount = priceService.calculatePrice(startTime, endTime, BikeType.E_BIKE,
+                PricingPlan.SINGLE_RIDE, 0);
+        double priceWithDiscount = priceService.calculatePrice(startTime, endTime, BikeType.E_BIKE,
+                PricingPlan.SINGLE_RIDE, 20);
 
         // Assert
         assertEquals(priceWithoutDiscount * 0.8, priceWithDiscount, 0.01);
