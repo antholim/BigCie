@@ -28,7 +28,8 @@ public class UserController {
     private final ITokenService tokenService;
     private final AuthorizationService authorizationService;
 
-    public UserController(IUserService userService, ICookieService cookieService, ITokenService tokenService, AuthorizationService authorizationService) {
+    public UserController(IUserService userService, ICookieService cookieService, ITokenService tokenService,
+            AuthorizationService authorizationService) {
         this.userService = userService;
         this.cookieService = cookieService;
         this.tokenService = tokenService;
@@ -40,7 +41,7 @@ public class UserController {
     public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
         try {
             String token = cookieService.getTokenFromCookie(request, "authToken");
-            
+
             // If no cookie, try Authorization header
             if (token == null) {
                 String authHeader = request.getHeader("Authorization");
@@ -48,22 +49,26 @@ public class UserController {
                     token = authHeader.substring(7);
                 }
             }
-            
+
             if (token == null) {
-                return ResponseEntity.status(401).body(new HashMap<String, String>() {{
-                    put("error", "No authentication token found");
-                }});
+                return ResponseEntity.status(401).body(new HashMap<String, String>() {
+                    {
+                        put("error", "No authentication token found");
+                    }
+                });
             }
-            
+
             UUID userId = tokenService.extractUserId(token, bigcie.bigcie.entities.enums.TokenType.ACCESS_TOKEN);
             User user = userService.getUserByUUID(userId);
-            
+
             if (user == null) {
-                return ResponseEntity.status(401).body(new HashMap<String, String>() {{
-                    put("error", "User not found");
-                }});
+                return ResponseEntity.status(401).body(new HashMap<String, String>() {
+                    {
+                        put("error", "User not found");
+                    }
+                });
             }
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("id", user.getId());
             response.put("userId", user.getId());
@@ -74,9 +79,11 @@ public class UserController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(401).body(new HashMap<String, String>() {{
-                put("error", "Unauthorized: " + e.getMessage());
-            }});
+            return ResponseEntity.status(401).body(new HashMap<String, String>() {
+                {
+                    put("error", "Unauthorized: " + e.getMessage());
+                }
+            });
         }
     }
 
@@ -96,11 +103,11 @@ public class UserController {
             User user = authorizationService.getUserFromRequest(request);
             // DUAL_ROLE and OPERATOR users can view all trips
             boolean canViewAll = user.getType() == UserType.OPERATOR || user.getType() == UserType.DUAL_ROLE;
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("canViewAll", canViewAll);
             response.put("userType", user.getType().toString());
-            
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();

@@ -85,19 +85,19 @@ public class TripService implements ITripService {
             trip.setEndDate(endTime);
             trip.setStatus(TripStatus.COMPLETED);
             trip.setDiscountApplied(discountPercentage);
-            
+
             double totalCost = priceService.calculatePrice(trip.getStartDate(), endTime, trip.getBikeType(),
                     trip.getPricingPlan(), discountPercentage);
             trip.setCost(totalCost);
-            
+
             // Auto-apply flex dollars
             double flexDollarsDeducted = flexDollarService.deductFlexDollars(trip.getUserId(), totalCost);
             trip.setFlexDollarsUsed(flexDollarsDeducted);
             trip.setAmountCharged(totalCost - flexDollarsDeducted);
-            
-            log.info("Trip {} completed. Total: ${}, Flex: ${}, Charged: ${}, Discount: {}%", 
+
+            log.info("Trip {} completed. Total: ${}, Flex: ${}, Charged: ${}, Discount: {}%",
                     tripId, totalCost, flexDollarsDeducted, trip.getAmountCharged(), discountPercentage);
-            
+
             tripRepository.save(trip);
         } else {
             throw new IllegalArgumentException("Trip not found or already completed");
@@ -113,6 +113,7 @@ public class TripService implements ITripService {
         }
         return tripAssembler.enrichTripDtoPage(tripList, userId);
     }
+
     @Override
     public List<TripDto> getTripByUserId(UUID userId) {
         List<Trip> tripList = tripRepository.findByUserId(userId);
@@ -138,6 +139,7 @@ public class TripService implements ITripService {
                 .filter(trip -> trip.getEndDate() != null && trip.getEndDate().isAfter(oneYearAgo))
                 .toList();
     }
+
     @Override
     public boolean meetsMonthlyTripRequirement(UUID userId, int minTripsPerMonth, int months) {
 
@@ -147,13 +149,13 @@ public class TripService implements ITripService {
                 .filter(trip -> trip.getStartDate().isAfter(LocalDateTime.now().minusMonths(months)))
                 .collect(Collectors.groupingBy(
                         trip -> YearMonth.from(trip.getStartDate()),
-                        Collectors.counting()
-                ));
+                        Collectors.counting()));
 
         for (int i = 0; i < months; i++) {
             YearMonth month = YearMonth.from(LocalDate.now().minusMonths(i));
             long count = tripCounts.getOrDefault(month, 0L);
-            if (count < minTripsPerMonth) return false;
+            if (count < minTripsPerMonth)
+                return false;
         }
 
         return true;
@@ -173,13 +175,13 @@ public class TripService implements ITripService {
                 .filter(trip -> trip.getStartDate().isAfter(start))
                 .collect(Collectors.groupingBy(
                         trip -> YearWeek.from(trip.getStartDate()),
-                        Collectors.counting()
-                ));
+                        Collectors.counting()));
 
         for (int i = 0; i < totalWeeks; i++) {
             YearWeek yw = YearWeek.from(LocalDate.now().minusWeeks(i));
             long count = tripCounts.getOrDefault(yw, 0L);
-            if (count < minTripsPerWeek) return false;
+            if (count < minTripsPerWeek)
+                return false;
         }
 
         return true;
@@ -202,10 +204,5 @@ public class TripService implements ITripService {
 
         return weeks;
     }
-
-
-
-
-
 
 }

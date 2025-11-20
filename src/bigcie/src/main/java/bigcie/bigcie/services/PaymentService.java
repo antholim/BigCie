@@ -52,7 +52,7 @@ public class PaymentService implements IPaymentService {
     @Override
     public void addPaymentMethod(UUID userId, PaymentInfoRequest paymentInfoRequest) {
         User user = userService.getUserByUUID(userId);
-        
+
         // Get payment info list - both Rider and DualRoleUser have this
         List<PaymentInfo> paymentInfos = null;
         if (user instanceof Rider rider) {
@@ -158,21 +158,21 @@ public class PaymentService implements IPaymentService {
         PlanBill planBill = new PlanBill();
         planBill.setId(UUID.randomUUID());
         planBill.setUserId(user.getId());
-        
+
         double planCost = pricingConfig.getPriceForPlan(plan);
         planBill.setCost(planCost);
-        
+
         // Auto-apply flex dollars
         double flexDollarsDeducted = flexDollarService.deductFlexDollars(user.getId(), planCost);
         planBill.setFlexDollarsUsed(flexDollarsDeducted);
         planBill.setAmountCharged(planCost - flexDollarsDeducted);
-        
+
         planBill.setPricingPlan(plan);
         planBill.setPaymentInfoId(defaultPaymentInfo.getId());
-        
-        log.info("Plan {} purchased. Total: ${}, Flex: ${}, Charged: ${}", 
+
+        log.info("Plan {} purchased. Total: ${}, Flex: ${}, Charged: ${}",
                 plan, planCost, flexDollarsDeducted, planBill.getAmountCharged());
-        
+
         billRepository.save(planBill);
         userService.updateUser(user);
     }

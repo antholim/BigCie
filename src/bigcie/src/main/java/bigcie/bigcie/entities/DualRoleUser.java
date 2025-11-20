@@ -15,7 +15,8 @@ import java.util.UUID;
 
 /**
  * DualRoleUser represents a user who can act as both an Operator and a Rider.
- * This allows operational staff to test the system as riders, with special discounts applied.
+ * This allows operational staff to test the system as riders, with special
+ * discounts applied.
  */
 @TypeAlias("dualRoleUser")
 @Getter

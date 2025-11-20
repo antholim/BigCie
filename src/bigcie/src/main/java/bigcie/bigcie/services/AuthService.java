@@ -71,9 +71,10 @@ public class AuthService {
 
         // Check IP restrictions for operator registration
         if (registerRequest.getUserType().equals(bigcie.bigcie.entities.enums.UserType.OPERATOR) ||
-            registerRequest.getUserType().equals(bigcie.bigcie.entities.enums.UserType.DUAL_ROLE)) {
+                registerRequest.getUserType().equals(bigcie.bigcie.entities.enums.UserType.DUAL_ROLE)) {
             if (!operatorRegistrationConfig.isIpAllowed(clientIp)) {
-                throw new IllegalArgumentException("Your IP address (" + clientIp + ") is not authorized to register operators");
+                throw new IllegalArgumentException(
+                        "Your IP address (" + clientIp + ") is not authorized to register operators");
             }
         }
 

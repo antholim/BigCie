@@ -13,9 +13,11 @@ import java.util.UUID;
 @Component
 public class PaymentLookup implements IPaymentLookup {
     private final IUserService userService;
+
     public PaymentLookup(IUserService userService) {
         this.userService = userService;
     }
+
     @Override
     public PaymentInfo getPaymentInfo(UUID id, UUID userId) {
         User user = userService.getUserByUUID(userId);

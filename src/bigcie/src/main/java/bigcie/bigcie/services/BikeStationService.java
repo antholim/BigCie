@@ -176,26 +176,27 @@ public class BikeStationService implements IBikeStationService {
         if (user instanceof Rider) {
             rider = (Rider) user;
             UUID activeTripId = rider.getActiveTripId() != null ? rider.getActiveTripId().getFirst() : null;
-            
+
             rider.getCurrentBikes().remove(bike.getId());
             rider.setActiveTripId(null);
             userService.updateUser(rider);
-            
+
             // End trip after updating rider to avoid overwriting flex dollar deductions
             if (activeTripId != null) {
                 tripService.endTrip(activeTripId, stationId, rider.getLoyaltyTier().getDiscountPercentage());
             }
-            
+
             loyaltyTierContext.evaluateUserTierUpgrade(rider);
         } else if (user instanceof DualRoleUser) {
             // Handle DualRoleUser operating in rider mode
             DualRoleUser dualRoleUser = (DualRoleUser) user;
-            UUID activeTripId = dualRoleUser.getActiveTripId() != null ? dualRoleUser.getActiveTripId().getFirst() : null;
-            
+            UUID activeTripId = dualRoleUser.getActiveTripId() != null ? dualRoleUser.getActiveTripId().getFirst()
+                    : null;
+
             dualRoleUser.getCurrentBikes().remove(bike.getId());
             dualRoleUser.setActiveTripId(null);
             userService.updateUser(dualRoleUser);
-            
+
             // End trip with combined discount: loyalty tier + operator discount
             if (activeTripId != null) {
                 int loyaltyDiscount = dualRoleUser.getLoyaltyTier().getDiscountPercentage();
@@ -204,7 +205,7 @@ public class BikeStationService implements IBikeStationService {
                 int totalDiscount = Math.min(loyaltyDiscount + operatorDiscount, 100);
                 tripService.endTrip(activeTripId, stationId, totalDiscount);
             }
-            
+
             // Note: LoyaltyTierContext.evaluateUserTierUpgrade requires Rider type
             // DualRoleUser can be tier upgraded when we have proper method overload
             // For now, tier upgrade is skipped for dual-role users operating as riders
@@ -215,10 +216,10 @@ public class BikeStationService implements IBikeStationService {
         // Award flex dollars if station capacity is below minimum threshold
         int totalBikesDocked = station.getStandardBikesDocked() + station.getEBikesDocked();
         double capacityPercentage = (double) totalBikesDocked / station.getCapacity();
-        
+
         if (capacityPercentage < Prices.MIN_CAPACITY_THRESHOLD) {
             flexDollarService.addFlexDollars(userId, Prices.FLEX_DOLLAR_REWARD);
-            log.info("Awarded {} flex dollars to user {} for docking at low-capacity station {} ({}% capacity)", 
+            log.info("Awarded {} flex dollars to user {} for docking at low-capacity station {} ({}% capacity)",
                     Prices.FLEX_DOLLAR_REWARD, userId, stationId, capacityPercentage * 100);
         }
 
@@ -235,13 +236,13 @@ public class BikeStationService implements IBikeStationService {
         if (!(user instanceof Rider) && !(user instanceof DualRoleUser)) {
             throw new UserIsNotRiderException();
         }
-        
+
         // Get payment info - both Rider and DualRoleUser have this method
         PaymentInfo defaultPayment = null;
         List<UUID> currentBikes = new ArrayList<>();
         PricingPlanInformation pricingPlanInfo = null;
         List<UUID> activeTripList = new ArrayList<>();
-        
+
         if (user instanceof Rider rider) {
             defaultPayment = rider.getDefaultPaymentInfo();
             currentBikes = rider.getCurrentBikes();
@@ -253,15 +254,15 @@ public class BikeStationService implements IBikeStationService {
             pricingPlanInfo = dualRoleUser.getPricingPlanInformation();
             activeTripList = dualRoleUser.getActiveTripId();
         }
-        
+
         if (defaultPayment == null) {
             throw new NoDefaultPaymentMethodFoundException();
         }
-        
+
         if (pricingPlanInfo == null) {
             throw new IllegalStateException("Pricing plan information not found for user");
         }
-        
+
         List<Reservation> reservations = reservationRepository.findByUserId(userId);
         for (Reservation reservation : reservations) {
             if (stationId.equals(reservation.getBikeStationId())) {
@@ -278,11 +279,11 @@ public class BikeStationService implements IBikeStationService {
         if (stationBikes.stream().allMatch(b -> b.getStatus() == BikeStatus.RESERVED)) {
             throw new AllBikesReservedException();
         }
-        
+
         if (!currentBikes.isEmpty()) {
             throw new RiderAlreadyHasBikeException();
         }
-        
+
         Bike bike = stationBikes.stream()
                 .filter(b -> b.getStatus() == BikeStatus.AVAILABLE && b.getBikeType() == bikeType)
                 .findFirst()
@@ -320,7 +321,7 @@ public class BikeStationService implements IBikeStationService {
                 defaultPayment.getId());
         activeTripList.add(trip.getId());
 
-//        loyaltyTierContext.evaluateUserTierUpgrade(rider);
+        // loyaltyTierContext.evaluateUserTierUpgrade(rider);
         userService.updateUser(user);
 
         return bike.getId();
@@ -431,7 +432,6 @@ public class BikeStationService implements IBikeStationService {
         }
         bikeStationRepository.save(sourceStation);
 
-
         destinationStation.getBikesIds().add(bike.getId());
         switch (bike.getBikeType()) {
             case STANDARD -> {
@@ -442,7 +442,8 @@ public class BikeStationService implements IBikeStationService {
             }
         }
         if (destinationStation.getStatus() == BikeStationStatus.OCCUPIED
-                && (destinationStation.getEBikesDocked() + destinationStation.getStandardBikesDocked()) == destinationStation.getCapacity()) {
+                && (destinationStation.getEBikesDocked()
+                        + destinationStation.getStandardBikesDocked()) == destinationStation.getCapacity()) {
             notificationService.notifyBikeStationStatusChange(destinationStation.getId(), BikeStationStatus.FULL);
             destinationStation.setStatus(BikeStationStatus.FULL);
         }

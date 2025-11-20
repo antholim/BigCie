@@ -18,6 +18,7 @@ public class BillAssembler {
     private final BillMapper billMapper;
     private final IPaymentLookup paymentLookup;
     private final PaymentInfoMapper paymentInfoMapper;
+
     public BillAssembler(BillMapper billMapper, IPaymentLookup paymentLookup, PaymentInfoMapper paymentInfoMapper) {
         this.billMapper = billMapper;
         this.paymentLookup = paymentLookup;

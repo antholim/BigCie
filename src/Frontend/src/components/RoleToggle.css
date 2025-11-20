@@ -32,9 +32,9 @@
 }
 
 .role-toggle-btn.active {
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
-  border-color: #2196F3;
+  border-color: #2196f3;
   box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
 }
 

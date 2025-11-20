@@ -39,8 +39,10 @@ public class AuthController {
     @GetMapping("/my-ip")
     public ResponseEntity<?> getMyIp(HttpServletRequest request) {
         String clientIp = IpAddressUtil.getClientIp(request);
-        return ResponseEntity.ok(new java.util.HashMap<String, String>() {{
-            put("ip", clientIp);
-        }});
+        return ResponseEntity.ok(new java.util.HashMap<String, String>() {
+            {
+                put("ip", clientIp);
+            }
+        });
     }
 }

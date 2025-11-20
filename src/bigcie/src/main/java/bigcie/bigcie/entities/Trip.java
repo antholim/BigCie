@@ -82,10 +82,12 @@ public class Trip extends Bill {
             trip.cost = cost;
             return this;
         }
-        public  Builder bikeType(BikeType bikeType) {
+
+        public Builder bikeType(BikeType bikeType) {
             trip.bikeType = bikeType;
             return this;
         }
+
         public Builder pricingPlan(PricingPlan pricingPlan) {
             trip.pricingPlan = pricingPlan;
             return this;
