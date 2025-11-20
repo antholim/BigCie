@@ -1,10 +1,8 @@
 package bigcie.bigcie.services;
 
 import bigcie.bigcie.dtos.BikeRequest.BikeStationRequest;
-import bigcie.bigcie.dtos.BikeStationRequest.MoveBikeRequest;
 import bigcie.bigcie.entities.Bike;
 import bigcie.bigcie.entities.BikeStation;
-import bigcie.bigcie.entities.Reservation;
 import bigcie.bigcie.entities.enums.BikeStationStatus;
 import bigcie.bigcie.entities.enums.BikeStatus;
 import bigcie.bigcie.entities.enums.BikeType;

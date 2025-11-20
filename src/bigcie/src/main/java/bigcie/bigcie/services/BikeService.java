@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -58,7 +57,8 @@ public class BikeService implements IBikeService {
             bikesIds.add(bikeId);
         }
 
-        // load all bikes for those ids from repository so the count reflects repository state (handles non-zero existing counts)
+        // load all bikes for those ids from repository so the count reflects repository
+        // state (handles non-zero existing counts)
         List<Bike> bikesIterable = bikeRepository.findAllById(bikesIds);
         int standardBikesDocked = 0;
         int eBikesDocked = 0;
@@ -84,7 +84,6 @@ public class BikeService implements IBikeService {
 
         return savedBike;
     }
-
 
     @Override
     public Bike getBikeById(UUID id) {

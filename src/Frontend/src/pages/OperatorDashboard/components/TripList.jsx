@@ -6,7 +6,7 @@ import TripDetails from '../../Trips/components/TripDetails';
 import './TripList.css';
 
 function TripList() {
-  const { user, isOperatorView, viewMode } = useAuth();
+  const { user, viewMode } = useAuth();
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

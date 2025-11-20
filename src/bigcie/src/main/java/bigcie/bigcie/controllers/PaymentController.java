@@ -4,7 +4,6 @@ import bigcie.bigcie.dtos.Billing.BillDto;
 import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoRequest.PaymentInfoRequest;
 import bigcie.bigcie.dtos.PaymentInfo.PaymentInfoResponse.PaymentInfoDto;
 import bigcie.bigcie.dtos.PaymentInfo.PaymentPlanRequest.PaymentPlanDto;
-import bigcie.bigcie.entities.enums.PricingPlan;
 import bigcie.bigcie.services.PaymentService;
 import bigcie.bigcie.services.TokenService;
 import bigcie.bigcie.services.interfaces.ICookieService;

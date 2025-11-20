@@ -10,8 +10,6 @@ import bigcie.bigcie.entities.*;
 import bigcie.bigcie.entities.enums.PricingPlan;
 import bigcie.bigcie.mappers.PaymentInfoMapper;
 import bigcie.bigcie.repositories.BillRepository;
-import bigcie.bigcie.repositories.PlanBillRepository;
-import bigcie.bigcie.repositories.TripRepository;
 import bigcie.bigcie.services.interfaces.IPaymentService;
 import bigcie.bigcie.services.interfaces.IUserService;
 import bigcie.bigcie.services.interfaces.IFlexDollarService;
@@ -29,23 +27,19 @@ import java.util.stream.Collectors;
 public class PaymentService implements IPaymentService {
     private final IUserService userService;
     private final PaymentInfoMapper paymentInfoMapper;
-    private final TripRepository tripRepository;
     private final BillAssembler billAssembler;
     private final BillRepository billRepository;
     private final PricingConfig pricingConfig;
-    private final PlanBillRepository planBillRepository;
     private final IFlexDollarService flexDollarService;
 
-    public PaymentService(IUserService userService, PaymentInfoMapper paymentInfoMapper, TripRepository tripRepository,
+    public PaymentService(IUserService userService, PaymentInfoMapper paymentInfoMapper,
             BillAssembler billAssembler, BillRepository billRepository, PricingConfig pricingConfig,
-            PlanBillRepository planBillRepository, IFlexDollarService flexDollarService) {
+            IFlexDollarService flexDollarService) {
         this.userService = userService;
         this.paymentInfoMapper = paymentInfoMapper;
-        this.tripRepository = tripRepository;
         this.billAssembler = billAssembler;
         this.billRepository = billRepository;
         this.pricingConfig = pricingConfig;
-        this.planBillRepository = planBillRepository;
         this.flexDollarService = flexDollarService;
     }
 

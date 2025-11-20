@@ -25,7 +25,6 @@ public class BMSConfigService implements IBMSConfigService {
 
     @Override
     public void populateDB() {
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
             /*
              * Docking stations

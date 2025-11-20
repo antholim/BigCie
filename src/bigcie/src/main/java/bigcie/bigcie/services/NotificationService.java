@@ -1,7 +1,6 @@
 package bigcie.bigcie.services;
 
 import bigcie.bigcie.dtos.events.*;
-import bigcie.bigcie.entities.Bike;
 import bigcie.bigcie.models.loyalty.state.LoyaltyTier;
 import bigcie.bigcie.services.interfaces.INotificationService;
 import lombok.RequiredArgsConstructor;
@@ -67,11 +66,10 @@ public class NotificationService implements INotificationService {
     @Override
     public void notifyUserLoyaltyStatusChange(UUID userId, LoyaltyTier newLoyaltyTier) {
         log.info("Notifying user {} loyalty tier change to {}", userId, newLoyaltyTier);
-//        messagingTemplate.convertAndSend(USER_DESTINATION, newLoyaltyTier);
+        // messagingTemplate.convertAndSend(USER_DESTINATION, newLoyaltyTier);
         messagingTemplate.convertAndSend(USER_DESTINATION, new LoyaltyTierChangeDTO(
                 userId,
-                newLoyaltyTier
-        ));
+                newLoyaltyTier));
         // Implement notification logic here
     }
 

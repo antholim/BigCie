@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import bigcie.bigcie.exceptions.responses.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
-import bigcie.bigcie.dtos.ReservationRequest.ReservationRequest;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,8 +33,7 @@ public class BikeStationController {
     private final ICookieService cookieService;
 
     public BikeStationController(IBikeStationService bikeStationService, IAuthorizationService authorizationService,
-            IReservationService reservationService, ITokenService tokenService, ICookieService cookieService
-                                 ) {
+            IReservationService reservationService, ITokenService tokenService, ICookieService cookieService) {
         this.bikeStationService = bikeStationService;
         this.authorizationService = authorizationService;
         this.reservationService = reservationService;
@@ -182,7 +180,6 @@ public class BikeStationController {
         return ResponseEntity.ok(null);
     }
 
-
     @Operation(summary = "Rebalance bikes between stations")
     @PostMapping("/rebalance-bikes")
     public ResponseEntity<BikeStation> rebalanceStation(HttpServletRequest request) {
@@ -198,8 +195,7 @@ public class BikeStationController {
     @PostMapping("/move-bike")
     public ResponseEntity<BikeStation> moveBike(
             HttpServletRequest request,
-            @RequestBody MoveBikeRequest moveBikeRequest
-    ) {
+            @RequestBody MoveBikeRequest moveBikeRequest) {
         if (!authorizationService.hasRole(request, UserType.OPERATOR)) {
             log.warn("Unauthorized attempt to create bike station");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();

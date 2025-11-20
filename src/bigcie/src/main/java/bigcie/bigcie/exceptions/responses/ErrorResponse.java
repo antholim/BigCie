@@ -1,7 +1,6 @@
 package bigcie.bigcie.exceptions.responses;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Setter

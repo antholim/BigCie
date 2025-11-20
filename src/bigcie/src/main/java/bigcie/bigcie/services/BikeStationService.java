@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import bigcie.bigcie.entities.enums.BikeStatus;
 import bigcie.bigcie.repositories.ReservationRepository;

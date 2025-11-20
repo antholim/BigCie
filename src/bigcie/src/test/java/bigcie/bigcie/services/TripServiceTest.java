@@ -6,15 +6,12 @@ import bigcie.bigcie.entities.Trip;
 import bigcie.bigcie.entities.enums.BikeType;
 import bigcie.bigcie.entities.enums.PricingPlan;
 import bigcie.bigcie.entities.enums.TripStatus;
-import bigcie.bigcie.entities.records.YearWeek;
 import bigcie.bigcie.repositories.TripRepository;
 import bigcie.bigcie.services.interfaces.IFlexDollarService;
 import bigcie.bigcie.services.interfaces.IPriceService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -24,7 +21,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -193,7 +189,6 @@ class TripServiceTest {
     void testEndTrip_WithDiscount() {
         // Arrange
         testTrip.setStartDate(LocalDateTime.now().minusHours(2));
-        double totalCost = 20.0;
         double discountedCost = 18.0;
         double flexDollarsUsed = 8.0;
         int discountPercentage = 10;
