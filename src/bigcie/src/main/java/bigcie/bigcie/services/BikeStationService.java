@@ -187,6 +187,27 @@ public class BikeStationService implements IBikeStationService {
             }
             
             loyaltyTierContext.evaluateUserTierUpgrade(rider);
+        } else if (user instanceof DualRoleUser) {
+            // Handle DualRoleUser operating in rider mode
+            DualRoleUser dualRoleUser = (DualRoleUser) user;
+            UUID activeTripId = dualRoleUser.getActiveTripId() != null ? dualRoleUser.getActiveTripId().getFirst() : null;
+            
+            dualRoleUser.getCurrentBikes().remove(bike.getId());
+            dualRoleUser.setActiveTripId(null);
+            userService.updateUser(dualRoleUser);
+            
+            // End trip with combined discount: loyalty tier + operator discount
+            if (activeTripId != null) {
+                int loyaltyDiscount = dualRoleUser.getLoyaltyTier().getDiscountPercentage();
+                int operatorDiscount = dualRoleUser.getOperatorRiderDiscount();
+                // Combine discounts: total discount = loyalty + operator (capped at 100%)
+                int totalDiscount = Math.min(loyaltyDiscount + operatorDiscount, 100);
+                tripService.endTrip(activeTripId, stationId, totalDiscount);
+            }
+            
+            // Note: LoyaltyTierContext.evaluateUserTierUpgrade requires Rider type
+            // DualRoleUser can be tier upgraded when we have proper method overload
+            // For now, tier upgrade is skipped for dual-role users operating as riders
         }
 
         bikeStationRepository.save(station);
@@ -211,16 +232,39 @@ public class BikeStationService implements IBikeStationService {
             throw new StationOutOfServiceException();
         }
         User user = userService.getUserByUUID(userId);
-        if (!(user instanceof Rider rider)) {
+        if (!(user instanceof Rider) && !(user instanceof DualRoleUser)) {
             throw new UserIsNotRiderException();
         }
-        if (rider.getDefaultPaymentInfo() == null) {
+        
+        // Get payment info - both Rider and DualRoleUser have this method
+        PaymentInfo defaultPayment = null;
+        List<UUID> currentBikes = new ArrayList<>();
+        PricingPlanInformation pricingPlanInfo = null;
+        List<UUID> activeTripList = new ArrayList<>();
+        
+        if (user instanceof Rider rider) {
+            defaultPayment = rider.getDefaultPaymentInfo();
+            currentBikes = rider.getCurrentBikes();
+            pricingPlanInfo = rider.getPricingPlanInformation();
+            activeTripList = rider.getActiveTripId();
+        } else if (user instanceof DualRoleUser dualRoleUser) {
+            defaultPayment = dualRoleUser.getDefaultPaymentInfo();
+            currentBikes = dualRoleUser.getCurrentBikes();
+            pricingPlanInfo = dualRoleUser.getPricingPlanInformation();
+            activeTripList = dualRoleUser.getActiveTripId();
+        }
+        
+        if (defaultPayment == null) {
             throw new NoDefaultPaymentMethodFoundException();
         }
+        
+        if (pricingPlanInfo == null) {
+            throw new IllegalStateException("Pricing plan information not found for user");
+        }
+        
         List<Reservation> reservations = reservationRepository.findByUserId(userId);
         for (Reservation reservation : reservations) {
             if (stationId.equals(reservation.getBikeStationId())) {
-                Bike reservedBike = bikeRepository.findBikeById(reservation.getBikeId());
                 notificationService.notifyReservationChange(reservation.getId(), "CANCELLED");
                 reservation.setStatus(ReservationStatus.COMPLETED);
                 reservationRepository.save(reservation);
@@ -234,9 +278,11 @@ public class BikeStationService implements IBikeStationService {
         if (stationBikes.stream().allMatch(b -> b.getStatus() == BikeStatus.RESERVED)) {
             throw new AllBikesReservedException();
         }
-        if (!rider.getCurrentBikes().isEmpty()) {
+        
+        if (!currentBikes.isEmpty()) {
             throw new RiderAlreadyHasBikeException();
         }
+        
         Bike bike = stationBikes.stream()
                 .filter(b -> b.getStatus() == BikeStatus.AVAILABLE && b.getBikeType() == bikeType)
                 .findFirst()
@@ -262,21 +308,20 @@ public class BikeStationService implements IBikeStationService {
         bikeRepository.save(bike);
         notificationService.notifyBikeStatusChange(bike.getId(), BikeStatus.ON_TRIP);
 
-
-        rider.getCurrentBikes().add(bike.getId());
-        userService.updateUser(rider);
+        currentBikes.add(bike.getId());
+        userService.updateUser(user);
 
         Trip trip = tripService.createTrip(
                 userId,
                 bike.getId(),
                 stationId,
-                rider.getPricingPlanInformation().getPricingPlan(),
+                pricingPlanInfo.getPricingPlan(),
                 bike.getBikeType(),
-                rider.getDefaultPaymentInfo().getId());
-        rider.getActiveTripId().add(trip.getId());
+                defaultPayment.getId());
+        activeTripList.add(trip.getId());
 
 //        loyaltyTierContext.evaluateUserTierUpgrade(rider);
-        userService.updateUser(rider);
+        userService.updateUser(user);
 
         return bike.getId();
     }

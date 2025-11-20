@@ -28,6 +28,7 @@ public class TripMapper {
                 .cost(trip.getCost())
                 .flexDollarsUsed(trip.getFlexDollarsUsed())
                 .amountCharged(trip.getAmountCharged())
+                .discountApplied(trip.getDiscountApplied())
                 .build();
         return dto;
     }

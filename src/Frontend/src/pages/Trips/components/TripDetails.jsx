@@ -103,13 +103,20 @@ export default function TripDetails({ trip, onClose }) {
                     </div>
                   ) : (
                     <>
-                      <div>5-minute units rate: $1.25 For 5 minutes</div>
+                      <div>5-minute units rate: ${(fiveMinRate || 1.25).toFixed(2)} per 5 minutes</div>
                       {trip.bikeType === "E_BIKE" && eBikeSurcharge > 0 && (
                         <div>E-bike surcharge: ${(eBikeSurcharge || 0).toFixed(2)}</div>
                       )}
                     </>
                   )}
                 </>
+              )}
+              {trip.discountApplied > 0 && (
+                <div style={{ marginTop: "12px", padding: "10px", background: "#dbeafe", borderRadius: "6px", borderLeft: "3px solid #0284c7" }}>
+                  <div style={{ color: "#0284c7", fontWeight: "500" }}>
+                    🎉 Discount Applied: {trip.discountApplied}%
+                  </div>
+                </div>
               )}
               <div style={{ marginTop: "12px", padding: "12px", background: "#f8fafc", borderRadius: "8px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>

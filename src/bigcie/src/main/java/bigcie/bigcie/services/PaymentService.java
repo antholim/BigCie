@@ -52,9 +52,13 @@ public class PaymentService implements IPaymentService {
     @Override
     public void addPaymentMethod(UUID userId, PaymentInfoRequest paymentInfoRequest) {
         User user = userService.getUserByUUID(userId);
-        Rider rider;
-        if (user instanceof Rider) {
-            rider = (Rider) user;
+        
+        // Get payment info list - both Rider and DualRoleUser have this
+        List<PaymentInfo> paymentInfos = null;
+        if (user instanceof Rider rider) {
+            paymentInfos = rider.getPaymentInfos();
+        } else if (user instanceof DualRoleUser dualRoleUser) {
+            paymentInfos = dualRoleUser.getPaymentInfos();
         } else {
             log.warn("Attempt to add payment method for non-rider user: {}", userId);
             throw new IllegalArgumentException("Only riders can add payment methods");
@@ -62,7 +66,7 @@ public class PaymentService implements IPaymentService {
 
         PaymentInfo paymentInfo = new PaymentInfo();
         // Check if a payment exists already
-        if (rider.getPaymentInfos().isEmpty()) {
+        if (paymentInfos.isEmpty()) {
             paymentInfo.setDefault(true);
         }
 
@@ -74,7 +78,7 @@ public class PaymentService implements IPaymentService {
         paymentInfo.setLast4(paymentInfoRequest.getCreditCardNumber().substring(11, 15));
         paymentInfo.setCardType(paymentInfoRequest.getCardType());
         paymentInfo.setCvv(paymentInfoRequest.getCvv());
-        rider.getPaymentInfos().add(paymentInfo);
+        paymentInfos.add(paymentInfo);
         userService.updateUser(user);
     }
 
@@ -86,15 +90,17 @@ public class PaymentService implements IPaymentService {
     @Override
     public List<PaymentInfoDto> getPaymentInfo(UUID userId) {
         User user = userService.getUserByUUID(userId);
-        Rider rider;
-        if (user instanceof Rider) {
-            rider = (Rider) user;
+        List<PaymentInfo> paymentInfos = null;
+        if (user instanceof Rider rider) {
+            paymentInfos = rider.getPaymentInfos();
+        } else if (user instanceof DualRoleUser dualRoleUser) {
+            paymentInfos = dualRoleUser.getPaymentInfos();
         } else {
             // Non-riders don't have payment info, return empty list
             log.warn("Attempt to get payment info for non-rider user: {}", userId);
             return new ArrayList<>();
         }
-        return rider.getPaymentInfos()
+        return paymentInfos
                 .stream()
                 .map(paymentInfoMapper::toDto)
                 .collect(Collectors.toList());
@@ -103,14 +109,16 @@ public class PaymentService implements IPaymentService {
     @Override
     public void updateDefaultPaymentMethod(UUID userId, UUID paymentMethodId) {
         User user = userService.getUserByUUID(userId);
-        Rider rider;
-        if (user instanceof Rider) {
-            rider = (Rider) user;
+        List<PaymentInfo> paymentInfos = null;
+        if (user instanceof Rider rider) {
+            paymentInfos = rider.getPaymentInfos();
+        } else if (user instanceof DualRoleUser dualRoleUser) {
+            paymentInfos = dualRoleUser.getPaymentInfos();
         } else {
             log.warn("Attempt to update default payment method for non-rider user: {}", userId);
             return; // Silently ignore for non-riders
         }
-        for (PaymentInfo paymentInfo : rider.getPaymentInfos()) {
+        for (PaymentInfo paymentInfo : paymentInfos) {
             paymentInfo.setDefault(paymentInfo.getId().equals(paymentMethodId));
         }
     }
@@ -118,27 +126,33 @@ public class PaymentService implements IPaymentService {
     @Override
     public void updatePaymentPlan(UUID userId, PaymentPlanDto paymentPlanRequest) {
         User user = userService.getUserByUUID(userId);
-        Rider rider;
-        if (user instanceof Rider) {
-            rider = (Rider) user;
+        // Get pricing plan info - both Rider and DualRoleUser have this
+        PricingPlanInformation pricingPlanInfo = null;
+        PaymentInfo defaultPaymentInfo = null;
+        if (user instanceof Rider rider) {
+            pricingPlanInfo = rider.getPricingPlanInformation();
+            defaultPaymentInfo = rider.getDefaultPaymentInfo();
+        } else if (user instanceof DualRoleUser dualRoleUser) {
+            pricingPlanInfo = dualRoleUser.getPricingPlanInformation();
+            defaultPaymentInfo = dualRoleUser.getDefaultPaymentInfo();
         } else {
             log.warn("Attempt to update payment plan for non-rider user: {}", userId);
             return; // Silently ignore for non-riders
         }
         PricingPlan plan = paymentPlanRequest.getPricingPlan();
-        rider.getPricingPlanInformation().setPricingPlan(plan);
+        pricingPlanInfo.setPricingPlan(plan);
         switch (plan) {
             case PricingPlan.SINGLE_RIDE -> {
-                rider.getPricingPlanInformation().setStartDate(null);
-                rider.getPricingPlanInformation().setEndDate(null);
+                pricingPlanInfo.setStartDate(null);
+                pricingPlanInfo.setEndDate(null);
             }
             case PricingPlan.DAY_PASS -> {
-                rider.getPricingPlanInformation().setStartDate(LocalDateTime.now());
-                rider.getPricingPlanInformation().setEndDate(LocalDateTime.now().plusDays(1));
+                pricingPlanInfo.setStartDate(LocalDateTime.now());
+                pricingPlanInfo.setEndDate(LocalDateTime.now().plusDays(1));
             }
             case PricingPlan.MONTHLY_PASS -> {
-                rider.getPricingPlanInformation().setStartDate(LocalDateTime.now());
-                rider.getPricingPlanInformation().setEndDate(LocalDateTime.now().plusMonths(1));
+                pricingPlanInfo.setStartDate(LocalDateTime.now());
+                pricingPlanInfo.setEndDate(LocalDateTime.now().plusMonths(1));
             }
         }
         PlanBill planBill = new PlanBill();
@@ -154,7 +168,7 @@ public class PaymentService implements IPaymentService {
         planBill.setAmountCharged(planCost - flexDollarsDeducted);
         
         planBill.setPricingPlan(plan);
-        planBill.setPaymentInfoId(rider.getDefaultPaymentInfo().getId());
+        planBill.setPaymentInfoId(defaultPaymentInfo.getId());
         
         log.info("Plan {} purchased. Total: ${}, Flex: ${}, Charged: ${}", 
                 plan, planCost, flexDollarsDeducted, planBill.getAmountCharged());
@@ -166,15 +180,17 @@ public class PaymentService implements IPaymentService {
     @Override
     public PaymentPlanDto getPricingPlanByUserId(UUID userId) {
         User user = userService.getUserByUUID(userId);
-        Rider rider;
-        if (user instanceof Rider) {
-            rider = (Rider) user;
+        PricingPlanInformation pricingPlanInfo = null;
+        if (user instanceof Rider rider) {
+            pricingPlanInfo = rider.getPricingPlanInformation();
+        } else if (user instanceof DualRoleUser dualRoleUser) {
+            pricingPlanInfo = dualRoleUser.getPricingPlanInformation();
         } else {
             // Non-riders don't have pricing plans, return default single ride plan
             log.warn("Attempt to get pricing plan for non-rider user: {}", userId);
             return new PaymentPlanDto(PricingPlan.SINGLE_RIDE);
         }
-        return new PaymentPlanDto(rider.getPricingPlanInformation().getPricingPlan());
+        return new PaymentPlanDto(pricingPlanInfo.getPricingPlan());
     }
 
     @Override

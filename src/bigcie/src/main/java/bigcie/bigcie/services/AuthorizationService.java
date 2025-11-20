@@ -45,7 +45,18 @@ public class AuthorizationService implements IAuthorizationService {
         try {
             User user = getUserFromRequest(request);
             log.info(user.toString());
-            return user.getType() == requiredRole;
+            
+            // Exact match
+            if (user.getType() == requiredRole) {
+                return true;
+            }
+            
+            // DUAL_ROLE users have both OPERATOR and RIDER permissions
+            if (user.getType() == UserType.DUAL_ROLE) {
+                return requiredRole == UserType.OPERATOR || requiredRole == UserType.RIDER;
+            }
+            
+            return false;
         } catch (Exception e) {
             log.error("Error checking user role: {}", e.getMessage());
             return false;

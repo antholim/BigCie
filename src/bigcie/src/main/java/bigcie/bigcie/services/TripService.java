@@ -84,6 +84,7 @@ public class TripService implements ITripService {
             trip.setBikeStationEndId(bikeStationEndId);
             trip.setEndDate(endTime);
             trip.setStatus(TripStatus.COMPLETED);
+            trip.setDiscountApplied(discountPercentage);
             
             double totalCost = priceService.calculatePrice(trip.getStartDate(), endTime, trip.getBikeType(),
                     trip.getPricingPlan(), discountPercentage);
@@ -94,8 +95,8 @@ public class TripService implements ITripService {
             trip.setFlexDollarsUsed(flexDollarsDeducted);
             trip.setAmountCharged(totalCost - flexDollarsDeducted);
             
-            log.info("Trip {} completed. Total: ${}, Flex: ${}, Charged: ${}", 
-                    tripId, totalCost, flexDollarsDeducted, trip.getAmountCharged());
+            log.info("Trip {} completed. Total: ${}, Flex: ${}, Charged: ${}, Discount: {}%", 
+                    tripId, totalCost, flexDollarsDeducted, trip.getAmountCharged(), discountPercentage);
             
             tripRepository.save(trip);
         } else {

@@ -12,7 +12,7 @@ import Toast from "../../components/Toast";
 
 export default function MapDashboard() {
     const navigate = useNavigate();
-    const { user, isAuthenticated, loading: _authLoading } = useAuth();
+    const { user, isAuthenticated, loading: _authLoading, viewMode } = useAuth();
     const mapRef = useRef(null);
     const leafletRef = useRef(null);
     const markerRef = useRef(null);
@@ -162,7 +162,8 @@ export default function MapDashboard() {
     }), []);
 
     // Check if user is an operator
-    const isOperator = user?.userType === 'OPERATOR' || user?.type === 'OPERATOR';
+    const isOperator = user?.userType === 'OPERATOR' || user?.type === 'OPERATOR' || 
+                       (user?.userType === 'DUAL_ROLE' && viewMode === 'OPERATOR');
 
     useEffect(() => {
         const unsubscribe = NotificationService.subscribeToTripEvents((event) => {

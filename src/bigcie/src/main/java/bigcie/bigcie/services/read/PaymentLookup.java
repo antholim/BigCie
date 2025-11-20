@@ -1,5 +1,6 @@
 package bigcie.bigcie.services.read;
 
+import bigcie.bigcie.entities.DualRoleUser;
 import bigcie.bigcie.entities.PaymentInfo;
 import bigcie.bigcie.entities.Rider;
 import bigcie.bigcie.entities.User;
@@ -20,6 +21,12 @@ public class PaymentLookup implements IPaymentLookup {
         User user = userService.getUserByUUID(userId);
         if (user instanceof Rider rider) {
             for (PaymentInfo paymentInfo : rider.getPaymentInfos()) {
+                if (paymentInfo.getId().equals(id)) {
+                    return paymentInfo;
+                }
+            }
+        } else if (user instanceof DualRoleUser dualRoleUser) {
+            for (PaymentInfo paymentInfo : dualRoleUser.getPaymentInfos()) {
                 if (paymentInfo.getId().equals(id)) {
                     return paymentInfo;
                 }

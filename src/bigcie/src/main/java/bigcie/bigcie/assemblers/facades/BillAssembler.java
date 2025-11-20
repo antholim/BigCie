@@ -32,7 +32,9 @@ public class BillAssembler {
             BillDto billDto = billDtos.get(i);
             // Enrich with payment info
             PaymentInfo paymentInfo = paymentLookup.getPaymentInfo(bill.getPaymentInfoId(), userId);
-            billDto.setPaymentInfo(paymentInfoMapper.toDto(paymentInfo));
+            if (paymentInfo != null) {
+                billDto.setPaymentInfo(paymentInfoMapper.toDto(paymentInfo));
+            }
         }
         return billDtos;
     }

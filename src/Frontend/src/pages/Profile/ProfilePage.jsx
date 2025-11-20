@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import FetchingService from "../../services/FetchingService";
 import { useAuth } from "../../contexts/AuthContext";
 import MapPreview from "../../components/MapPreview";
+import RoleToggle from "../../components/RoleToggle";
 import "../../components/home.css";
 import BikeBox from "./components/BikeBox";
 import { truncateId, formatDateTime } from "../../utils/utils";
@@ -11,8 +12,9 @@ import SideBar from "../../components/SideBar";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, loading: authLoading, logout } = useAuth();
+  const { user, isAuthenticated, loading: authLoading, logout, viewMode } = useAuth();
   const isOperator = user?.userType === 'OPERATOR' || user?.type === 'OPERATOR';
+  const isDualRoleInOperatorMode = user?.userType === 'DUAL_ROLE' && viewMode === 'OPERATOR';
   const [reservations, setReservations] = useState([]);
   const [reservationsLoading, setReservationsLoading] = useState(false);
   const [bikeRentals, setBikeRentals] = useState([]);
@@ -232,7 +234,8 @@ useEffect(() => {
             <span>DowntownBike</span>
           </div>
           <div className="db-actions" style={{ gap: "12px" }}>
-            {isOperator && (
+            <RoleToggle />
+            {(isOperator || isDualRoleInOperatorMode) && (
               <button
                 className="db-btn"
                 type="button"

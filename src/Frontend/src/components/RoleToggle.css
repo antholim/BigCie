@@ -1,0 +1,43 @@
+.role-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.role-toggle-label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+.role-toggle-btn {
+  padding: 6px 12px;
+  border: 2px solid #ddd;
+  background-color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.role-toggle-btn:hover {
+  background-color: #f9f9f9;
+  border-color: #999;
+}
+
+.role-toggle-btn.active {
+  background-color: #2196F3;
+  color: white;
+  border-color: #2196F3;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+}
+
+.role-toggle-btn:active {
+  transform: scale(0.98);
+}

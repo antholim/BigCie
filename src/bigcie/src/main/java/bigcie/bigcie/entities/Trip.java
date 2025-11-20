@@ -28,6 +28,7 @@ public class Trip extends Bill {
     private double distanceInKm;
     private BikeType bikeType;
     private PricingPlan pricingPlan;
+    private int discountApplied = 0; // Discount percentage applied (loyalty tier + operator discount)
 
     public static class Builder {
         private final Trip trip = new Trip();
@@ -89,6 +90,12 @@ public class Trip extends Bill {
             trip.pricingPlan = pricingPlan;
             return this;
         }
+
+        public Builder discountApplied(int discountApplied) {
+            trip.discountApplied = discountApplied;
+            return this;
+        }
+
         public Builder paymentInfoId(UUID paymentInfoId) {
             trip.paymentInfoId = paymentInfoId;
             return this;

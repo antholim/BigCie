@@ -11,6 +11,7 @@ import bigcie.bigcie.models.AuthenticationResponse;
 import bigcie.bigcie.repositories.UserRepository;
 import bigcie.bigcie.services.interfaces.ICookieService;
 import bigcie.bigcie.services.interfaces.ITokenService;
+import bigcie.bigcie.config.OperatorRegistrationConfig;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,6 +31,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final ITokenService tokenService;
     private final ICookieService cookieService;
+    private final OperatorRegistrationConfig operatorRegistrationConfig;
 
     public LoginResponse login(LoginRequest loginRequest, HttpServletResponse response) {
         Authentication authentication = authenticationManager.authenticate(
@@ -59,12 +61,20 @@ public class AuthService {
         throw new IllegalArgumentException("Invalid username/email or password");
     }
 
-    public RegisterResponse register(RegisterRequest registerRequest) {
+    public RegisterResponse register(RegisterRequest registerRequest, String clientIp) {
         if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
             throw new IllegalArgumentException("Username already exists: " + registerRequest.getUsername());
         }
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already exists: " + registerRequest.getEmail());
+        }
+
+        // Check IP restrictions for operator registration
+        if (registerRequest.getUserType().equals(bigcie.bigcie.entities.enums.UserType.OPERATOR) ||
+            registerRequest.getUserType().equals(bigcie.bigcie.entities.enums.UserType.DUAL_ROLE)) {
+            if (!operatorRegistrationConfig.isIpAllowed(clientIp)) {
+                throw new IllegalArgumentException("Your IP address (" + clientIp + ") is not authorized to register operators");
+            }
         }
 
         User user;

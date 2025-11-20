@@ -32,6 +32,7 @@ public class TripDto {
     private PaymentInfoDto paymentInfo;
     private double flexDollarsUsed;
     private double amountCharged;
+    private int discountApplied;
 
     public static class Builder {
         private final TripDto tripDto = new TripDto();
@@ -108,6 +109,11 @@ public class TripDto {
 
         public Builder amountCharged(double amountCharged) {
             tripDto.amountCharged = amountCharged;
+            return this;
+        }
+
+        public Builder discountApplied(int discountApplied) {
+            tripDto.discountApplied = discountApplied;
             return this;
         }
 
