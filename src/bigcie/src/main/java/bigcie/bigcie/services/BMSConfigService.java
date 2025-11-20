@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import bigcie.bigcie.entities.BMSConfig;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.util.List;
 
@@ -56,14 +57,15 @@ public class BMSConfigService implements IBMSConfigService {
     public BMSConfig createConfig(String JSONFilePath) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
             java.io.File file = new java.io.File(JSONFilePath);
             this.bmsConfig = objectMapper.readValue(file, BMSConfig.class);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new IllegalArgumentException("Unable to load BMS config from " + JSONFilePath, e);
         }
 
-        // Return the loaded config (or null if an exception occurred)
+        // Return the loaded config
         return this.bmsConfig;
     }
 

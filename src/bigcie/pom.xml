@@ -122,6 +122,15 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.5.4</version>
+				<configuration>
+					<!-- Required for Mockito inline mock-maker on newer JDKs -->
+					<argLine>-Djdk.attach.allowAttachSelf=true -XX:+StartAttachListener</argLine>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
