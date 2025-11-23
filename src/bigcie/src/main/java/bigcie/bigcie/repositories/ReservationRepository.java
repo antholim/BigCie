@@ -45,4 +45,8 @@ public interface ReservationRepository extends MongoRepository<Reservation, UUID
 
     List<Reservation> findByUserIdAndStatus(UUID userId, ReservationStatus status);
 
+    @Query("{ 'expiry': { $lt: ?0 }, 'status': 'ACTIVE' }")
+    List<Reservation> findExpiredActiveReservations(LocalDateTime now);
+
+
 }

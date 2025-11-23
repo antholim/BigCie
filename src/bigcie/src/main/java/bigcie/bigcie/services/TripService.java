@@ -143,21 +143,30 @@ public class TripService implements ITripService {
 
         List<Trip> trips = tripRepository.findByUserId(userId);
 
+        YearMonth earliestMonth = YearMonth.from(LocalDate.now()).minusMonths(months - 1);
+        LocalDateTime earliestDate = earliestMonth.atDay(1).atStartOfDay();
+        for (Trip trip : trips) {
+            System.out.println("Trip ID: " + trip.getId() + ", Start Date: " + trip.getStartDate());
+        }
         Map<YearMonth, Long> tripCounts = trips.stream()
-                .filter(trip -> trip.getStartDate().isAfter(LocalDateTime.now().minusMonths(months)))
+                .filter(trip -> !trip.getStartDate().isBefore(earliestDate)) // inclusive
                 .collect(Collectors.groupingBy(
                         trip -> YearMonth.from(trip.getStartDate()),
                         Collectors.counting()));
 
         for (int i = 0; i < months; i++) {
-            YearMonth month = YearMonth.from(LocalDate.now().minusMonths(i));
+            YearMonth month = YearMonth.from(LocalDate.now()).minusMonths(i);
             long count = tripCounts.getOrDefault(month, 0L);
+
+            System.out.println("Month: " + month + ", Trips: " + count);
+
             if (count < minTripsPerMonth)
                 return false;
         }
 
         return true;
     }
+
 
     @Override
     public boolean meetsWeeklyTripRequirement(UUID userId, int minTripsPerWeek, int months) {

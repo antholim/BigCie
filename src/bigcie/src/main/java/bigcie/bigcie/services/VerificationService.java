@@ -25,9 +25,13 @@ public class VerificationService {
     @Scheduled(fixedRate = 15000)
     public void checkExpiredReservation(){
         log.info("Checking expired reservation");
-        List<Reservation> expired = reservationRepository.findByExpiryBefore(LocalDateTime.now(), ReservationStatus.ACTIVE);
+        List<Reservation> expired = reservationRepository.findExpiredActiveReservations(LocalDateTime.now());
 
         expired.forEach(reservation -> {
+            System.out.println(expired.toString());
+        });
+
+            expired.forEach(reservation -> {
             log.info(reservation.getExpiry().toString());
             log.info(LocalDateTime.now().toString());
             reservation.setStatus(ReservationStatus.EXPIRED);
