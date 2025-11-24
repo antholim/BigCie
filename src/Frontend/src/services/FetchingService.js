@@ -3,14 +3,34 @@ import axios from "axios";
 class FetchingService {
 	constructor() {
 		if (!FetchingService.instance) {
+					// Determine base URL based on environment
+					const baseURL = this.getBaseURL();
 					this.axiosInstance = axios.create({
 						withCredentials: true,
-						baseURL: "http://localhost:8080/",
+						baseURL: baseURL,
 						// You can add more default config here
 					});
 			FetchingService.instance = this;
 		}
 		return FetchingService.instance;
+	}
+
+	getBaseURL() {
+		// Use environment variable if available (recommended for production)
+		if (import.meta.env.VITE_API_BASE_URL) {
+			return import.meta.env.VITE_API_BASE_URL;
+		}
+		
+		// Fallback: use the same origin as the frontend
+		// This works for both localhost and production domains
+		if (typeof window !== "undefined") {
+			const protocol = window.location.protocol; // http: or https:
+			const host = window.location.host; // includes port
+			return `${protocol}//${host}/`;
+		}
+		
+		// Final fallback (should rarely be needed)
+		return "http://localhost:8080/";
 	}
 
 	get(url, config) {

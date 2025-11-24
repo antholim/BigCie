@@ -47,17 +47,34 @@ const LogEntry = React.memo(({ entry }) => {
   );
 });
 
-export default function LogDashboard({ wsUrl = 'ws://localhost:8080/ws' }) {
+const getDefaultWebSocketURL = () => {
+  // Use environment variable if available (recommended for production)
+  if (import.meta.env.VITE_WS_URL) {
+    return import.meta.env.VITE_WS_URL;
+  }
+  
+  // Fallback: dynamically construct WebSocket URL from current location
+  if (typeof window !== "undefined") {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const host = window.location.host;
+    return `${protocol}//${host}/ws`;
+  }
+  
+  return "ws://localhost:8080/ws";
+};
+
+export default function LogDashboard({ wsUrl = null }) {
   const [filter, setFilter] = useState('');
   const [isPaused, setIsPaused] = useState(false);
   const [connected, setConnected] = useState(false);
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef(null);
   const stompClient = useRef(null);
+  const effectiveWsUrl = wsUrl || getDefaultWebSocketURL();
 
   useEffect(() => {
     const client = new Client({
-      brokerURL: wsUrl,
+      brokerURL: effectiveWsUrl,
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
@@ -84,7 +101,7 @@ export default function LogDashboard({ wsUrl = 'ws://localhost:8080/ws' }) {
         client.deactivate();
       }
     };
-  }, [wsUrl]);
+  }, [effectiveWsUrl]);
 
   const clear = useCallback(() => {
     setMessages([]);
