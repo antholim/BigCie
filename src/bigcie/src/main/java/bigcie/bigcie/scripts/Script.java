@@ -49,7 +49,7 @@ public class Script implements CommandLineRunner {
 //        reservationPopulate();
 //        defaulttobronze();
 //        bronzeToSilver();
-        silverToGold();
+//        silverToGold();
     }
 
     private void recountAllStations() {
