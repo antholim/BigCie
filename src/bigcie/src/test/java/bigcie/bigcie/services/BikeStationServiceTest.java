@@ -38,24 +38,6 @@ class BikeStationServiceTest {
     @Mock
     private BikeRepository bikeRepository;
 
-    @Mock
-    private ReservationRepository reservationRepository;
-
-    @Mock
-    private INotificationService notificationService;
-
-    @Mock
-    private IUserService userService;
-
-    @Mock
-    private ITripService tripService;
-
-    @Mock
-    private IFlexDollarService flexDollarService;
-
-    @Mock
-    private LoyaltyTierContext loyaltyTierContext;
-
     @InjectMocks
     private BikeStationService bikeStationService;
 

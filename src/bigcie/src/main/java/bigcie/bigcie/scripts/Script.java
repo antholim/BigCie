@@ -3,7 +3,9 @@ package bigcie.bigcie.scripts;
 import bigcie.bigcie.entities.*;
 import bigcie.bigcie.entities.enums.BikeType;
 import bigcie.bigcie.entities.enums.PricingPlan;
+import bigcie.bigcie.entities.enums.ReservationStatus;
 import bigcie.bigcie.entities.enums.TripStatus;
+import bigcie.bigcie.repositories.ReservationRepository;
 import bigcie.bigcie.repositories.TripRepository;
 import bigcie.bigcie.repositories.UserRepository;
 import bigcie.bigcie.services.interfaces.IBikeService;
@@ -27,13 +29,15 @@ public class Script implements CommandLineRunner {
     private final TripRepository tripRepository;
     private final IUserService userService;
     private final UserRepository userRepository;
+    private final ReservationRepository reservationRepository;
 
-    public Script(IBikeStationService bikeStationService, IBikeService bikeService, IReservationService reservationService, TripRepository tripRepository, IUserService userService, UserRepository userRepository) {
+    public Script(IBikeStationService bikeStationService, IBikeService bikeService, IReservationService reservationService, TripRepository tripRepository, IUserService userService, UserRepository userRepository, ReservationRepository reservationRepository) {
         this.bikeStationService = bikeStationService;
         this.bikeService = bikeService;
         this.tripRepository = tripRepository;
         this.userService = userService;
         this.userRepository = userRepository;
+        this.reservationRepository = reservationRepository;
     }
 
     @Override
@@ -42,7 +46,10 @@ public class Script implements CommandLineRunner {
         // clearBikeFromUser(UUID.fromString("93e21f50-5bf8-4891-9d3a-30a9676f3b36"));
         // setStationStatus();
         recountAllStations();
-        reservationPopulate();
+//        reservationPopulate();
+//        defaulttobronze();
+//        bronzeToSilver();
+        silverToGold();
     }
 
     private void recountAllStations() {
@@ -63,7 +70,150 @@ public class Script implements CommandLineRunner {
             bikeStationService.updateStation(station.getId(), station);
         });
     }
+//    private void defaulttobronze() {
+//        BikeStation bikeStation = bikeStationService.getAllStations().getFirst();
+//        Bike bike = bikeService.getBikeById(bikeStation.getBikesIds().get(0));
+//        User user = userService.getUserByUUID(userRepository.findByEmail("defaulttobronze@test.com").get().getId());
+//        Rider rider = (Rider)  user;
+//
+//        List<Trip> trips = tripRepository.findByUserId(user.getId());
+//        for (int i = 0; i < 9; i++) {
+//            Trip trip = new Trip.Builder()
+//                    .bikeId(bike.getId())
+//                    .bikeStationStartId(bikeStation.getId())
+//                    .bikeStationEndId(bikeStation.getId())
+//                    .startDate(LocalDateTime.now().minusMonths(2))
+//                    .endDate(LocalDateTime.now().minusMonths(2).plusMinutes(1))
+//                    .status(TripStatus.COMPLETED)
+//                    .distanceInKm(0.0)
+//                    .bikeType(bike.getBikeType())
+//                    .pricingPlan(PricingPlan.SINGLE_RIDE)
+//                    .discountApplied(0)
+//                    .userId(user.getId())
+//                    .paymentInfoId(rider.getDefaultPaymentInfo().getId())
+//                    .cost(1.19)
+//                    .build();
+//
+//            trips.add(trip);
+//        }
+//        tripRepository.saveAll(trips);
+//
+//    }
 
+    public void bronzeToSilver() {
+        BikeStation bikeStation = bikeStationService.getAllStations().getFirst();
+        Bike bike = bikeService.getBikeById(bikeStation.getBikesIds().get(0));
+        User user = userService.getUserByUUID(userRepository.findByEmail("silvertogold@test.com").get().getId());
+        Rider rider = (Rider)  user;
+
+        List<Trip> trips = tripRepository.findByUserId(user.getId());
+        for (int i = 0; i < 5; i++) {
+            Trip trip = new Trip.Builder()
+                    .bikeId(bike.getId())
+                    .bikeStationStartId(bikeStation.getId())
+                    .bikeStationEndId(bikeStation.getId())
+                    .startDate(LocalDateTime.now().minusMonths(2))
+                    .endDate(LocalDateTime.now().minusMonths(2).plusMinutes(1))
+                    .status(TripStatus.COMPLETED)
+                    .distanceInKm(0.0)
+                    .bikeType(bike.getBikeType())
+                    .pricingPlan(PricingPlan.SINGLE_RIDE)
+                    .discountApplied(0)
+                    .userId(user.getId())
+                    .paymentInfoId(rider.getDefaultPaymentInfo().getId())
+                    .cost(1.19)
+                    .build();
+
+            trips.add(trip);
+        }
+        for (int i = 0; i < 5; i++) {
+            Trip trip = new Trip.Builder()
+                    .bikeId(bike.getId())
+                    .bikeStationStartId(bikeStation.getId())
+                    .bikeStationEndId(bikeStation.getId())
+                    .startDate(LocalDateTime.now().minusMonths(1))
+                    .endDate(LocalDateTime.now().minusMonths(1).plusMinutes(1))
+                    .status(TripStatus.COMPLETED)
+                    .distanceInKm(0.0)
+                    .bikeType(bike.getBikeType())
+                    .pricingPlan(PricingPlan.SINGLE_RIDE)
+                    .discountApplied(0)
+                    .userId(user.getId())
+                    .paymentInfoId(rider.getDefaultPaymentInfo().getId())
+                    .cost(1.19)
+                    .build();
+
+            trips.add(trip);
+        }
+        for (int i = 0; i < 5; i++) {
+            Trip trip = new Trip.Builder()
+                    .bikeId(bike.getId())
+                    .bikeStationStartId(bikeStation.getId())
+                    .bikeStationEndId(bikeStation.getId())
+                    .startDate(LocalDateTime.now().minusMonths(0))
+                    .endDate(LocalDateTime.now().minusMonths(0).plusMinutes(1))
+                    .status(TripStatus.COMPLETED)
+                    .distanceInKm(0.0)
+                    .bikeType(bike.getBikeType())
+                    .pricingPlan(PricingPlan.SINGLE_RIDE)
+                    .discountApplied(0)
+                    .userId(user.getId())
+                    .paymentInfoId(rider.getDefaultPaymentInfo().getId())
+                    .cost(1.19)
+                    .build();
+
+            trips.add(trip);
+        }
+        tripRepository.saveAll(trips);
+
+        List<Reservation> reservations = reservationRepository.findByUserId(rider.getId());
+        for (int i = 0; i < 4; i++ ) {
+            Reservation reservation = new Reservation(
+                    UUID.randomUUID(),
+                    rider.getId(),
+                    bikeStation.getId(),
+                    bike.getId(),
+                    LocalDateTime.now(),
+                    LocalDateTime.now().plusMinutes(2),
+                    ReservationStatus.COMPLETED
+            );
+            reservations.add(reservation);
+        }
+        reservationRepository.saveAll(reservations);
+
+
+
+
+    }
+    private void silverToGold() {
+        BikeStation bikeStation = bikeStationService.getAllStations().getFirst();
+        Bike bike = bikeService.getBikeById(bikeStation.getBikesIds().get(0));
+        User user = userService.getUserByUUID(userRepository.findByEmail("silvertogold@test.com").get().getId());
+        Rider rider = (Rider)  user;
+        List<Trip> trips = tripRepository.findByUserId(user.getId());
+        for (int week = 0; week < 14; week++) {
+            for (int i = 0; i < 5; i++) {
+                Trip trip = new Trip.Builder()
+                        .bikeId(bike.getId())
+                        .bikeStationStartId(bikeStation.getId())
+                        .bikeStationEndId(bikeStation.getId())
+                        .startDate(LocalDateTime.now().minusWeeks(week))
+                        .endDate(LocalDateTime.now().minusWeeks(week).plusMinutes(1))
+                        .status(TripStatus.COMPLETED)
+                        .distanceInKm(0.0)
+                        .bikeType(bike.getBikeType())
+                        .pricingPlan(PricingPlan.SINGLE_RIDE)
+                        .discountApplied(0)
+                        .userId(user.getId())
+                        .paymentInfoId(rider.getDefaultPaymentInfo().getId())
+                        .cost(1.19)
+                        .build();
+
+                trips.add(trip);
+            }
+        }
+        tripRepository.saveAll(trips);
+    }
     private void reservationPopulate() {
         BikeStation bikeStation = bikeStationService.getAllStations().getFirst();
         Bike bike = bikeService.getBikeById(bikeStation.getBikesIds().get(0));
