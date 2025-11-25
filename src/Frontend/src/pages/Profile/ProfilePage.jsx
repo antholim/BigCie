@@ -231,7 +231,7 @@ useEffect(() => {
         <div className="db-container db-flex-between">
           <div className="db-brand">
             <div className="db-logo">dYs�</div>
-            <span>DowntownBike</span>
+            <span>BigCie</span>
           </div>
           <div className="db-actions" style={{ gap: "12px" }}>
             <RoleToggle />

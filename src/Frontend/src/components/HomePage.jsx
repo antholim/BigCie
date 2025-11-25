@@ -117,7 +117,7 @@ export default function DowntownBikeLanding() {
         <div className="db-container db-flex-between">
           <div className="db-brand">
             <div className="db-logo">🚲</div>
-            <span>DowntownBike</span>
+            <span>BigCie</span>
           </div>
           <nav className="db-nav">
             <a href="#how">How it works</a>
@@ -330,7 +330,7 @@ export default function DowntownBikeLanding() {
           <div>
             <div className="db-brand">
               <div className="db-logo">🚲</div>
-              <span>DowntownBike</span>
+              <span>BigCie</span>
             </div>
             <p className="db-muted">
               A demo landing page for a city bike rental service built with React.
@@ -361,7 +361,7 @@ export default function DowntownBikeLanding() {
             </ul>
           </div>
         </div>
-        <div className="db-footer-bottom">© {new Date().getFullYear()} DowntownBike. Demo content.</div>
+        <div className="db-footer-bottom">© {new Date().getFullYear()} BigCie. Demo content.</div>
       </footer>
     </div>
   );

@@ -114,7 +114,7 @@ export default function PaymentPage() {
         <div className="db-container db-flex-between">
           <div className="db-brand">
             <div className="db-logo">dYs�</div>
-            <span>DowntownBike</span>
+            <span>BigCie</span>
           </div>
           <div className="db-actions" style={{ gap: "12px" }}>
             <button className="db-btn" type="button" onClick={() => navigate(-1)}>Back</button>
