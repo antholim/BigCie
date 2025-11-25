@@ -10,15 +10,18 @@ export default defineConfig({
     allowedHosts: ["bigcie.cimpo1.com", "localhost", "127.0.0.1"],
     proxy: {
       "/api": {
-        target: "http://107.172.139.134:8080",
+        target: "https://107.172.139.134:8080",
         changeOrigin: true,
         secure: false,
       },
       "/ws": {
-        target: "ws://107.172.139.134:8080",
+        target: "wss://107.172.139.134:8080",
         ws: true,
         changeOrigin: true,
       },
     },
+  },
+  preview: {
+    host: "0.0.0.0",
   },
 });

@@ -30,7 +30,7 @@ class FetchingService {
 		}
 		
 		// Final fallback (should rarely be needed)
-		return "http://localhost:8080/";
+		return "https://localhost:8080/";
 	}
 
 	get(url, config) {
