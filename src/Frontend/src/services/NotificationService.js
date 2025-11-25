@@ -1,7 +1,7 @@
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
-const DEFAULT_BASE_URL = "https://localhost:8080";
+const DEFAULT_BASE_URL = "http://localhost:8080";
 const OPERATOR_TOPIC = "/topic/operator-events";
 
 const resolveBaseUrl = () => {
