@@ -34,7 +34,6 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .requiresChannel(channel -> channel.anyRequest())
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(
                                 "/api/v1/register",
