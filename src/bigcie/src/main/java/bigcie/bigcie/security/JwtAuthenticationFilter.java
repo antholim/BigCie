@@ -67,6 +67,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private UserDetails authenticateUsingJwtToken(String jwtToken, HttpServletRequest request) {
         try {
+            // Validate token is not null or empty
+            if (jwtToken == null || jwtToken.trim().isEmpty()) {
+                log.debug("JWT token is null or empty");
+                return null;
+            }
             String username = tokenService.extractUsername(jwtToken, TokenType.ACCESS_TOKEN);
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -84,6 +89,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private UserDetails authenticateUsingRefreshToken(String refreshToken, HttpServletRequest request,
             HttpServletResponse response) {
         try {
+            // Validate token is not null or empty
+            if (refreshToken == null || refreshToken.trim().isEmpty()) {
+                log.debug("Refresh token is null or empty");
+                return null;
+            }
             String username = tokenService.extractUsername(refreshToken, TokenType.REFRESH_TOKEN);
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);

@@ -121,6 +121,10 @@ public class TokenService implements ITokenService {
 
     // Helper method to extract all claims from a token
     private Claims extractAllClaims(String token, TokenType tokenType) throws JwtException {
+        // Validate token is not null or empty before attempting to parse
+        if (token == null || token.trim().isEmpty()) {
+            throw new JwtException("Token cannot be null or empty");
+        }
         try {
             return Jwts.parser()
                     .verifyWith(getKey(tokenType))

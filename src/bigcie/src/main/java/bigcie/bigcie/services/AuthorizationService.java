@@ -31,13 +31,18 @@ public class AuthorizationService implements IAuthorizationService {
     public User getUserFromRequest(HttpServletRequest request) {
         log.info("HERE");
         String token = cookieService.getTokenFromCookie(request, "authToken");
-        if (token == null) {
+        if (token == null || token.trim().isEmpty()) {
             throw new RuntimeException("No access token found");
         }
 
-        UUID userId = tokenService.extractUserId(token, TokenType.ACCESS_TOKEN);
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        try {
+            UUID userId = tokenService.extractUserId(token, TokenType.ACCESS_TOKEN);
+            return userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+        } catch (Exception e) {
+            log.error("Error extracting user from token: {}", e.getMessage());
+            throw new RuntimeException("Invalid access token: " + e.getMessage(), e);
+        }
     }
 
     @Override
