@@ -6,7 +6,7 @@ export default defineConfig({
   define: {
     global: "window",
   },
-  preview: {
+  server: {
     allowedHosts: ["bigcie.cimpo1.com", "localhost", "127.0.0.1"],
     proxy: {
       "/api": {
