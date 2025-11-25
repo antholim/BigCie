@@ -12,4 +12,5 @@ import org.springframework.stereotype.Component;
 public class CookieConfigProperties {
     private boolean secure;
     private boolean httpOnly;
+    private String sameSite = "None"; // Default to None for cross-origin
 }

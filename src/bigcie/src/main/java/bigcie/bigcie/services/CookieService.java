@@ -59,12 +59,18 @@ public class CookieService implements ICookieService {
         long maxAge = tokenType == TokenType.ACCESS_TOKEN ? tokenConfigProperties.getExp()
                 : rtConfigProperties.getExp();
 
-        ResponseCookie cookie = ResponseCookie.from(cookieName, token)
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(cookieName, token)
                 .httpOnly(cookieConfigProperties.isHttpOnly())
                 .secure(cookieConfigProperties.isSecure())
                 .path("/")
-                .maxAge(maxAge)
-                .build();
+                .maxAge(maxAge);
+
+        // Add SameSite attribute for cross-origin requests
+        if (cookieConfigProperties.getSameSite() != null && !cookieConfigProperties.getSameSite().isEmpty()) {
+            builder.sameSite(cookieConfigProperties.getSameSite());
+        }
+
+        ResponseCookie cookie = builder.build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
