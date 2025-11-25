@@ -60,11 +60,14 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
                 "http://localhost:5173",
+                "http://localhost:4173",
                 "http://127.0.0.1:3000",
                 "http://127.0.0.1:5173",
+                "http://127.0.0.1:4173",
                 "https://bigcie.cimpo1.com",
                 "http://107.172.139.134:3000",
-                "http://107.172.139.134:5173"));
+                "http://107.172.139.134:5173",
+                "http://107.172.139.134:4173"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
